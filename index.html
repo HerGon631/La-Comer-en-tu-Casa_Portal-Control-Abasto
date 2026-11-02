@@ -714,16 +714,36 @@
                 const response = await fetch(`${WEB_APP_URL}?action=verificarSesion&token=${encodeURIComponent(datos.sessionToken)}`);
                 const result = await response.json();
 
-                if (result && result.active === false) {
-                    alert("Su sesión ha expirado, ha sido abierta en otro dispositivo o ha sido bloqueada por el administrador.");
-                    cerrarSesion();
+                if (result) {
+                    // Si el servidor indica que está bloqueado o el token ya no es válido, expulsar inmediatamente
+                    if (result.active === false || result.isBlocked === true) {
+                        alert("Su cuenta ha sido bloqueada o la sesión ha expirado.");
+                        cerrarSesion();
+                        return;
+                    }
+
+                    // Actualizar dinámicamente el estatus de administrador en tiempo real sin recargar
+                    if (result.isAdmin !== undefined && result.isAdmin !== datos.isAdmin) {
+                        datos.isAdmin = result.isAdmin;
+                        localStorage.setItem('lcc_sesion', JSON.stringify(datos));
+                        
+                        if (datos.isAdmin) {
+                            adminBadge.style.display = "block";
+                            profileRango.textContent = "🛡️ Administrador";
+                            profileRango.className = "badge-rango badge-admin";
+                        } else {
+                            adminBadge.style.display = "none";
+                            profileRango.textContent = "👤 Usuario Estándar";
+                            profileRango.className = "badge-rango badge-user";
+                        }
+                    }
                 }
             } catch (e) {}
         }
 
         function iniciarVerificacionRemota() {
             clearInterval(intervaloVerificacionToken);
-            intervaloVerificacionToken = setInterval(verificarValidezSesionRemota, 30000);
+            intervaloVerificacionToken = setInterval(verificarValidezSesionRemota, 10000); // Verifica cada 10 segundos para mayor fluidez
         }
 
         function verificarSesionGuardada() {
@@ -750,6 +770,7 @@
                         profileRango.textContent = "🛡️ Administrador";
                         profileRango.className = "badge-rango badge-admin";
                     } else {
+                        adminBadge.style.display = "none";
                         profileRango.textContent = "👤 Usuario Estándar";
                         profileRango.className = "badge-rango badge-user";
                     }
@@ -890,7 +911,7 @@
             }
 
             if (guardar) {
-                localStorage.setItem('lcc_seccion_activa', nombreSeccion);
+                localStorage.setItem('lcc_sesion_activa', nombreSeccion);
                 localStorage.setItem('lcc_titulo_activo', tituloFranja);
             }
 
