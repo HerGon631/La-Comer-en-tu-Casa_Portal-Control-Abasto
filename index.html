@@ -368,7 +368,7 @@
             font-weight: bold;
         }
 
-        /* --- CINTA ANIMADA CON ENTRADA SUAVE DESDE LA DERECHA --- */
+        /* --- CINTA ANIMADA CON ENTRADA LIMPIA DESDE LA DERECHA --- */
         .ticker-container {
             background: linear-gradient(90deg, #fff0f5 0%, #ffe4ee 100%);
             border-bottom: 2px solid rgba(228, 0, 124, 0.15);
@@ -692,13 +692,9 @@
                 const totalComentarios = lista.length;
                 const segundosDinamicos = Math.max(50, totalComentarios * 16);
                 tickerTrack.style.animationDuration = segundosDinamicos + 's';
-
-                // Añade la clase para animar la entrada limpia desde la derecha
                 tickerTrack.classList.add('loaded');
 
-            } catch (error) {
-                // Silencioso en caso de error
-            }
+            } catch (error) {}
         }
 
         let tabId = sessionStorage.getItem('lcc_tab_id');
@@ -715,11 +711,11 @@
                 const datos = JSON.parse(sesionGuardada);
                 if (!datos.sessionToken) return;
 
-                const response = await fetch(`${WEB_APP_URL}?action=verificarSesion&empleado=${encodeURIComponent(datos.empleado)}&token=${encodeURIComponent(datos.sessionToken)}`);
+                const response = await fetch(`${WEB_APP_URL}?action=verificarSesion&token=${encodeURIComponent(datos.sessionToken)}`);
                 const result = await response.json();
 
                 if (result && result.active === false) {
-                    alert("Su sesión ha sido abierta en otro dispositivo. Este equipo ha sido cerrado.");
+                    alert("Su sesión ha expirado, ha sido abierta en otro dispositivo o ha sido bloqueada por el administrador.");
                     cerrarSesion();
                 }
             } catch (e) {}
