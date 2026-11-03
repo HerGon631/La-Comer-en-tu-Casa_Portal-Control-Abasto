@@ -34,6 +34,92 @@
             flex-direction: column;
         }
 
+        /* --- PANTALLA DE CARGA GLOBAL (OVERLAY) --- */
+        .global-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .global-loader.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loader-logo-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* Anillo giratorio de carga */
+        .loader-spin-ring {
+            position: absolute;
+            width: 135px;
+            height: 135px;
+            border: 4px solid rgba(228, 0, 124, 0.15);
+            border-top: 4px solid var(--mexican-pink);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Imagen del Pelícano con respiración suave */
+        .loader-logo-img {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 4px 20px rgba(228, 0, 124, 0.25);
+            animation: logoPulse 1.8s ease-in-out infinite;
+        }
+
+        .loader-text {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--text-color);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
         .login-wrapper {
             display: flex;
             justify-content: center;
@@ -154,19 +240,6 @@
         button.btn-primary:disabled {
             opacity: 0.85;
             cursor: not-allowed;
-        }
-
-        /* Animación sutil para los puntos de carga */
-        .loading-dots::after {
-            content: '';
-            animation: dots 1.5s steps(4, end) infinite;
-        }
-
-        @keyframes dots {
-            0% { content: ''; }
-            25% { content: '.'; }
-            50% { content: '..'; }
-            75% { content: '...'; }
         }
 
         .mensaje {
@@ -492,6 +565,16 @@
 </head>
 <body>
 
+    <!-- OVERLAY DE CARGA CON IMAGEN DEL PELÍCANO -->
+    <div id="globalLoader" class="global-loader">
+        <div class="loader-logo-wrapper">
+            <div class="loader-spin-ring"></div>
+            <!-- Carga pelicano-logo.png o pelicano.jpg con fallback automático -->
+            <img id="loaderImg" class="loader-logo-img" src="pelicano-logo.png" alt="Cargando..." onerror="this.onerror=null; this.src='pelicano.jpg';">
+        </div>
+        <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
+    </div>
+
     <div id="login-section" class="login-wrapper">
         <div class="login-card">
             <div class="logo-container">LC</div>
@@ -532,7 +615,7 @@
 
             <div class="profile-container">
                 <button class="profile-btn" id="profileToggle" aria-label="Menú de Perfil">
-                    <img src="pelicano.jpg" alt="Perfil Pelícano">
+                    <img src="pelicano.jpg" alt="Perfil Pelícano" onerror="this.src='pelicano-logo.png'">
                 </button>
 
                 <div class="profile-dropdown" id="profileDropdown">
@@ -666,9 +749,27 @@
         const profileRango = document.getElementById('profileRango');
         const tickerContainer = document.getElementById('tickerContainer');
 
+        const globalLoader = document.getElementById('globalLoader');
+        const loaderText = document.getElementById('loaderText');
+
         let temporizadorInactividad;
         let intervaloVerificacionToken;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
+
+        function mostrarLoader(mensaje = "Verificando acceso") {
+            if (loaderText) {
+                loaderText.innerHTML = `${mensaje}<span class="loading-dots"></span>`;
+            }
+            if (globalLoader) {
+                globalLoader.classList.add('active');
+            }
+        }
+
+        function ocultarLoader() {
+            if (globalLoader) {
+                globalLoader.classList.remove('active');
+            }
+        }
 
         function generarEstrellas(puntuacion) {
             let num = parseInt(puntuacion) || 5;
@@ -944,7 +1045,7 @@
             }
 
             if (guardar) {
-                localStorage.setItem('lcc_seccion_activa', nombreSeccion);
+                localStorage.setItem('lcc_sesion_activa', nombreSeccion);
                 localStorage.setItem('lcc_titulo_activo', tituloFranja);
             }
 
@@ -952,12 +1053,15 @@
         }
 
         function cerrarSesion() {
-            localStorage.removeItem('lcc_sesion');
-            localStorage.removeItem('lcc_active_tab_owner');
-            localStorage.removeItem('lcc_seccion_activa');
-            localStorage.removeItem('lcc_titulo_activo');
-            clearInterval(intervaloVerificacionToken);
-            location.reload();
+            mostrarLoader("Cerrando sesión");
+            setTimeout(() => {
+                localStorage.removeItem('lcc_sesion');
+                localStorage.removeItem('lcc_active_tab_owner');
+                localStorage.removeItem('lcc_seccion_activa');
+                localStorage.removeItem('lcc_titulo_activo');
+                clearInterval(intervaloVerificacionToken);
+                location.reload();
+            }, 500);
         }
 
         if (form) {
@@ -990,13 +1094,14 @@
                     return;
                 }
 
-                // --- PUNTO 4: INDICADOR VISUAL DE CARGA EN EL LOGIN ---
                 if (mensajeAlerta) {
                     mensajeAlerta.textContent = "";
                 }
+                
+                // ACTIVAR PANTALLA DE CARGA VISUAL CON PELÍCANO
+                mostrarLoader("Verificando credenciales");
                 if (btnIngresar) {
                     btnIngresar.disabled = true;
-                    btnIngresar.innerHTML = 'Verificando acceso<span class="loading-dots"></span>';
                 }
 
                 const sessionToken = 'token_' + Math.random().toString(36).substring(2) + '_' + Date.now();
@@ -1019,24 +1124,25 @@
                         localStorage.setItem('lcc_active_tab_owner', tabId);
 
                         verificarSesionGuardada();
+                        ocultarLoader();
                     } else {
+                        ocultarLoader();
                         if (mensajeAlerta) {
                             mensajeAlerta.textContent = (result && result.message) ? result.message : "Acceso denegado. Verifique sus datos.";
                             mensajeAlerta.className = "mensaje error";
                         }
                         if (btnIngresar) {
                             btnIngresar.disabled = false;
-                            btnIngresar.innerHTML = 'Ingresar al Portal &rarr;';
                         }
                     }
                 } catch (error) {
+                    ocultarLoader();
                     if (mensajeAlerta) {
                         mensajeAlerta.textContent = "Error de conexión con el servidor.";
                         mensajeAlerta.className = "mensaje error";
                     }
                     if (btnIngresar) {
                         btnIngresar.disabled = false;
-                        btnIngresar.innerHTML = 'Ingresar al Portal &rarr;';
                     }
                 }
             });
