@@ -23,6 +23,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -68,7 +69,6 @@
             margin-bottom: 20px;
         }
 
-        /* Anillo giratorio de carga */
         .loader-spin-ring {
             position: absolute;
             width: 135px;
@@ -79,7 +79,6 @@
             animation: spin 1s linear infinite;
         }
 
-        /* Imagen del Pelícano con respiración suave */
         .loader-logo-img {
             width: 110px;
             height: 110px;
@@ -290,6 +289,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: transform 0.2s;
+        }
+        .menu-btn:active {
+            transform: scale(0.9);
         }
 
         .header-title {
@@ -346,10 +349,16 @@
             color: var(--text-color);
             text-align: left;
             border: 1px solid #eee;
+            animation: dropdownFade 0.2s ease-out;
         }
 
         .profile-dropdown.active {
             display: block;
+        }
+
+        @keyframes dropdownFade {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .profile-dropdown h3 {
@@ -397,7 +406,7 @@
             height: 100vh;
             background-color: #ffffff;
             box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2);
-            transition: left 0.3s ease;
+            transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 1100;
             display: flex;
             flex-direction: column;
@@ -444,8 +453,9 @@
             font-weight: 600;
             color: var(--text-color);
             cursor: pointer;
-            transition: background 0.2s ease, padding-left 0.2s ease;
+            transition: background 0.2s ease, padding-left 0.2s ease, color 0.2s ease;
             display: block;
+            position: relative;
         }
 
         .menu-item:hover {
@@ -457,6 +467,17 @@
             background-color: var(--mexican-pink);
             color: #ffffff;
             font-weight: bold;
+        }
+
+        /* Animación corta, visible y fluida al seleccionar opción del menú (Punto 5) */
+        .menu-item.menu-tap-anim {
+            animation: menuTapFlash 0.35s ease-out;
+        }
+
+        @keyframes menuTapFlash {
+            0% { background-color: var(--mexican-pink); color: #fff; transform: scale(1); }
+            50% { background-color: rgba(228, 0, 124, 0.35); transform: scale(0.98); }
+            100% { background-color: var(--mexican-pink); color: #fff; transform: scale(1); }
         }
 
         .ticker-container {
@@ -569,7 +590,6 @@
     <div id="globalLoader" class="global-loader">
         <div class="loader-logo-wrapper">
             <div class="loader-spin-ring"></div>
-            <!-- Carga pelicano-logo.png o pelicano.jpg con fallback automático -->
             <img id="loaderImg" class="loader-logo-img" src="pelicano-logo.png" alt="Cargando..." onerror="this.onerror=null; this.src='pelicano.jpg';">
         </div>
         <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
@@ -994,6 +1014,10 @@
 
         if (menuToggle) {
             menuToggle.addEventListener('click', toggleMenu);
+            menuToggle.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                toggleMenu();
+            }, {passive: false});
         }
 
         if (profileToggle) {
@@ -1002,6 +1026,12 @@
                 if (sidebar) sidebar.classList.remove('active');
                 profileDropdown.classList.toggle('active');
             });
+            profileToggle.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (sidebar) sidebar.classList.remove('active');
+                profileDropdown.classList.toggle('active');
+            }, {passive: false});
         }
 
         function cerrarTodo() {
@@ -1015,12 +1045,17 @@
             }
         });
 
+        // PUNTO 5: Optimización y animación de selección en menú móvil / hamburguesa
         function cambiarSeccion(nombreSeccion, tituloFranja, elementoMenu, guardar = true) {
             const items = document.querySelectorAll('.menu-item');
             items.forEach(item => item.classList.remove('selected'));
 
             if (elementoMenu) {
                 elementoMenu.classList.add('selected');
+                elementoMenu.classList.add('menu-tap-anim');
+                setTimeout(() => {
+                    elementoMenu.classList.remove('menu-tap-anim');
+                }, 350);
             } else {
                 const itemPorDefecto = document.querySelector(`.menu-item[data-section="${nombreSeccion}"]`);
                 if (itemPorDefecto) itemPorDefecto.classList.add('selected');
@@ -1045,7 +1080,7 @@
             }
 
             if (guardar) {
-                localStorage.setItem('lcc_sesion_activa', nombreSeccion);
+                localStorage.setItem('lcc_seccion_activa', nombreSeccion);
                 localStorage.setItem('lcc_titulo_activo', tituloFranja);
             }
 
@@ -1098,7 +1133,6 @@
                     mensajeAlerta.textContent = "";
                 }
                 
-                // ACTIVAR PANTALLA DE CARGA VISUAL CON PELÍCANO
                 mostrarLoader("Verificando credenciales");
                 if (btnIngresar) {
                     btnIngresar.disabled = true;
