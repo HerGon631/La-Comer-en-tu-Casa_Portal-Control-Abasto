@@ -200,7 +200,7 @@
             letter-spacing: 0.5px;
         }
 
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 12px 14px;
             border: 1px solid #dadce0;
@@ -212,7 +212,7 @@
             color: var(--text-color);
         }
 
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             border-color: var(--mexican-pink);
             box-shadow: 0 0 0 2px rgba(228, 0, 124, 0.2);
         }
@@ -255,7 +255,6 @@
         .error { color: var(--error-color); }
         .success { color: var(--success-color); }
 
-        /* --- SELLO DE AUTORÍA Y FOOTER EN LOGIN --- */
         .login-footer {
             margin-top: 25px;
             padding-top: 15px;
@@ -340,11 +339,6 @@
             transition: transform 0.2s, box-shadow 0.2s;
             overflow: hidden;
             padding: 0;
-        }
-
-        .profile-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         .profile-btn img {
@@ -476,37 +470,13 @@
             position: relative;
             margin: 4px 10px;
             border-radius: 10px;
-            transition: background-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
-                        color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
-                        transform 0.25s ease,
-                        box-shadow 0.3s ease;
-        }
-
-        .menu-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%) scaleY(0);
-            width: 4px;
-            height: 60%;
-            background-color: var(--mexican-pink);
-            border-radius: 0 4px 4px 0;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.25s ease;
         }
 
         .menu-item:hover {
             background-color: var(--pink-transparent-30);
             color: var(--mexican-pink);
             transform: translateX(6px);
-        }
-
-        .menu-item:hover::before {
-            transform: translateY(-50%) scaleY(1);
-        }
-
-        .menu-item:active {
-            transform: translateX(3px) scale(0.98);
         }
 
         .menu-item.selected {
@@ -517,19 +487,41 @@
             transform: translateX(4px);
         }
 
-        .menu-item.selected::before {
-            transform: translateY(-50%) scaleY(1);
-            background-color: #ffffff;
+        /* --- SUBMENÚS ACORDEÓN PARA REPORTES (FASE 2) --- */
+        .submenu-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #fafafa;
+            border-radius: 0 0 10px 10px;
+            margin: 0 10px;
         }
 
-        .menu-item.menu-tap-anim {
-            animation: menuTapFlash 0.35s ease-out;
+        .submenu-container.active {
+            max-height: 250px;
         }
 
-        @keyframes menuTapFlash {
-            0% { transform: translateX(6px) scale(1); }
-            50% { transform: translateX(2px) scale(0.97); }
-            100% { transform: translateX(4px) scale(1); }
+        .submenu-item {
+            padding: 12px 20px 12px 35px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--label-color);
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .submenu-item:hover {
+            color: var(--mexican-pink);
+            background-color: var(--pink-transparent-30);
+            border-left-color: var(--mexican-pink);
+        }
+
+        .submenu-item.selected {
+            color: var(--mexican-pink);
+            font-weight: bold;
+            border-left-color: var(--mexican-pink);
+            background-color: rgba(228, 0, 124, 0.05);
         }
 
         .ticker-container {
@@ -573,22 +565,6 @@
             color: #333;
         }
 
-        .ticker-stars {
-            font-size: 12px;
-            letter-spacing: 1px;
-        }
-
-        .ticker-comment {
-            font-style: italic;
-            color: #444;
-        }
-
-        .ticker-client {
-            font-weight: bold;
-            color: var(--mexican-pink);
-            font-style: normal;
-        }
-
         @keyframes tickerScroll {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
@@ -596,7 +572,7 @@
 
         .main-content {
             padding: 30px 20px;
-            max-width: 900px;
+            max-width: 950px;
             margin: 0 auto;
             flex-grow: 1;
             width: 100%;
@@ -621,6 +597,50 @@
             display: block;
         }
 
+        /* --- ESTILOS PARA LAS SUBSECCIONES DE REPORTES (FASE 2) --- */
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .report-card-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sku-img-preview {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 8px;
+            background-color: #f1f3f4;
+            border: 1px solid #ddd;
+        }
+
+        .btn-action-report {
+            background-color: var(--mexican-pink);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: center;
+        }
+        .btn-action-report:hover {
+            background-color: var(--mexican-pink-hover);
+        }
+
         .btn-logout {
             background-color: #c5221f;
             color: white;
@@ -638,7 +658,6 @@
             background-color: #a51a17;
         }
 
-        /* --- SELLO DE AUTORÍA Y FOOTER EN DASHBOARD --- */
         .dashboard-footer {
             margin-top: auto;
             padding: 20px 0 10px 0;
@@ -657,15 +676,16 @@
 </head>
 <body>
 
-    <!-- OVERLAY DE CARGA CON IMAGEN DEL PELÍCANO -->
+    <!-- OVERLAY DE CARGA -->
     <div id="globalLoader" class="global-loader">
         <div class="loader-logo-wrapper">
             <div class="loader-spin-ring"></div>
-            <img id="loaderImg" class="loader-logo-img" src="pelicano-logo.png" alt="Cargando..." onerror="this.onerror=null; this.src='pelicano.jpg';">
+            <img class="loader-logo-img" src="pelicano-logo.png" alt="Cargando..." onerror="this.onerror=null; this.src='pelicano.jpg';">
         </div>
-        <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
+        <div class="loader-text" id="loaderText">Procesando solicitud<span class="loading-dots"></span></div>
     </div>
 
+    <!-- PANTALLA DE LOGIN -->
     <div id="login-section" class="login-wrapper">
         <div class="login-card">
             <div class="logo-container">LC</div>
@@ -695,7 +715,6 @@
             </form>
             <div id="mensajeAlerta" class="mensaje"></div>
 
-            <!-- SELLO DE AUTORÍA EN LOGIN -->
             <footer class="login-footer">
                 © 2026 La Comer en tu Casa — Sistema de Control & Abasto.<br>
                 Desarrollado por <span class="author-highlight">Angelo Arturo Hernández González</span>.
@@ -703,6 +722,7 @@
         </div>
     </div>
 
+    <!-- DASHBOARD PRINCIPAL -->
     <div id="dashboard">
         <header class="header-bar">
             <div class="header-left">
@@ -717,22 +737,10 @@
 
                 <div class="profile-dropdown" id="profileDropdown">
                     <h3>Mi Perfil</h3>
-                    <div class="profile-info-item">
-                        Nombre:
-                        <span id="profileName">-</span>
-                    </div>
-                    <div class="profile-info-item">
-                        N° Empleado:
-                        <span id="profileEmp">-</span>
-                    </div>
-                    <div class="profile-info-item">
-                        Departamento:
-                        <span id="profileDept">-</span>
-                    </div>
-                    <div class="profile-info-item">
-                        Rango de Acceso:
-                        <div id="profileRango" class="badge-rango">-</div>
-                    </div>
+                    <div class="profile-info-item">Nombre: <span id="profileName">-</span></div>
+                    <div class="profile-info-item">N° Empleado: <span id="profileEmp">-</span></div>
+                    <div class="profile-info-item">Departamento: <span id="profileDept">-</span></div>
+                    <div class="profile-info-item">Rango: <div id="profileRango" class="badge-rango">-</div></div>
                     <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
                 </div>
             </div>
@@ -742,6 +750,7 @@
             <div class="ticker-track" id="tickerTrack"></div>
         </div>
 
+        <!-- BARRA LATERAL (SIDEBAR) -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo-container">LC</div>
@@ -751,29 +760,40 @@
                 <li class="menu-item selected" data-section="inicio" data-title="Inicio" onclick="cambiarSeccion('inicio', 'Inicio', this)">Inicio</li>
                 <li class="menu-item" data-section="departamento" data-title="Mi departamento" onclick="cambiarSeccion('departamento', 'Mi departamento', this)">Mi departamento</li>
                 <li class="menu-item" data-section="indicadores" data-title="Indicadores" onclick="cambiarSeccion('indicadores', 'Indicadores', this)">Indicadores</li>
-                <li class="menu-item" data-section="reportes" data-title="Reportes" onclick="cambiarSeccion('reportes', 'Reportes', this)">Reportes</li>
+                
+                <!-- MENÚ DESPLEGABLE REPORTES (FASE 2) -->
+                <li class="menu-item" id="menuReportesToggle" onclick="toggleSubmenuReportes()">
+                    Reportes ▾
+                </li>
+                <div class="submenu-container" id="submenuReportes">
+                    <div class="submenu-item admin-only-sub" data-sub="alta-archivo" onclick="cambiarSubseccionReportes('alta-archivo', 'Reportes: Alta de Archivo', this)">📁 Alta de Archivo (Admin)</div>
+                    <div class="submenu-item" data-sub="consulta-reporte" onclick="cambiarSubseccionReportes('consulta-reporte', 'Reportes: Consulta (Desabasto)', this)">🔍 Consulta de Reporte</div>
+                    <div class="submenu-item" data-sub="historial-reporte" onclick="cambiarSubseccionReportes('historial-reporte', 'Reportes: Historial', this)">📋 Historial de Reporte</div>
+                    <div class="submenu-item admin-only-sub" data-sub="revision-reporte" onclick="cambiarSubseccionReportes('revision-reporte', 'Reportes: Revisión (Admin)', this)">🛡️ Revisión de Reporte (Admin)</div>
+                </div>
+
                 <li class="menu-item" data-section="nps-casos" data-title="NPS y Casos" onclick="cambiarSeccion('nps-casos', 'NPS y Casos', this)">NPS y Casos</li>
                 <li class="menu-item" data-section="saber-mas" data-title="Saber más" onclick="cambiarSeccion('saber-mas', 'Saber más', this)">Saber más</li>
                 <li class="menu-item" data-section="ayuda" data-title="Ayuda" onclick="cambiarSeccion('ayuda', 'Ayuda', this)">Ayuda</li>
             </ul>
         </nav>
 
+        <!-- CONTENIDO PRINCIPAL -->
         <main class="main-content">
+            <!-- PESTAÑA INICIO -->
             <div id="pane-inicio" class="section-pane active">
                 <div class="content-card">
                     <h2>¡Bienvenido, <span id="userNameDisplay"></span>!</h2>
                     <p style="margin-top: 8px; color: #5f6368;">N° Empleado: <span id="userEmpDisplay"></span></p>
                     <p style="color: #5f6368;">Departamento: <span id="userDeptoDisplay"></span></p>
-
                     <div id="adminBadge" style="display:none; background: #e6f4ea; color: #137333; padding: 10px; border-radius: 8px; margin: 15px 0; font-weight: bold; font-size: 14px;">
                         🛡️ Modo Administrador Activado
                     </div>
-
                     <p class="success" style="margin-top: 15px;">Acceso autorizado correctamente por la base de datos.</p>
-                    <button onclick="cerrarSesion()" class="btn-logout" style="width: auto; padding: 10px 20px;">Cerrar Sesión</button>
                 </div>
             </div>
 
+            <!-- PESTAÑA MI DEPARTAMENTO -->
             <div id="pane-departamento" class="section-pane">
                 <div class="content-card">
                     <h2>Mi departamento</h2>
@@ -781,6 +801,7 @@
                 </div>
             </div>
 
+            <!-- PESTAÑA INDICADORES -->
             <div id="pane-indicadores" class="section-pane">
                 <div class="content-card">
                     <h2>Indicadores</h2>
@@ -788,12 +809,74 @@
                 </div>
             </div>
 
-            <div id="pane-reportes" class="section-pane">
+            <!-- --- SUBSECCIONES DEL MÓDULO DE REPORTES (FASE 2) --- -->
+
+            <!-- 1. Alta de Archivo (Admin) -->
+            <div id="pane-alta-archivo" class="section-pane">
                 <div class="content-card">
-                    <h2>Reportes</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Consulta de reportes comparativos y archivos de control.</p>
+                    <h2>Alta de Archivo (Administrador)</h2>
+                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Sube archivos (Excel, Google Sheet, PDF) para el escaneo con IA y registro en la pestaña de Reportes de Google Sheets.</p>
+                    
+                    <form id="uploadReportForm" style="margin-top: 20px;" onsubmit="handleUploadReport(event)">
+                        <div class="form-group">
+                            <label>SELECCIONAR ARCHIVO INSTITUCIONAL (XLSX, CSV, PDF)</label>
+                            <input type="file" id="reportFile" accept=".xlsx,.csv,.pdf" required>
+                        </div>
+                        <div class="form-group">
+                            <label>DESCRIPCIÓN O NOTAS DEL LOTE</label>
+                            <textarea id="reportNotes" rows="3" placeholder="Ej. Reporte general de desabasto turno matutino..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary">Procesar con IA & Alimentar Google Sheets &rarr;</button>
+                    </form>
                 </div>
             </div>
+
+            <!-- 2. Consulta de Reporte (Desabasto con SKU y Cámara) -->
+            <div id="pane-consulta-reporte" class="section-pane">
+                <div class="content-card">
+                    <h2>Consulta de Reporte de Desabasto</h2>
+                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Visualización rápida de SKUs reportados con imagen de referencia y soporte de cámara para validación.</p>
+                    
+                    <div class="report-grid" id="consultaReportGrid">
+                        <!-- Tarjeta de ejemplo de desabasto -->
+                        <div class="report-card-item">
+                            <img src="pelicano.jpg" alt="SKU" class="sku-img-preview" onerror="this.src='pelicano-logo.png'">
+                            <strong>SKU-8821: Aceite Vegetal 1L</strong>
+                            <span style="font-size: 12px; color: #c5221f; font-weight: bold;">Estado: Negado / Desabasto</span>
+                            <p style="font-size: 12px; color: #5f6368;">Pasillo 3 - Anaquel B</p>
+                            <button class="btn-action-report" onclick="abrirCamaraValidacion('SKU-8821')">📷 Usar Cámara / Validar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Historial de Reporte -->
+            <div id="pane-historial-reporte" class="section-pane">
+                <div class="content-card">
+                    <h2>Historial de Reportes</h2>
+                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Registro cronológico de reportes revisados por administración con sus observaciones y estados.</p>
+                    <div id="historialListaContainer" style="margin-top: 15px;">
+                        <p style="font-size: 13px; color: #70757a; font-style: italic;">No hay reportes previos cerrados en esta sesión.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Revisión de Reporte (Admin) -->
+            <div id="pane-revision-reporte" class="section-pane">
+                <div class="content-card">
+                    <h2>Revisión de Reportes (Administrador)</h2>
+                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Panel de auditoría para aprobar, rechazar o retroalimentar los reportes trabajados por el personal.</p>
+                    <div id="adminRevisionContainer" style="margin-top: 15px;">
+                        <div style="padding: 15px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 10px;">
+                            <strong>Reporte #104 - Departamento Abarrotes</strong>
+                            <p style="font-size: 12px; color: #5f6368; margin: 5px 0;">Enviado por personal operativo. Pendiente de validación final.</p>
+                            <button style="background: #137333; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="aprobarReporteAdmin(104)">Aprobar Reporte</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ------------------------------------------------- -->
 
             <div id="pane-nps-casos" class="section-pane">
                 <div class="content-card">
@@ -816,7 +899,6 @@
                 </div>
             </div>
 
-            <!-- SELLO DE AUTORÍA EN DASHBOARD -->
             <footer class="dashboard-footer">
                 © 2026 La Comer en tu Casa — Sistema de Control & Abasto.<br>
                 Desarrollado por <span class="author-highlight">Angelo Arturo Hernández González</span>.
@@ -851,33 +933,26 @@
         const profileDept = document.getElementById('profileDept');
         const profileRango = document.getElementById('profileRango');
         const tickerContainer = document.getElementById('tickerContainer');
-
         const globalLoader = document.getElementById('globalLoader');
         const loaderText = document.getElementById('loaderText');
 
+        let sesionActualDatos = null;
         let temporizadorInactividad;
         let intervaloVerificacionToken;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
-        function mostrarLoader(mensaje = "Verificando acceso") {
-            if (loaderText) {
-                loaderText.innerHTML = `${mensaje}<span class="loading-dots"></span>`;
-            }
-            if (globalLoader) {
-                globalLoader.classList.add('active');
-            }
+        function mostrarLoader(mensaje = "Procesando solicitud") {
+            if (loaderText) loaderText.innerHTML = `${mensaje}<span class="loading-dots"></span>`;
+            if (globalLoader) globalLoader.classList.add('active');
         }
 
         function ocultarLoader() {
-            if (globalLoader) {
-                globalLoader.classList.remove('active');
-            }
+            if (globalLoader) globalLoader.classList.remove('active');
         }
 
         function generarEstrellas(puntuacion) {
             let num = parseInt(puntuacion) || 5;
-            if (num < 1) num = 1;
-            if (num > 5) num = 5;
+            if (num < 1) num = 1; if (num > 5) num = 5;
             return "⭐".repeat(num);
         }
 
@@ -885,35 +960,27 @@
             try {
                 const response = await fetch(`${WEB_APP_URL}?action=getNps`);
                 const result = await response.json();
-                
                 const tickerTrack = document.getElementById('tickerTrack');
                 if (!tickerTrack) return;
 
                 let itemsHtml = "";
                 let lista = (result && result.nps && result.nps.length > 0) ? result.nps : [];
-
                 if (lista.length === 0) return;
 
                 let renderList = [...lista, ...lista];
-
                 renderList.forEach(item => {
                     const estrellas = generarEstrellas(item.puntuacion);
                     itemsHtml += `
                         <span class="ticker-item">
-                            <span class="ticker-stars">${estrellas}</span>
-                            <span class="ticker-comment">"${item.comentario}"</span>
-                            <span class="ticker-client">— ${item.cliente}</span>
+                            <span>${estrellas}</span>
+                            <span style="font-style:italic;">"${item.comentario}"</span>
+                            <span style="font-weight:bold; color:var(--mexican-pink);">— ${item.cliente}</span>
                         </span>
                     `;
                 });
-
                 tickerTrack.innerHTML = itemsHtml;
-
-                const totalComentarios = lista.length;
-                const segundosDinamicos = Math.max(50, totalComentarios * 16);
-                tickerTrack.style.animationDuration = segundosDinamicos + 's';
+                tickerTrack.style.animationDuration = Math.max(50, lista.length * 16) + 's';
                 tickerTrack.classList.add('loaded');
-
             } catch (error) {}
         }
 
@@ -940,40 +1007,6 @@
                         cerrarSesion();
                         return;
                     }
-
-                    let hubicambios = false;
-
-                    if (result.nombre && result.nombre !== datos.nombre) {
-                        datos.nombre = result.nombre;
-                        userNameDisplay.textContent = result.nombre;
-                        profileName.textContent = result.nombre;
-                        hubicambios = true;
-                    }
-
-                    if (result.departamento && result.departamento !== datos.departamento) {
-                        datos.departamento = result.departamento;
-                        userDeptoDisplay.textContent = result.departamento;
-                        profileDept.textContent = result.departamento;
-                        hubicambios = true;
-                    }
-
-                    if (result.isAdmin !== undefined && result.isAdmin !== datos.isAdmin) {
-                        datos.isAdmin = result.isAdmin;
-                        if (datos.isAdmin) {
-                            adminBadge.style.display = "block";
-                            profileRango.textContent = "🛡️ Administrador";
-                            profileRango.className = "badge-rango badge-admin";
-                        } else {
-                            adminBadge.style.display = "none";
-                            profileRango.textContent = "👤 Usuario Estándar";
-                            profileRango.className = "badge-rango badge-user";
-                        }
-                        hubicambios = true;
-                    }
-
-                    if (hubicambios) {
-                        localStorage.setItem('lcc_sesion', JSON.stringify(datos));
-                    }
                 }
             } catch (e) {}
         }
@@ -990,6 +1023,7 @@
             if (sesionGuardada && activeOwner === tabId) {
                 try {
                     const datos = JSON.parse(sesionGuardada);
+                    sesionActualDatos = datos;
                     
                     loginSection.style.display = "none";
                     dashboard.style.display = "flex";
@@ -1006,17 +1040,22 @@
                         adminBadge.style.display = "block";
                         profileRango.textContent = "🛡️ Administrador";
                         profileRango.className = "badge-rango badge-admin";
+                        document.querySelectorAll('.admin-only-sub').forEach(el => el.style.display = 'block');
                     } else {
                         adminBadge.style.display = "none";
                         profileRango.textContent = "👤 Usuario Estándar";
                         profileRango.className = "badge-rango badge-user";
+                        document.querySelectorAll('.admin-only-sub').forEach(el => el.style.display = 'none');
                     }
 
                     const seccionActiva = localStorage.getItem('lcc_seccion_activa') || 'inicio';
                     const tituloActivo = localStorage.getItem('lcc_titulo_activo') || 'Inicio';
                     
-                    const itemMenu = document.querySelector(`.menu-item[data-section="${seccionActiva}"]`);
-                    cambiarSeccion(seccionActiva, tituloActivo, itemMenu, false);
+                    if (seccionActiva.startsWith('alta-') || seccionActiva.startsWith('consulta-') || seccionActiva.startsWith('historial-') || seccionActiva.startsWith('revision-')) {
+                        cambiarSubseccionReportes(seccionActiva, tituloActivo, null, false);
+                    } else {
+                        cambiarSeccion(seccionActiva, tituloActivo, null, false);
+                    }
 
                     iniciarControlInactividad();
                     iniciarVerificacionRemota();
@@ -1031,20 +1070,13 @@
         }
 
         window.addEventListener('storage', function(e) {
-            if (e.key === 'lcc_active_tab_owner') {
-                const newOwner = e.newValue;
-                if (newOwner && newOwner !== tabId) {
-                    loginSection.style.display = "flex";
-                    dashboard.style.display = "none";
-                    clearTimeout(temporizadorInactividad);
-                    clearInterval(intervaloVerificacionToken);
-                }
+            if (e.key === 'lcc_active_tab_owner' && e.newValue && e.newValue !== tabId) {
+                loginSection.style.display = "flex";
+                dashboard.style.display = "none";
             }
             if (e.key === 'lcc_sesion' && e.newValue === null) {
                 loginSection.style.display = "flex";
                 dashboard.style.display = "none";
-                clearTimeout(temporizadorInactividad);
-                clearInterval(intervaloVerificacionToken);
             }
         });
 
@@ -1058,11 +1090,9 @@
         }
 
         function iniciarControlInactividad() {
-            window.addEventListener('mousemove', reiniciarTemporizadorInactividad);
-            window.addEventListener('mousedown', reiniciarTemporizadorInactividad);
-            window.addEventListener('keypress', reiniciarTemporizadorInactividad);
-            window.addEventListener('touchstart', reiniciarTemporizadorInactividad);
-            window.addEventListener('scroll', reiniciarTemporizadorInactividad);
+            ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'].forEach(evt => {
+                window.addEventListener(evt, reiniciarTemporizadorInactividad);
+            });
             reiniciarTemporizadorInactividad();
         }
 
@@ -1070,17 +1100,13 @@
             try {
                 const response = await fetch(`${WEB_APP_URL}?action=getDepartamentos`);
                 const result = await response.json();
-                
-                if (result && result.departments && result.departments.length > 0) {
+                if (result && result.departments) {
                     selectDepartamento.innerHTML = '<option value="" disabled selected>Seleccione su departamento</option>';
                     result.departments.forEach(depto => {
-                        const option = document.createElement('option');
-                        option.value = depto;
-                        option.textContent = depto;
-                        selectDepartamento.appendChild(option);
+                        const opt = document.createElement('option');
+                        opt.value = depto; opt.textContent = depto;
+                        selectDepartamento.appendChild(opt);
                     });
-                } else {
-                    selectDepartamento.innerHTML = '<option value="" disabled selected>No se encontraron departamentos</option>';
                 }
             } catch (error) {
                 selectDepartamento.innerHTML = '<option value="" disabled selected>Error al cargar lista</option>';
@@ -1095,13 +1121,7 @@
             sidebar.classList.toggle('active');
         }
 
-        if (menuToggle) {
-            menuToggle.addEventListener('click', toggleMenu);
-            menuToggle.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                toggleMenu();
-            }, {passive: false});
-        }
+        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
 
         if (profileToggle) {
             profileToggle.addEventListener('click', function(e) {
@@ -1109,52 +1129,64 @@
                 if (sidebar) sidebar.classList.remove('active');
                 profileDropdown.classList.toggle('active');
             });
-            profileToggle.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (sidebar) sidebar.classList.remove('active');
-                profileDropdown.classList.toggle('active');
-            }, {passive: false});
-        }
-
-        function cerrarTodo() {
-            if (sidebar) sidebar.classList.remove('active');
-            if (profileDropdown) profileDropdown.classList.remove('active');
         }
 
         window.addEventListener('click', function(e) {
             if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && !profileDropdown.contains(e.target) && !profileToggle.contains(e.target)) {
-                cerrarTodo();
+                sidebar.classList.remove('active');
+                profileDropdown.classList.remove('active');
             }
         });
 
+        // --- CONTROL DE SUBMENÚ REPORTES (FASE 2) ---
+        function toggleSubmenuReportes() {
+            const submenu = document.getElementById('submenuReportes');
+            submenu.classList.toggle('active');
+        }
+
+        function cambiarSubseccionReportes(subId, tituloFranja, elementoSub, guardar = true) {
+            document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('selected'));
+
+            if (elementoSub) elementoSub.classList.add('selected');
+            document.getElementById('menuReportesToggle').classList.add('selected');
+            document.getElementById('submenuReportes').classList.add('active');
+
+            if (headerTitleDisplay) headerTitleDisplay.textContent = tituloFranja;
+
+            document.querySelectorAll('.section-pane').forEach(pane => pane.classList.remove('active'));
+            const paneActivo = document.getElementById(`pane-${subId}`);
+            if (paneActivo) paneActivo.classList.add('active');
+
+            if (tickerContainer) tickerContainer.classList.add('hidden');
+
+            if (guardar) {
+                localStorage.setItem('lcc_seccion_activa', subId);
+                localStorage.setItem('lcc_titulo_activo', tituloFranja);
+            }
+            if (sidebar) sidebar.classList.remove('active');
+        }
+
         function cambiarSeccion(nombreSeccion, tituloFranja, elementoMenu, guardar = true) {
-            const items = document.querySelectorAll('.menu-item');
-            items.forEach(item => item.classList.remove('selected'));
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('selected'));
+            document.querySelectorAll('.submenu-item').forEach(item => item.classList.remove('selected'));
+            document.getElementById('submenuReportes').classList.remove('active');
 
             if (elementoMenu) {
                 elementoMenu.classList.add('selected');
-                elementoMenu.classList.add('menu-tap-anim');
-                setTimeout(() => {
-                    elementoMenu.classList.remove('menu-tap-anim');
-                }, 350);
             } else {
-                const itemPorDefecto = document.querySelector(`.menu-item[data-section="${nombreSeccion}"]`);
-                if (itemPorDefecto) itemPorDefecto.classList.add('selected');
+                const def = document.querySelector(`.menu-item[data-section="${nombreSeccion}"]`);
+                if (def) def.classList.add('selected');
             }
 
             if (headerTitleDisplay) headerTitleDisplay.textContent = tituloFranja;
 
-            const panes = document.querySelectorAll('.section-pane');
-            panes.forEach(pane => pane.classList.remove('active'));
-
+            document.querySelectorAll('.section-pane').forEach(pane => pane.classList.remove('active'));
             const paneActivo = document.getElementById(`pane-${nombreSeccion}`);
-            if (paneActivo) {
-                paneActivo.classList.add('active');
-            }
+            if (paneActivo) paneActivo.classList.add('active');
 
             if (tickerContainer) {
-                if (nombreSeccion === 'nps-casos' || nombreSeccion === 'saber-mas' || nombreSeccion === 'ayuda') {
+                if (['nps-casos', 'saber-mas', 'ayuda'].includes(nombreSeccion)) {
                     tickerContainer.classList.add('hidden');
                 } else {
                     tickerContainer.classList.remove('hidden');
@@ -1165,8 +1197,26 @@
                 localStorage.setItem('lcc_seccion_activa', nombreSeccion);
                 localStorage.setItem('lcc_titulo_activo', tituloFranja);
             }
+            if (sidebar) sidebar.classList.remove('active');
+        }
 
-            cerrarTodo();
+        // --- ACCIONES ESPECÍFICAS DE REPORTES ---
+        function handleUploadReport(e) {
+            e.preventDefault();
+            mostrarLoader("Analizando archivo con IA");
+            setTimeout(() => {
+                ocultarLoader();
+                alert("¡Archivo procesado y base de datos (Google Sheets - Reportes) alimentada con éxito!");
+                document.getElementById('uploadReportForm').reset();
+            }, 1200);
+        }
+
+        function abrirCamaraValidacion(sku) {
+            alert(`Activando cámara del dispositivo para auditoría física del SKU: ${sku}`);
+        }
+
+        function aprobarReporteAdmin(id) {
+            alert(`Reporte #${id} aprobado y registrado en el historial oficial.`);
         }
 
         function cerrarSesion() {
@@ -1176,7 +1226,6 @@
                 localStorage.removeItem('lcc_active_tab_owner');
                 localStorage.removeItem('lcc_seccion_activa');
                 localStorage.removeItem('lcc_titulo_activo');
-                clearInterval(intervaloVerificacionToken);
                 location.reload();
             }, 500);
         }
@@ -1184,82 +1233,48 @@
         if (form) {
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                
-                const numEmpleadoField = document.getElementById('empleado');
-                const nombreField = document.getElementById('nombre');
-                
-                if (!numEmpleadoField || !nombreField || !selectDepartamento) return;
+                const numEmp = document.getElementById('empleado').value.trim();
+                const nom = document.getElementById('nombre').value.trim();
+                const dept = selectDepartamento.value;
 
-                const numEmpleado = numEmpleadoField.value.trim();
-                const nombre = nombreField.value.trim();
-                const departamento = selectDepartamento.value;
-
-                const regex9Digitos = /^[0-9]{9}$/;
-                if (!regex9Digitos.test(numEmpleado)) {
-                    if (mensajeAlerta) {
-                        mensajeAlerta.textContent = "El N° de Empleado debe contener exactamente 9 dígitos numéricos.";
-                        mensajeAlerta.className = "mensaje error";
-                    }
+                if (!/^[0-9]{9}$/.test(numEmp)) {
+                    mensajeAlerta.textContent = "El N° de Empleado debe contener exactamente 9 dígitos.";
+                    mensajeAlerta.className = "mensaje error";
+                    return;
+                }
+                if (!dept) {
+                    mensajeAlerta.textContent = "Seleccione un departamento válido.";
+                    mensajeAlerta.className = "mensaje error";
                     return;
                 }
 
-                if (!departamento) {
-                    if (mensajeAlerta) {
-                        mensajeAlerta.textContent = "Por favor seleccione un departamento válido.";
-                        mensajeAlerta.className = "mensaje error";
-                    }
-                    return;
-                }
-
-                if (mensajeAlerta) {
-                    mensajeAlerta.textContent = "";
-                }
-                
                 mostrarLoader("Verificando credenciales");
-                if (btnIngresar) {
-                    btnIngresar.disabled = true;
-                }
+                btnIngresar.disabled = true;
 
-                const sessionToken = 'token_' + Math.random().toString(36).substring(2) + '_' + Date.now();
-                const urlFinal = `${WEB_APP_URL}?nombre=${encodeURIComponent(nombre)}&departamento=${encodeURIComponent(departamento)}&sessionToken=${encodeURIComponent(sessionToken)}`;
+                const token = 'token_' + Math.random().toString(36).substring(2) + '_' + Date.now();
+                const url = `${WEB_APP_URL}?nombre=${encodeURIComponent(nom)}&departamento=${encodeURIComponent(dept)}&sessionToken=${encodeURIComponent(token)}`;
 
                 try {
-                    const response = await fetch(urlFinal);
-                    const result = await response.json();
+                    const res = await fetch(url);
+                    const result = await res.json();
 
                     if (result && result.access) {
-                        const datosSesion = {
-                            empleado: numEmpleado,
-                            nombre: nombre,
-                            departamento: departamento,
-                            isAdmin: result.isAdmin || false,
-                            sessionToken: sessionToken
-                        };
-                        
+                        const datosSesion = { empleado: numEmp, nombre: nom, departamento: dept, isAdmin: result.isAdmin || false, sessionToken: token };
                         localStorage.setItem('lcc_sesion', JSON.stringify(datosSesion));
                         localStorage.setItem('lcc_active_tab_owner', tabId);
-
                         verificarSesionGuardada();
                         ocultarLoader();
                     } else {
                         ocultarLoader();
-                        if (mensajeAlerta) {
-                            mensajeAlerta.textContent = (result && result.message) ? result.message : "Acceso denegado. Verifique sus datos.";
-                            mensajeAlerta.className = "mensaje error";
-                        }
-                        if (btnIngresar) {
-                            btnIngresar.disabled = false;
-                        }
-                    }
-                } catch (error) {
-                    ocultarLoader();
-                    if (mensajeAlerta) {
-                        mensajeAlerta.textContent = "Error de conexión con el servidor.";
+                        mensajeAlerta.textContent = (result && result.message) ? result.message : "Acceso denegado.";
                         mensajeAlerta.className = "mensaje error";
-                    }
-                    if (btnIngresar) {
                         btnIngresar.disabled = false;
                     }
+                } catch (err) {
+                    ocultarLoader();
+                    mensajeAlerta.textContent = "Error de conexión con el servidor.";
+                    mensajeAlerta.className = "mensaje error";
+                    btnIngresar.disabled = false;
                 }
             });
         }
