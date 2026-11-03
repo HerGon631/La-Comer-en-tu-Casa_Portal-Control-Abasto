@@ -17,6 +17,7 @@
             --card-bg: #ffffff;
             --text-color: #202124;
             --label-color: #5f6368;
+            --footer-text: #70757a;
         }
 
         * {
@@ -125,17 +126,19 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            background-color: var(--pink-transparent-30);
+            background-color: var(--pink-transparent-50);
         }
 
         .login-card {
             background: var(--card-bg);
-            padding: 30px 25px;
+            padding: 30px 25px 20px 25px;
             border-radius: 20px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
             width: 100%;
             max-width: 400px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
         }
 
         .logo-container {
@@ -149,6 +152,7 @@
             margin-bottom: 15px;
             box-shadow: 0 4px 12px rgba(228, 0, 124, 0.3);
             letter-spacing: 1px;
+            align-self: center;
         }
 
         h1 {
@@ -250,6 +254,21 @@
 
         .error { color: var(--error-color); }
         .success { color: var(--success-color); }
+
+        /* --- PUNTO 8: SELLO DE AUTORÍA Y FOOTER EN LOGIN --- */
+        .login-footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 11px;
+            color: var(--footer-text);
+            line-height: 1.5;
+        }
+
+        .login-footer .author-highlight {
+            color: var(--mexican-pink);
+            font-weight: bold;
+        }
 
         #dashboard {
             display: none;
@@ -447,7 +466,6 @@
             flex-grow: 1;
         }
 
-        /* --- PUNTO 6: TRANSICIÓN Y ANIMACIÓN EN BOTONES DE SECCIÓN --- */
         .menu-item {
             padding: 16px 20px 16px 24px;
             font-size: 15px;
@@ -458,14 +476,12 @@
             position: relative;
             margin: 4px 10px;
             border-radius: 10px;
-            /* Transición fluida suave para hover, foco y estado inactivo */
             transition: background-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
                         color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
                         transform 0.25s ease,
                         box-shadow 0.3s ease;
         }
 
-        /* Indicador sutil de barra lateral en cada opción */
         .menu-item::before {
             content: '';
             position: absolute;
@@ -503,7 +519,7 @@
 
         .menu-item.selected::before {
             transform: translateY(-50%) scaleY(1);
-            background-color: #ffffff; /* Barra blanca sobre fondo rosa */
+            background-color: #ffffff;
         }
 
         .menu-item.menu-tap-anim {
@@ -584,6 +600,8 @@
             margin: 0 auto;
             flex-grow: 1;
             width: 100%;
+            display: flex;
+            flex-direction: column;
         }
 
         .content-card {
@@ -596,6 +614,7 @@
 
         .section-pane {
             display: none;
+            flex-grow: 1;
         }
 
         .section-pane.active {
@@ -617,6 +636,22 @@
         }
         .btn-logout:hover {
             background-color: #a51a17;
+        }
+
+        /* --- PUNTO 8: SELLO DE AUTORÍA Y FOOTER EN DASHBOARD --- */
+        .dashboard-footer {
+            margin-top: auto;
+            padding: 20px 0 10px 0;
+            text-align: center;
+            font-size: 11px;
+            color: var(--footer-text);
+            border-top: 1px solid #e0e0e0;
+            line-height: 1.5;
+        }
+
+        .dashboard-footer .author-highlight {
+            color: var(--mexican-pink);
+            font-weight: bold;
         }
     </style>
 </head>
@@ -659,6 +694,12 @@
                 <button type="submit" id="btnIngresar" class="btn-primary">Ingresar al Portal &rarr;</button>
             </form>
             <div id="mensajeAlerta" class="mensaje"></div>
+
+            <!-- SELLO DE AUTORÍA EN LOGIN (PUNTO 8) -->
+            <footer class="login-footer">
+                © 2026 La Comer en tu Casa — Sistema de Control & Abasto.<br>
+                Desarrollado por <span class="author-highlight">Angelo Arturo</span>.
+            </footer>
         </div>
     </div>
 
@@ -774,6 +815,12 @@
                     <p style="margin-top: 10px; color: #5f6368;">Canales de soporte técnico y asistencia del portal.</p>
                 </div>
             </div>
+
+            <!-- SELLO DE AUTORÍA EN DASHBOARD (PUNTO 8) -->
+            <footer class="dashboard-footer">
+                © 2026 La Comer en tu Casa — Sistema de Control & Abasto.<br>
+                Desarrollado por <span class="author-highlight">Angelo Arturo</span>.
+            </footer>
         </main>
     </div>
 
