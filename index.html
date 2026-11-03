@@ -96,6 +96,8 @@
             letter-spacing: 0.5px;
             display: flex;
             align-items: center;
+            text-align: center;
+            padding: 0 15px;
         }
 
         .loading-dots::after {
@@ -255,7 +257,6 @@
         .error { color: var(--error-color); }
         .success { color: var(--success-color); }
 
-        /* --- PUNTO 8: SELLO DE AUTORÍA Y FOOTER EN LOGIN --- */
         .login-footer {
             margin-top: 25px;
             padding-top: 15px;
@@ -638,7 +639,6 @@
             background-color: #a51a17;
         }
 
-        /* --- PUNTO 8: SELLO DE AUTORÍA Y FOOTER EN DASHBOARD --- */
         .dashboard-footer {
             margin-top: auto;
             padding: 20px 0 10px 0;
@@ -695,7 +695,6 @@
             </form>
             <div id="mensajeAlerta" class="mensaje"></div>
 
-            <!-- SELLO DE AUTORÍA EN LOGIN (PUNTO 8) -->
             <footer class="login-footer">
                 © 2026 La Comer en tu Casa — Sistema de Control & Abasto.<br>
                 Desarrollado por <span class="author-highlight">Angelo Arturo</span>.
@@ -816,7 +815,6 @@
                 </div>
             </div>
 
-            <!-- SELLO DE AUTORÍA EN DASHBOARD (PUNTO 8) -->
             <footer class="dashboard-footer">
                 © 2026 La Comer en tu Casa — Sistema de Control & Abasto.<br>
                 Desarrollado por <span class="author-highlight">Angelo Arturo</span>.
@@ -859,6 +857,27 @@
         let intervaloVerificacionToken;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
+        // --- PUNTO 9: FUNCIÓN FETCH CON REINTENTOS AUTOMÁTICOS Y TIMEOUT ---
+        async function fetchConReintento(url, opciones = {}, reintentos = 3, timeoutMs = 8000) {
+            for (let i = 0; i < reintentos; i++) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+                try {
+                    const response = await fetch(url, { ...opciones, signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (response.ok) {
+                        return await response.json();
+                    }
+                } catch (err) {
+                    clearTimeout(timeoutId);
+                    if (i === reintentos - 1) throw err;
+                    // Espera progresiva antes de reintentar (1s, 2s)
+                    await new Promise(res => setTimeout(res, (i + 1) * 1000));
+                }
+            }
+        }
+
         function mostrarLoader(mensaje = "Verificando acceso") {
             if (loaderText) {
                 loaderText.innerHTML = `${mensaje}<span class="loading-dots"></span>`;
@@ -883,9 +902,7 @@
 
         async function cargarEvaluacionesNPS() {
             try {
-                const response = await fetch(`${WEB_APP_URL}?action=getNps`);
-                const result = await response.json();
-                
+                const result = await fetchConReintento(`${WEB_APP_URL}?action=getNps`, {}, 2, 6000);
                 const tickerTrack = document.getElementById('tickerTrack');
                 if (!tickerTrack) return;
 
@@ -931,8 +948,7 @@
                 const datos = JSON.parse(sesionGuardada);
                 if (!datos.sessionToken) return;
 
-                const response = await fetch(`${WEB_APP_URL}?action=verificarSesion&token=${encodeURIComponent(datos.sessionToken)}`);
-                const result = await response.json();
+                const result = await fetchConReintento(`${WEB_APP_URL}?action=verificarSesion&token=${encodeURIComponent(datos.sessionToken)}`, {}, 2, 5000);
 
                 if (result) {
                     if (result.active === false || result.isBlocked === true) {
@@ -1068,8 +1084,7 @@
 
         async function cargarDepartamentos() {
             try {
-                const response = await fetch(`${WEB_APP_URL}?action=getDepartamentos`);
-                const result = await response.json();
+                const result = await fetchConReintento(`${WEB_APP_URL}?action=getDepartamentos`, {}, 3, 8000);
                 
                 if (result && result.departments && result.departments.length > 0) {
                     selectDepartamento.innerHTML = '<option value="" disabled selected>Seleccione su departamento</option>';
@@ -1083,7 +1098,7 @@
                     selectDepartamento.innerHTML = '<option value="" disabled selected>No se encontraron departamentos</option>';
                 }
             } catch (error) {
-                selectDepartamento.innerHTML = '<option value="" disabled selected>Error al cargar lista</option>';
+                selectDepartamento.innerHTML = '<option value="" disabled selected>Error de red al cargar lista (Reintente)</option>';
             }
         }
 
@@ -1215,7 +1230,7 @@
                     mensajeAlerta.textContent = "";
                 }
                 
-                mostrarLoader("Verificando credenciales");
+                mostrarLoader("Verificando credenciales en red");
                 if (btnIngresar) {
                     btnIngresar.disabled = true;
                 }
@@ -1224,8 +1239,7 @@
                 const urlFinal = `${WEB_APP_URL}?nombre=${encodeURIComponent(nombre)}&departamento=${encodeURIComponent(departamento)}&sessionToken=${encodeURIComponent(sessionToken)}`;
 
                 try {
-                    const response = await fetch(urlFinal);
-                    const result = await response.json();
+                    const result = await fetchConReintento(urlFinal, {}, 3, 10000);
 
                     if (result && result.access) {
                         const datosSesion = {
@@ -1254,7 +1268,7 @@
                 } catch (error) {
                     ocultarLoader();
                     if (mensajeAlerta) {
-                        mensajeAlerta.textContent = "Error de conexión con el servidor.";
+                        mensajeAlerta.textContent = "Se agotó el tiempo de conexión. Por favor comprueba tu señal de datos y vuelve a intentarlo.";
                         mensajeAlerta.className = "mensaje error";
                     }
                     if (btnIngresar) {
