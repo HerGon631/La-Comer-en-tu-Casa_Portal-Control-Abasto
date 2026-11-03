@@ -138,17 +138,35 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.3s, transform 0.1s;
+            transition: background 0.3s, transform 0.1s, opacity 0.3s;
             margin-top: 10px;
             box-shadow: 0 4px 12px rgba(228, 0, 124, 0.25);
         }
 
-        button.btn-primary:hover {
+        button.btn-primary:hover:not(:disabled) {
             background-color: var(--mexican-pink-hover);
         }
 
-        button.btn-primary:active {
+        button.btn-primary:active:not(:disabled) {
             transform: scale(0.98);
+        }
+
+        button.btn-primary:disabled {
+            opacity: 0.85;
+            cursor: not-allowed;
+        }
+
+        /* Animación sutil para los puntos de carga */
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
         }
 
         .mensaje {
@@ -713,14 +731,12 @@
                 const result = await response.json();
 
                 if (result) {
-                    // 1. EXPULSIÓN INSTANTÁNEA SI ESTÁ BLOQUEADO O TOKEN INVÁLIDO
                     if (result.active === false || result.isBlocked === true) {
                         alert("Su cuenta ha sido bloqueada o la sesión ha expirado.");
                         cerrarSesion();
                         return;
                     }
 
-                    // 2. ACTUALIZACIÓN DINÁMICA DE DATOS GENERALES (Nombre y Departamento)
                     let hubicambios = false;
 
                     if (result.nombre && result.nombre !== datos.nombre) {
@@ -737,7 +753,6 @@
                         hubicambios = true;
                     }
 
-                    // 3. ACTUALIZACIÓN DINÁMICA DE RANGO / ADMIN
                     if (result.isAdmin !== undefined && result.isAdmin !== datos.isAdmin) {
                         datos.isAdmin = result.isAdmin;
                         if (datos.isAdmin) {
@@ -975,13 +990,13 @@
                     return;
                 }
 
+                // --- PUNTO 4: INDICADOR VISUAL DE CARGA EN EL LOGIN ---
                 if (mensajeAlerta) {
-                    mensajeAlerta.textContent = "Verificando credenciales con el servidor...";
-                    mensajeAlerta.className = "mensaje";
+                    mensajeAlerta.textContent = "";
                 }
                 if (btnIngresar) {
                     btnIngresar.disabled = true;
-                    btnIngresar.textContent = "Verificando acceso...";
+                    btnIngresar.innerHTML = 'Verificando acceso<span class="loading-dots"></span>';
                 }
 
                 const sessionToken = 'token_' + Math.random().toString(36).substring(2) + '_' + Date.now();
@@ -1011,7 +1026,7 @@
                         }
                         if (btnIngresar) {
                             btnIngresar.disabled = false;
-                            btnIngresar.textContent = "Ingresar al Portal →";
+                            btnIngresar.innerHTML = 'Ingresar al Portal &rarr;';
                         }
                     }
                 } catch (error) {
@@ -1021,7 +1036,7 @@
                     }
                     if (btnIngresar) {
                         btnIngresar.disabled = false;
-                        btnIngresar.textContent = "Ingresar al Portal →";
+                        btnIngresar.innerHTML = 'Ingresar al Portal &rarr;';
                     }
                 }
             });
