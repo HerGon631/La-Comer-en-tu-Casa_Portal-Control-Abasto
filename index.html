@@ -368,7 +368,6 @@
             font-weight: bold;
         }
 
-        /* --- CINTA ANIMADA CON ENTRADA LIMPIA DESDE LA DERECHA --- */
         .ticker-container {
             background: linear-gradient(90deg, #fff0f5 0%, #ffe4ee 100%);
             border-bottom: 2px solid rgba(228, 0, 124, 0.15);
@@ -541,7 +540,6 @@
             </div>
         </header>
 
-        <!-- CINTA ANIMADA CON ENTRADA LIMPIA DESDE LA DERECHA -->
         <div class="ticker-container" id="tickerContainer">
             <div class="ticker-track" id="tickerTrack"></div>
         </div>
@@ -715,18 +713,33 @@
                 const result = await response.json();
 
                 if (result) {
-                    // Si el servidor indica que está bloqueado o el token ya no es válido, expulsar inmediatamente
+                    // 1. EXPULSIÓN INSTANTÁNEA SI ESTÁ BLOQUEADO O TOKEN INVÁLIDO
                     if (result.active === false || result.isBlocked === true) {
                         alert("Su cuenta ha sido bloqueada o la sesión ha expirado.");
                         cerrarSesion();
                         return;
                     }
 
-                    // Actualizar dinámicamente el estatus de administrador en tiempo real sin recargar
+                    // 2. ACTUALIZACIÓN DINÁMICA DE DATOS GENERALES (Nombre y Departamento)
+                    let hubicambios = false;
+
+                    if (result.nombre && result.nombre !== datos.nombre) {
+                        datos.nombre = result.nombre;
+                        userNameDisplay.textContent = result.nombre;
+                        profileName.textContent = result.nombre;
+                        hubicambios = true;
+                    }
+
+                    if (result.departamento && result.departamento !== datos.departamento) {
+                        datos.departamento = result.departamento;
+                        userDeptoDisplay.textContent = result.departamento;
+                        profileDept.textContent = result.departamento;
+                        hubicambios = true;
+                    }
+
+                    // 3. ACTUALIZACIÓN DINÁMICA DE RANGO / ADMIN
                     if (result.isAdmin !== undefined && result.isAdmin !== datos.isAdmin) {
                         datos.isAdmin = result.isAdmin;
-                        localStorage.setItem('lcc_sesion', JSON.stringify(datos));
-                        
                         if (datos.isAdmin) {
                             adminBadge.style.display = "block";
                             profileRango.textContent = "🛡️ Administrador";
@@ -736,6 +749,11 @@
                             profileRango.textContent = "👤 Usuario Estándar";
                             profileRango.className = "badge-rango badge-user";
                         }
+                        hubicambios = true;
+                    }
+
+                    if (hubicambios) {
+                        localStorage.setItem('lcc_sesion', JSON.stringify(datos));
                     }
                 }
             } catch (e) {}
@@ -743,7 +761,7 @@
 
         function iniciarVerificacionRemota() {
             clearInterval(intervaloVerificacionToken);
-            intervaloVerificacionToken = setInterval(verificarValidezSesionRemota, 10000); // Verifica cada 10 segundos para mayor fluidez
+            intervaloVerificacionToken = setInterval(verificarValidezSesionRemota, 10000);
         }
 
         function verificarSesionGuardada() {
@@ -911,7 +929,7 @@
             }
 
             if (guardar) {
-                localStorage.setItem('lcc_sesion_activa', nombreSeccion);
+                localStorage.setItem('lcc_seccion_activa', nombreSeccion);
                 localStorage.setItem('lcc_titulo_activo', tituloFranja);
             }
 
