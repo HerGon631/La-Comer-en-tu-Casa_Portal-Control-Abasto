@@ -36,7 +36,7 @@
             flex-direction: column;
         }
 
-        /* --- PANTALLA DE CARGA GLOBAL (OVERLAY) --- */
+        /* --- PANTALLA DE CARGA GLOBAL --- */
         .global-loader {
             position: fixed;
             top: 0;
@@ -155,21 +155,8 @@
             align-self: center;
         }
 
-        h1 {
-            font-size: 20px;
-            color: #111;
-            margin-bottom: 5px;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            font-size: 11px;
-            color: var(--mexican-pink);
-            font-weight: bold;
-            letter-spacing: 1px;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-        }
+        h1 { font-size: 20px; color: #111; margin-bottom: 5px; font-weight: 700; }
+        .subtitle { font-size: 11px; color: var(--mexican-pink); font-weight: bold; letter-spacing: 1px; margin-bottom: 20px; text-transform: uppercase; }
 
         .status-badge {
             background-color: var(--success-bg);
@@ -186,497 +173,98 @@
             width: 100%;
         }
 
-        .form-group {
-            margin-bottom: 18px;
-            text-align: left;
-        }
+        .form-group { margin-bottom: 18px; text-align: left; }
+        label { display: block; margin-bottom: 6px; font-size: 11px; font-weight: bold; color: var(--label-color); letter-spacing: 0.5px; }
+        input, select, textarea { width: 100%; padding: 12px 14px; border: 1px solid #dadce0; border-radius: 10px; font-size: 14px; outline: none; transition: border 0.3s, box-shadow 0.3s; background-color: #fff; color: var(--text-color); }
+        input:focus, select:focus, textarea:focus { border-color: var(--mexican-pink); box-shadow: 0 0 0 2px rgba(228, 0, 124, 0.2); }
 
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 11px;
-            font-weight: bold;
-            color: var(--label-color);
-            letter-spacing: 0.5px;
-        }
+        button.btn-primary { width: 100%; padding: 14px; background-color: var(--mexican-pink); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; transition: background 0.3s, transform 0.1s; margin-top: 10px; box-shadow: 0 4px 12px rgba(228, 0, 124, 0.25); }
+        button.btn-primary:hover:not(:disabled) { background-color: var(--mexican-pink-hover); }
+        button.btn-primary:disabled { opacity: 0.85; cursor: not-allowed; }
 
-        input, select, textarea {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #dadce0;
-            border-radius: 10px;
-            font-size: 14px;
-            outline: none;
-            transition: border 0.3s, box-shadow 0.3s;
-            background-color: #fff;
-            color: var(--text-color);
-        }
-
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--mexican-pink);
-            box-shadow: 0 0 0 2px rgba(228, 0, 124, 0.2);
-        }
-
-        button.btn-primary {
-            width: 100%;
-            padding: 14px;
-            background-color: var(--mexican-pink);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.1s, opacity 0.3s;
-            margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(228, 0, 124, 0.25);
-        }
-
-        button.btn-primary:hover:not(:disabled) {
-            background-color: var(--mexican-pink-hover);
-        }
-
-        button.btn-primary:active:not(:disabled) {
-            transform: scale(0.98);
-        }
-
-        button.btn-primary:disabled {
-            opacity: 0.85;
-            cursor: not-allowed;
-        }
-
-        .mensaje {
-            margin-top: 15px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: bold;
-        }
-
+        .mensaje { margin-top: 15px; text-align: center; font-size: 13px; font-weight: bold; }
         .error { color: var(--error-color); }
         .success { color: var(--success-color); }
 
-        .login-footer {
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
-            font-size: 11px;
-            color: var(--footer-text);
-            line-height: 1.5;
-        }
+        .login-footer, .dashboard-footer { text-align: center; font-size: 11px; color: var(--footer-text); line-height: 1.5; }
+        .login-footer { margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; }
+        .dashboard-footer { margin-top: auto; padding: 20px 0 10px 0; border-top: 1px solid #e0e0e0; }
+        .author-highlight { color: var(--mexican-pink); font-weight: bold; }
 
-        .login-footer .author-highlight {
-            color: var(--mexican-pink);
-            font-weight: bold;
-        }
+        #dashboard { display: none; width: 100%; min-height: 100vh; flex-direction: column; flex-grow: 1; }
 
-        #dashboard {
-            display: none;
-            width: 100%;
-            min-height: 100vh;
-            flex-direction: column;
-            flex-grow: 1;
-        }
+        .header-bar { background-color: var(--mexican-pink); height: 65px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15); position: sticky; top: 0; z-index: 100; }
+        .header-left { display: flex; align-items: center; gap: 15px; z-index: 105; }
+        .menu-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; padding: 5px; }
+        .header-title { color: white; font-size: 18px; font-weight: bold; }
 
-        .header-bar {
-            background-color: var(--mexican-pink);
-            height: 65px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+        .profile-container { position: relative; z-index: 1100; }
+        .profile-btn { width: 44px; height: 44px; border-radius: 50%; background-color: white; border: 2px solid rgba(255, 255, 255, 0.9); cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 0; }
+        .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            z-index: 105;
-        }
+        .profile-dropdown { position: absolute; top: 55px; right: 0; width: 280px; background: white; border-radius: 14px; box-shadow: 0 8px 25px rgba(0,0,0,0.25); padding: 20px; display: none; z-index: 1200; border: 1px solid #eee; }
+        .profile-dropdown.active { display: block; }
+        .profile-dropdown h3 { font-size: 15px; color: #111; margin-bottom: 4px; border-bottom: 2px solid var(--mexican-pink); padding-bottom: 8px; }
+        .profile-info-item { font-size: 13px; margin: 10px 0; color: var(--label-color); }
+        .profile-info-item span { font-weight: bold; color: var(--text-color); display: block; }
 
-        .menu-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 26px;
-            cursor: pointer;
-            padding: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-        }
-        .menu-btn:active {
-            transform: scale(0.9);
-        }
+        .badge-rango { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-top: 5px; }
+        .badge-admin { background-color: #e6f4ea; color: #137333; }
+        .badge-user { background-color: #f1f3f4; color: #5f6368; }
 
-        .header-title {
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 280px; height: 100vh; background-color: #ffffff; box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2); transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1100; display: flex; flex-direction: column; }
+        .sidebar.active { left: 0; }
+        .sidebar-header { background-color: var(--mexican-pink); padding: 20px 15px; display: flex; align-items: center; gap: 12px; color: white; }
+        .sidebar-header .logo-container { margin-bottom: 0; font-size: 18px; padding: 8px 12px; background-color: white; color: var(--mexican-pink); box-shadow: none; }
+        .sidebar-header-text { font-size: 13px; font-weight: bold; line-height: 1.3; }
 
-        .profile-container {
-            position: relative;
-            z-index: 1100;
-        }
+        .menu-list { list-style: none; padding: 10px 0; overflow-y: auto; flex-grow: 1; }
+        .menu-item { padding: 16px 20px 16px 24px; font-size: 15px; font-weight: 600; color: var(--text-color); cursor: pointer; display: block; transition: background-color 0.3s, color 0.3s; margin: 4px 10px; border-radius: 10px; }
+        .menu-item:hover, .menu-item.selected { background-color: var(--pink-transparent-30); color: var(--mexican-pink); }
+        .menu-item.selected { font-weight: bold; }
 
-        .profile-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background-color: white;
-            border: 2px solid rgba(255, 255, 255, 0.9);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
-            overflow: hidden;
-            padding: 0;
-        }
+        /* --- SUBMENÚS ACORDEÓN REPORTES --- */
+        .submenu-container { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background-color: #fafafa; border-radius: 0 0 10px 10px; margin: 0 10px; }
+        .submenu-container.active { max-height: 250px; }
+        .submenu-item { padding: 12px 20px 12px 35px; font-size: 13px; font-weight: 500; color: var(--label-color); cursor: pointer; border-left: 3px solid transparent; transition: all 0.2s; }
+        .submenu-item:hover, .submenu-item.selected { color: var(--mexican-pink); background-color: var(--pink-transparent-30); border-left-color: var(--mexican-pink); }
 
-        .profile-btn img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
+        .ticker-container { background: linear-gradient(90deg, #fff0f5 0%, #ffe4ee 100%); border-bottom: 2px solid rgba(228, 0, 124, 0.15); padding: 8px 0; overflow: hidden; white-space: nowrap; position: sticky; top: 65px; z-index: 90; }
+        .ticker-container.hidden { display: none; }
+        .ticker-track { display: inline-block; white-space: nowrap; animation: tickerScroll 80s linear infinite; }
+        .ticker-item { display: inline-flex; align-items: center; gap: 10px; margin-right: 50px; font-size: 13px; color: #333; }
+        @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-        .profile-dropdown {
-            position: absolute;
-            top: 55px;
-            right: 0;
-            width: 280px;
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-            padding: 20px;
-            display: none;
-            z-index: 1200;
-            color: var(--text-color);
-            text-align: left;
-            border: 1px solid #eee;
-            animation: dropdownFade 0.2s ease-out;
-        }
+        .main-content { padding: 30px 20px; max-width: 1000px; margin: 0 auto; flex-grow: 1; width: 100%; display: flex; flex-direction: column; }
+        .content-card { background: #ffffff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); margin-bottom: 20px; }
+        .section-pane { display: none; flex-grow: 1; }
+        .section-pane.active { display: block; }
 
-        .profile-dropdown.active {
-            display: block;
-        }
+        /* --- ESTILOS DE TABLA Y LISTADO DE CONSULTA --- */
+        .report-table-container { overflow-x: auto; margin-top: 15px; border-radius: 10px; border: 1px solid #e0e0e0; }
+        .report-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        .report-table th, .report-table td { padding: 12px 15px; border-bottom: 1px solid #eee; }
+        .report-table th { background-color: #f8f9fa; color: var(--label-color); font-weight: bold; }
+        
+        .badge-estatus { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; display: inline-block; }
+        .estatus-nuevo { background-color: #e8f0fe; color: #1a73e8; }
+        .estatus-reincidente { background-color: #fef7e0; color: #b06000; }
+        .estatus-critico { background-color: #fce8e6; color: #c5221f; }
+        .estatus-escalado { background-color: #f3e8fd; color: #8430ce; }
+        .estatus-finalizado { background-color: #e6f4ea; color: #137333; }
+        .estatus-caducado { background-color: #f1f3f4; color: #5f6368; }
+        .estatus-pendiente { background-color: #fef7e0; color: #b06000; }
 
-        @keyframes dropdownFade {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .btn-action-table { background-color: var(--mexican-pink); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .btn-action-table:hover { background-color: var(--mexican-pink-hover); }
+        .btn-action-table:disabled { background-color: #dadce0; cursor: not-allowed; }
 
-        .profile-dropdown h3 {
-            font-size: 15px;
-            color: #111;
-            margin-bottom: 4px;
-            border-bottom: 2px solid var(--mexican-pink);
-            padding-bottom: 8px;
-        }
-
-        .profile-info-item {
-            font-size: 13px;
-            margin: 10px 0;
-            color: var(--label-color);
-        }
-
-        .profile-info-item span {
-            font-weight: bold;
-            color: var(--text-color);
-            display: block;
-        }
-
-        .badge-rango {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-        .badge-admin {
-            background-color: #e6f4ea;
-            color: #137333;
-        }
-        .badge-user {
-            background-color: #f1f3f4;
-            color: #5f6368;
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -300px;
-            width: 280px;
-            height: 100vh;
-            background-color: #ffffff;
-            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2);
-            transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 1100;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .sidebar-header {
-            background-color: var(--mexican-pink);
-            padding: 20px 15px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: white;
-        }
-
-        .sidebar-header .logo-container {
-            margin-bottom: 0;
-            font-size: 18px;
-            padding: 8px 12px;
-            background-color: white;
-            color: var(--mexican-pink);
-            box-shadow: none;
-        }
-
-        .sidebar-header-text {
-            font-size: 13px;
-            font-weight: bold;
-            line-height: 1.3;
-        }
-
-        .menu-list {
-            list-style: none;
-            padding: 10px 0;
-            overflow-y: auto;
-            flex-grow: 1;
-        }
-
-        .menu-item {
-            padding: 16px 20px 16px 24px;
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-color);
-            cursor: pointer;
-            display: block;
-            position: relative;
-            margin: 4px 10px;
-            border-radius: 10px;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.25s ease;
-        }
-
-        .menu-item:hover {
-            background-color: var(--pink-transparent-30);
-            color: var(--mexican-pink);
-            transform: translateX(6px);
-        }
-
-        .menu-item.selected {
-            background-color: var(--mexican-pink);
-            color: #ffffff;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(228, 0, 124, 0.25);
-            transform: translateX(4px);
-        }
-
-        /* --- SUBMENÚS ACORDEÓN PARA REPORTES (FASE 2) --- */
-        .submenu-container {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            background-color: #fafafa;
-            border-radius: 0 0 10px 10px;
-            margin: 0 10px;
-        }
-
-        .submenu-container.active {
-            max-height: 250px;
-        }
-
-        .submenu-item {
-            padding: 12px 20px 12px 35px;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--label-color);
-            cursor: pointer;
-            border-left: 3px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .submenu-item:hover {
-            color: var(--mexican-pink);
-            background-color: var(--pink-transparent-30);
-            border-left-color: var(--mexican-pink);
-        }
-
-        .submenu-item.selected {
-            color: var(--mexican-pink);
-            font-weight: bold;
-            border-left-color: var(--mexican-pink);
-            background-color: rgba(228, 0, 124, 0.05);
-        }
-
-        .ticker-container {
-            background: linear-gradient(90deg, #fff0f5 0%, #ffe4ee 100%);
-            border-bottom: 2px solid rgba(228, 0, 124, 0.15);
-            padding: 8px 0;
-            overflow: hidden;
-            white-space: nowrap;
-            position: sticky;
-            top: 65px;
-            z-index: 90;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-            pointer-events: none;
-            user-select: none;
-        }
-
-        .ticker-container.hidden {
-            display: none;
-        }
-
-        .ticker-track {
-            display: inline-block;
-            white-space: nowrap;
-            opacity: 0;
-            transform: translateX(100%);
-            transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .ticker-track.loaded {
-            opacity: 1;
-            transform: translateX(0);
-            animation: tickerScroll 80s linear infinite;
-        }
-
-        .ticker-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-right: 50px;
-            font-size: 13px;
-            color: #333;
-        }
-
-        @keyframes tickerScroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        .main-content {
-            padding: 30px 20px;
-            max-width: 950px;
-            margin: 0 auto;
-            flex-grow: 1;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .content-card {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px;
-        }
-
-        .section-pane {
-            display: none;
-            flex-grow: 1;
-        }
-
-        .section-pane.active {
-            display: block;
-        }
-
-        /* --- ESTILOS PARA LAS SUBSECCIONES DE REPORTES (FASE 2) --- */
-        .report-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .report-card-item {
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .sku-img-preview {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            border-radius: 8px;
-            background-color: #f1f3f4;
-            border: 1px solid #ddd;
-        }
-
-        .btn-action-report {
-            background-color: var(--mexican-pink);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-            text-align: center;
-        }
-        .btn-action-report:hover {
-            background-color: var(--mexican-pink-hover);
-        }
-
-        .btn-logout {
-            background-color: #c5221f;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-            transition: background 0.2s;
-        }
-        .btn-logout:hover {
-            background-color: #a51a17;
-        }
-
-        .dashboard-footer {
-            margin-top: auto;
-            padding: 20px 0 10px 0;
-            text-align: center;
-            font-size: 11px;
-            color: var(--footer-text);
-            border-top: 1px solid #e0e0e0;
-            line-height: 1.5;
-        }
-
-        .dashboard-footer .author-highlight {
-            color: var(--mexican-pink);
-            font-weight: bold;
-        }
+        .sku-thumb { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; }
+        .btn-logout { background-color: #c5221f; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-    <!-- OVERLAY DE CARGA -->
     <div id="globalLoader" class="global-loader">
         <div class="loader-logo-wrapper">
             <div class="loader-spin-ring"></div>
@@ -685,17 +273,13 @@
         <div class="loader-text" id="loaderText">Procesando solicitud<span class="loading-dots"></span></div>
     </div>
 
-    <!-- PANTALLA DE LOGIN -->
+    <!-- LOGIN -->
     <div id="login-section" class="login-wrapper">
         <div class="login-card">
             <div class="logo-container">LC</div>
             <h1>La Comer en tu Casa</h1>
             <div class="subtitle">Portal de Control & Abasto</div>
-
-            <div class="status-badge">
-                <span>🟢</span> Sistema Autorizado Activo
-            </div>
-
+            <div class="status-badge"><span>🟢</span> Sistema Autorizado Activo</div>
             <form id="accessForm">
                 <div class="form-group">
                     <label for="empleado">N° EMPLEADO (9 DÍGITOS)</label>
@@ -714,7 +298,6 @@
                 <button type="submit" id="btnIngresar" class="btn-primary">Ingresar al Portal &rarr;</button>
             </form>
             <div id="mensajeAlerta" class="mensaje"></div>
-
             <footer class="login-footer">
                 © 2026 La Comer en tu Casa — Sistema de Control & Abasto.<br>
                 Desarrollado por <span class="author-highlight">Angelo Arturo Hernández González</span>.
@@ -722,19 +305,17 @@
         </div>
     </div>
 
-    <!-- DASHBOARD PRINCIPAL -->
+    <!-- DASHBOARD -->
     <div id="dashboard">
         <header class="header-bar">
             <div class="header-left">
-                <button class="menu-btn" id="menuToggle" aria-label="Abrir Menú">☰</button>
+                <button class="menu-btn" id="menuToggle">☰</button>
                 <div class="header-title" id="headerTitleDisplay">Inicio</div>
             </div>
-
             <div class="profile-container">
-                <button class="profile-btn" id="profileToggle" aria-label="Menú de Perfil">
-                    <img src="pelicano.jpg" alt="Perfil Pelícano" onerror="this.src='pelicano-logo.png'">
+                <button class="profile-btn" id="profileToggle">
+                    <img src="pelicano.jpg" alt="Perfil" onerror="this.src='pelicano-logo.png'">
                 </button>
-
                 <div class="profile-dropdown" id="profileDropdown">
                     <h3>Mi Perfil</h3>
                     <div class="profile-info-item">Nombre: <span id="profileName">-</span></div>
@@ -750,102 +331,79 @@
             <div class="ticker-track" id="tickerTrack"></div>
         </div>
 
-        <!-- BARRA LATERAL (SIDEBAR) -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo-container">LC</div>
                 <div class="sidebar-header-text">La Comer en tu Casa:<br>Control & Abasto</div>
             </div>
             <ul class="menu-list">
-                <li class="menu-item selected" data-section="inicio" data-title="Inicio" onclick="cambiarSeccion('inicio', 'Inicio', this)">Inicio</li>
-                <li class="menu-item" data-section="departamento" data-title="Mi departamento" onclick="cambiarSeccion('departamento', 'Mi departamento', this)">Mi departamento</li>
-                <li class="menu-item" data-section="indicadores" data-title="Indicadores" onclick="cambiarSeccion('indicadores', 'Indicadores', this)">Indicadores</li>
+                <li class="menu-item selected" data-section="inicio" onclick="cambiarSeccion('inicio', 'Inicio', this)">Inicio</li>
+                <li class="menu-item" data-section="departamento" onclick="cambiarSeccion('departamento', 'Mi departamento', this)">Mi departamento</li>
+                <li class="menu-item" data-section="indicadores" onclick="cambiarSeccion('indicadores', 'Indicadores', this)">Indicadores</li>
                 
-                <!-- MENÚ DESPLEGABLE REPORTES (FASE 2) -->
-                <li class="menu-item" id="menuReportesToggle" onclick="toggleSubmenuReportes()">
-                    Reportes ▾
-                </li>
+                <li class="menu-item" id="menuReportesToggle" onclick="toggleSubmenuReportes()">Reportes ▾</li>
                 <div class="submenu-container" id="submenuReportes">
-                    <div class="submenu-item admin-only-sub" data-sub="alta-archivo" onclick="cambiarSubseccionReportes('alta-archivo', 'Reportes: Alta de Archivo', this)">📁 Alta de Archivo (Admin)</div>
-                    <div class="submenu-item" data-sub="consulta-reporte" onclick="cambiarSubseccionReportes('consulta-reporte', 'Reportes: Consulta (Desabasto)', this)">🔍 Consulta de Reporte</div>
-                    <div class="submenu-item" data-sub="historial-reporte" onclick="cambiarSubseccionReportes('historial-reporte', 'Reportes: Historial', this)">📋 Historial de Reporte</div>
-                    <div class="submenu-item admin-only-sub" data-sub="revision-reporte" onclick="cambiarSubseccionReportes('revision-reporte', 'Reportes: Revisión (Admin)', this)">🛡️ Revisión de Reporte (Admin)</div>
+                    <div class="submenu-item admin-only-sub" onclick="cambiarSubseccionReportes('alta-archivo', 'Reportes: Alta de Archivo', this)">📁 Alta de Archivo (Admin)</div>
+                    <div class="submenu-item" onclick="cambiarSubseccionReportes('consulta-reporte', 'Reportes: Consulta (Desabasto)', this)">🔍 Consulta de Reporte</div>
+                    <div class="submenu-item" onclick="cambiarSubseccionReportes('historial-reporte', 'Reportes: Historial', this)">📋 Historial de Reporte</div>
+                    <div class="submenu-item admin-only-sub" onclick="cambiarSubseccionReportes('revision-reporte', 'Reportes: Revisión (Admin)', this)">🛡️ Revisión de Reporte (Admin)</div>
                 </div>
 
-                <li class="menu-item" data-section="nps-casos" data-title="NPS y Casos" onclick="cambiarSeccion('nps-casos', 'NPS y Casos', this)">NPS y Casos</li>
-                <li class="menu-item" data-section="saber-mas" data-title="Saber más" onclick="cambiarSeccion('saber-mas', 'Saber más', this)">Saber más</li>
-                <li class="menu-item" data-section="ayuda" data-title="Ayuda" onclick="cambiarSeccion('ayuda', 'Ayuda', this)">Ayuda</li>
+                <li class="menu-item" data-section="nps-casos" onclick="cambiarSeccion('nps-casos', 'NPS y Casos', this)">NPS y Casos</li>
+                <li class="menu-item" data-section="saber-mas" onclick="cambiarSeccion('saber-mas', 'Saber más', this)">Saber más</li>
+                <li class="menu-item" data-section="ayuda" onclick="cambiarSeccion('ayuda', 'Ayuda', this)">Ayuda</li>
             </ul>
         </nav>
 
-        <!-- CONTENIDO PRINCIPAL -->
         <main class="main-content">
-            <!-- PESTAÑA INICIO -->
             <div id="pane-inicio" class="section-pane active">
                 <div class="content-card">
                     <h2>¡Bienvenido, <span id="userNameDisplay"></span>!</h2>
                     <p style="margin-top: 8px; color: #5f6368;">N° Empleado: <span id="userEmpDisplay"></span></p>
                     <p style="color: #5f6368;">Departamento: <span id="userDeptoDisplay"></span></p>
-                    <div id="adminBadge" style="display:none; background: #e6f4ea; color: #137333; padding: 10px; border-radius: 8px; margin: 15px 0; font-weight: bold; font-size: 14px;">
-                        🛡️ Modo Administrador Activado
-                    </div>
-                    <p class="success" style="margin-top: 15px;">Acceso autorizado correctamente por la base de datos.</p>
+                    <div id="adminBadge" style="display:none; background: #e6f4ea; color: #137333; padding: 10px; border-radius: 8px; margin: 15px 0; font-weight: bold; font-size: 14px;">🛡️ Modo Administrador Activado</div>
                 </div>
             </div>
 
-            <!-- PESTAÑA MI DEPARTAMENTO -->
-            <div id="pane-departamento" class="section-pane">
-                <div class="content-card">
-                    <h2>Mi departamento</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Gestión, tareas y control operativo del departamento asignado.</p>
-                </div>
-            </div>
-
-            <!-- PESTAÑA INDICADORES -->
-            <div id="pane-indicadores" class="section-pane">
-                <div class="content-card">
-                    <h2>Indicadores</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Panel de métricas, rendimiento y cumplimiento.</p>
-                </div>
-            </div>
-
-            <!-- --- SUBSECCIONES DEL MÓDULO DE REPORTES (FASE 2) --- -->
-
-            <!-- 1. Alta de Archivo (Admin) -->
+            <!-- 1. Alta de Archivo -->
             <div id="pane-alta-archivo" class="section-pane">
                 <div class="content-card">
                     <h2>Alta de Archivo (Administrador)</h2>
-                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Sube archivos (Excel, Google Sheet, PDF) para el escaneo con IA y registro en la pestaña de Reportes de Google Sheets.</p>
-                    
+                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Sube archivos para el escaneo con IA y generación de reportes de desabasto.</p>
                     <form id="uploadReportForm" style="margin-top: 20px;" onsubmit="handleUploadReport(event)">
                         <div class="form-group">
-                            <label>SELECCIONAR ARCHIVO INSTITUCIONAL (XLSX, CSV, PDF)</label>
+                            <label>SELECCIONAR ARCHIVO (XLSX, CSV, PDF)</label>
                             <input type="file" id="reportFile" accept=".xlsx,.csv,.pdf" required>
-                        </div>
-                        <div class="form-group">
-                            <label>DESCRIPCIÓN O NOTAS DEL LOTE</label>
-                            <textarea id="reportNotes" rows="3" placeholder="Ej. Reporte general de desabasto turno matutino..." required></textarea>
                         </div>
                         <button type="submit" class="btn-primary">Procesar con IA & Alimentar Google Sheets &rarr;</button>
                     </form>
                 </div>
             </div>
 
-            <!-- 2. Consulta de Reporte (Desabasto con SKU y Cámara) -->
+            <!-- 2. Consulta de Reporte (Listado exacto) -->
             <div id="pane-consulta-reporte" class="section-pane">
                 <div class="content-card">
                     <h2>Consulta de Reporte de Desabasto</h2>
-                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Visualización rápida de SKUs reportados con imagen de referencia y soporte de cámara para validación.</p>
+                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Escanee cada producto para desbloquear y realizar la acción de resolución. Al vaciar la lista, el reporte pasará automáticamente a revisión.</p>
                     
-                    <div class="report-grid" id="consultaReportGrid">
-                        <!-- Tarjeta de ejemplo de desabasto -->
-                        <div class="report-card-item">
-                            <img src="pelicano.jpg" alt="SKU" class="sku-img-preview" onerror="this.src='pelicano-logo.png'">
-                            <strong>SKU-8821: Aceite Vegetal 1L</strong>
-                            <span style="font-size: 12px; color: #c5221f; font-weight: bold;">Estado: Negado / Desabasto</span>
-                            <p style="font-size: 12px; color: #5f6368;">Pasillo 3 - Anaquel B</p>
-                            <button class="btn-action-report" onclick="abrirCamaraValidacion('SKU-8821')">📷 Usar Cámara / Validar</button>
-                        </div>
+                    <div class="report-table-container">
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th>1. Escaneo</th>
+                                    <th>2. Imagen</th>
+                                    <th>3. SKU</th>
+                                    <th>4. Descripción</th>
+                                    <th>5. Cant. Negada</th>
+                                    <th>6. Inv.</th>
+                                    <th>7. Estatus</th>
+                                    <th>8. Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="consultaTableBody">
+                                <!-- Generado dinámicamente -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -854,9 +412,9 @@
             <div id="pane-historial-reporte" class="section-pane">
                 <div class="content-card">
                     <h2>Historial de Reportes</h2>
-                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Registro cronológico de reportes revisados por administración con sus observaciones y estados.</p>
+                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Registro cronológico de reportes revisados por administración.</p>
                     <div id="historialListaContainer" style="margin-top: 15px;">
-                        <p style="font-size: 13px; color: #70757a; font-style: italic;">No hay reportes previos cerrados en esta sesión.</p>
+                        <p style="font-size: 13px; color: #70757a; font-style: italic;">No hay reportes históricos registrados.</p>
                     </div>
                 </div>
             </div>
@@ -865,39 +423,29 @@
             <div id="pane-revision-reporte" class="section-pane">
                 <div class="content-card">
                     <h2>Revisión de Reportes (Administrador)</h2>
-                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Panel de auditoría para aprobar, rechazar o retroalimentar los reportes trabajados por el personal.</p>
-                    <div id="adminRevisionContainer" style="margin-top: 15px;">
-                        <div style="padding: 15px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 10px;">
-                            <strong>Reporte #104 - Departamento Abarrotes</strong>
-                            <p style="font-size: 12px; color: #5f6368; margin: 5px 0;">Enviado por personal operativo. Pendiente de validación final.</p>
-                            <button style="background: #137333; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="aprobarReporteAdmin(104)">Aprobar Reporte</button>
-                        </div>
+                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Auditoría de reportes finalizados, caducados o pendientes.</p>
+                    
+                    <div class="report-table-container" style="margin-top: 15px;">
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th># Reporte</th>
+                                    <th>Departamento</th>
+                                    <th>Estatus Actual</th>
+                                    <th>Acción / Comentario Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="revisionTableBody">
+                                <!-- Generado dinámicamente -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- ------------------------------------------------- -->
-
-            <div id="pane-nps-casos" class="section-pane">
-                <div class="content-card">
-                    <h2>NPS y Casos</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Apartado reservado para la gestión y análisis de evaluaciones y casos operativos.</p>
-                </div>
-            </div>
-
-            <div id="pane-saber-mas" class="section-pane">
-                <div class="content-card">
-                    <h2>Saber más</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Documentación de procesos, manuales y políticas de operación.</p>
-                </div>
-            </div>
-
-            <div id="pane-ayuda" class="section-pane">
-                <div class="content-card">
-                    <h2>Ayuda</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Canales de soporte técnico y asistencia del portal.</p>
-                </div>
-            </div>
+            <div id="pane-nps-casos" class="section-pane"><div class="content-card"><h2>NPS y Casos</h2></div></div>
+            <div id="pane-saber-mas" class="section-pane"><div class="content-card"><h2>Saber más</h2></div></div>
+            <div id="pane-ayuda" class="section-pane"><div class="content-card"><h2>Ayuda</h2></div></div>
 
             <footer class="dashboard-footer">
                 © 2026 La Comer en tu Casa — Sistema de Control & Abasto.<br>
@@ -909,25 +457,36 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyc7tXRLUR4aiguUk2mq-liDOyG8irBb8tRVG8bmoayNspMvSjkhh_eIghTNx-S9D0HwQ/exec";
 
+        // Datos iniciales de prueba para Consulta
+        let listaConsultaItems = [
+            { id: 1, sku: 'SKU-8821', desc: 'Aceite Vegetal 1L', cantNegada: 12, inv: 2, solicitudesConsecutivas: 1, escaneado: false },
+            { id: 2, sku: 'SKU-4410', desc: 'Leche Deslactosada 1L', cantNegada: 25, inv: 0, solicitudesConsecutivas: 2, escaneado: false },
+            { id: 3, sku: 'SKU-9021', desc: 'Papel Higiénico 4 pzas', cantNegada: 8, inv: 1, solicitudesConsecutivas: 3, escaneado: false },
+            { id: 4, sku: 'SKU-3012', desc: 'Atún en Agua 140g', cantNegada: 40, inv: 0, solicitudesConsecutivas: 4, escaneado: false }
+        ];
+
+        // Lista de reportes en Revisión / Historial
+        let listaReportesRevision = [
+            { repId: 'REP-501', depto: 'Abarrotes', estatus: 'Finalizado', fechaCreacion: new Date(Date.now() - 3600000), comentarioAdmin: '' },
+            { repId: 'REP-498', depto: 'Electrónica', estatus: 'Caducado', fechaCreacion: new Date(Date.now() - 100000000), comentarioAdmin: '' },
+            { repId: 'REP-495', depto: 'Farmacia', estatus: 'Pendiente', fechaCreacion: new Date(Date.now() - 120000000), comentarioAdmin: '' }
+        ];
+
         const form = document.getElementById('accessForm');
         const mensajeAlerta = document.getElementById('mensajeAlerta');
         const loginSection = document.getElementById('login-section');
         const dashboard = document.getElementById('dashboard');
-        
         const userNameDisplay = document.getElementById('userNameDisplay');
         const userEmpDisplay = document.getElementById('userEmpDisplay');
         const userDeptoDisplay = document.getElementById('userDeptoDisplay');
         const adminBadge = document.getElementById('adminBadge');
         const btnIngresar = document.getElementById('btnIngresar');
         const selectDepartamento = document.getElementById('departamento');
-
         const sidebar = document.getElementById('sidebar');
         const menuToggle = document.getElementById('menuToggle');
         const headerTitleDisplay = document.getElementById('headerTitleDisplay');
-
         const profileToggle = document.getElementById('profileToggle');
         const profileDropdown = document.getElementById('profileDropdown');
-
         const profileName = document.getElementById('profileName');
         const profileEmp = document.getElementById('profileEmp');
         const profileDept = document.getElementById('profileDept');
@@ -936,296 +495,178 @@
         const globalLoader = document.getElementById('globalLoader');
         const loaderText = document.getElementById('loaderText');
 
-        let sesionActualDatos = null;
-        let temporizadorInactividad;
-        let intervaloVerificacionToken;
-        const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
+        let tabId = sessionStorage.getItem('lcc_tab_id') || ('tab_' + Math.random().toString(36).substring(2));
+        sessionStorage.setItem('lcc_tab_id', tabId);
 
-        function mostrarLoader(mensaje = "Procesando solicitud") {
-            if (loaderText) loaderText.innerHTML = `${mensaje}<span class="loading-dots"></span>`;
-            if (globalLoader) globalLoader.classList.add('active');
+        function mostrarLoader(msg = "Procesando") {
+            loaderText.innerHTML = `${msg}<span class="loading-dots"></span>`;
+            globalLoader.classList.add('active');
+        }
+        function ocultarLoader() { globalLoader.classList.remove('active'); }
+
+        function obtenerEstatusPorConteo(conteo) {
+            if (conteo === 1) return { texto: 'Nuevo', clase: 'estatus-nuevo' };
+            if (conteo === 2) return { texto: 'Reincidente', clase: 'estatus-reincidente' };
+            if (conteo === 3) return { texto: 'Crítico', clase: 'estatus-critico' };
+            return { texto: 'Escalado', clase: 'estatus-escalado' };
         }
 
-        function ocultarLoader() {
-            if (globalLoader) globalLoader.classList.remove('active');
-        }
+        function renderConsultaTabla() {
+            const tbody = document.getElementById('consultaTableBody');
+            tbody.innerHTML = '';
 
-        function generarEstrellas(puntuacion) {
-            let num = parseInt(puntuacion) || 5;
-            if (num < 1) num = 1; if (num > 5) num = 5;
-            return "⭐".repeat(num);
-        }
-
-        async function cargarEvaluacionesNPS() {
-            try {
-                const response = await fetch(`${WEB_APP_URL}?action=getNps`);
-                const result = await response.json();
-                const tickerTrack = document.getElementById('tickerTrack');
-                if (!tickerTrack) return;
-
-                let itemsHtml = "";
-                let lista = (result && result.nps && result.nps.length > 0) ? result.nps : [];
-                if (lista.length === 0) return;
-
-                let renderList = [...lista, ...lista];
-                renderList.forEach(item => {
-                    const estrellas = generarEstrellas(item.puntuacion);
-                    itemsHtml += `
-                        <span class="ticker-item">
-                            <span>${estrellas}</span>
-                            <span style="font-style:italic;">"${item.comentario}"</span>
-                            <span style="font-weight:bold; color:var(--mexican-pink);">— ${item.cliente}</span>
-                        </span>
-                    `;
-                });
-                tickerTrack.innerHTML = itemsHtml;
-                tickerTrack.style.animationDuration = Math.max(50, lista.length * 16) + 's';
-                tickerTrack.classList.add('loaded');
-            } catch (error) {}
-        }
-
-        let tabId = sessionStorage.getItem('lcc_tab_id');
-        if (!tabId) {
-            tabId = 'tab_' + Math.random().toString(36).substring(2);
-            sessionStorage.setItem('lcc_tab_id', tabId);
-        }
-
-        async function verificarValidezSesionRemota() {
-            const sesionGuardada = localStorage.getItem('lcc_sesion');
-            if (!sesionGuardada) return;
-
-            try {
-                const datos = JSON.parse(sesionGuardada);
-                if (!datos.sessionToken) return;
-
-                const response = await fetch(`${WEB_APP_URL}?action=verificarSesion&token=${encodeURIComponent(datos.sessionToken)}`);
-                const result = await response.json();
-
-                if (result) {
-                    if (result.active === false || result.isBlocked === true) {
-                        alert("Su cuenta ha sido bloqueada o la sesión ha expirado.");
-                        cerrarSesion();
-                        return;
-                    }
-                }
-            } catch (e) {}
-        }
-
-        function iniciarVerificacionRemota() {
-            clearInterval(intervaloVerificacionToken);
-            intervaloVerificacionToken = setInterval(verificarValidezSesionRemota, 10000);
-        }
-
-        function verificarSesionGuardada() {
-            const sesionGuardada = localStorage.getItem('lcc_sesion');
-            const activeOwner = localStorage.getItem('lcc_active_tab_owner');
-
-            if (sesionGuardada && activeOwner === tabId) {
-                try {
-                    const datos = JSON.parse(sesionGuardada);
-                    sesionActualDatos = datos;
-                    
-                    loginSection.style.display = "none";
-                    dashboard.style.display = "flex";
-
-                    userNameDisplay.textContent = datos.nombre;
-                    userEmpDisplay.textContent = datos.empleado;
-                    userDeptoDisplay.textContent = datos.departamento;
-
-                    profileName.textContent = datos.nombre;
-                    profileEmp.textContent = datos.empleado;
-                    profileDept.textContent = datos.departamento;
-
-                    if (datos.isAdmin) {
-                        adminBadge.style.display = "block";
-                        profileRango.textContent = "🛡️ Administrador";
-                        profileRango.className = "badge-rango badge-admin";
-                        document.querySelectorAll('.admin-only-sub').forEach(el => el.style.display = 'block');
-                    } else {
-                        adminBadge.style.display = "none";
-                        profileRango.textContent = "👤 Usuario Estándar";
-                        profileRango.className = "badge-rango badge-user";
-                        document.querySelectorAll('.admin-only-sub').forEach(el => el.style.display = 'none');
-                    }
-
-                    const seccionActiva = localStorage.getItem('lcc_seccion_activa') || 'inicio';
-                    const tituloActivo = localStorage.getItem('lcc_titulo_activo') || 'Inicio';
-                    
-                    if (seccionActiva.startsWith('alta-') || seccionActiva.startsWith('consulta-') || seccionActiva.startsWith('historial-') || seccionActiva.startsWith('revision-')) {
-                        cambiarSubseccionReportes(seccionActiva, tituloActivo, null, false);
-                    } else {
-                        cambiarSeccion(seccionActiva, tituloActivo, null, false);
-                    }
-
-                    iniciarControlInactividad();
-                    iniciarVerificacionRemota();
-                    cargarEvaluacionesNPS();
-                } catch (e) {
-                    localStorage.removeItem('lcc_sesion');
-                }
-            } else {
-                loginSection.style.display = "flex";
-                dashboard.style.display = "none";
+            if (listaConsultaItems.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px; color: #137333; font-weight: bold;">¡Todos los productos han sido trabajados! El reporte ha pasado a Revisión.</td></tr>`;
+                return;
             }
-        }
 
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'lcc_active_tab_owner' && e.newValue && e.newValue !== tabId) {
-                loginSection.style.display = "flex";
-                dashboard.style.display = "none";
-            }
-            if (e.key === 'lcc_sesion' && e.newValue === null) {
-                loginSection.style.display = "flex";
-                dashboard.style.display = "none";
-            }
-        });
+            listaConsultaItems.forEach((item, index) => {
+                const estatusObj = obtenerEstatusPorConteo(item.solicitudesConsecutivas);
+                const tr = document.createElement('tr');
 
-        function reiniciarTemporizadorInactividad() {
-            if (!localStorage.getItem('lcc_sesion') || localStorage.getItem('lcc_active_tab_owner') !== tabId) return;
-            clearTimeout(temporizadorInactividad);
-            temporizadorInactividad = setTimeout(() => {
-                alert("Su sesión ha expirado por inactividad (20 minutos).");
-                cerrarSesion();
-            }, TIEMPO_INACTIVIDAD);
-        }
-
-        function iniciarControlInactividad() {
-            ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'].forEach(evt => {
-                window.addEventListener(evt, reiniciarTemporizadorInactividad);
-            });
-            reiniciarTemporizadorInactividad();
-        }
-
-        async function cargarDepartamentos() {
-            try {
-                const response = await fetch(`${WEB_APP_URL}?action=getDepartamentos`);
-                const result = await response.json();
-                if (result && result.departments) {
-                    selectDepartamento.innerHTML = '<option value="" disabled selected>Seleccione su departamento</option>';
-                    result.departments.forEach(depto => {
-                        const opt = document.createElement('option');
-                        opt.value = depto; opt.textContent = depto;
-                        selectDepartamento.appendChild(opt);
-                    });
-                }
-            } catch (error) {
-                selectDepartamento.innerHTML = '<option value="" disabled selected>Error al cargar lista</option>';
-            }
-        }
-
-        cargarDepartamentos();
-        verificarSesionGuardada();
-
-        function toggleMenu() {
-            if (profileDropdown) profileDropdown.classList.remove('active');
-            sidebar.classList.toggle('active');
-        }
-
-        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
-
-        if (profileToggle) {
-            profileToggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (sidebar) sidebar.classList.remove('active');
-                profileDropdown.classList.toggle('active');
+                tr.innerHTML = `
+                    <td>
+                        <button class="btn-action-table" style="background:#202124;" onclick="escanearProducto(${index})">
+                            ${item.escaneado ? '✔ Escaneado' : '📷 Escanear'}
+                        </button>
+                    </td>
+                    <td><img src="pelicano.jpg" class="sku-thumb" onerror="this.src='pelicano-logo.png'"></td>
+                    <td style="font-weight: bold; font-family: monospace; color: var(--mexican-pink);">${item.sku}</td>
+                    <td>${item.desc}</td>
+                    <td style="font-weight: bold; color: #c5221f;">${item.cantNegada}</td>
+                    <td>${item.inv}</td>
+                    <td><span class="badge-estatus ${estatusObj.clase}">${estatusObj.texto}</span></td>
+                    <td>
+                        <button class="btn-action-table" id="btnAccion-${index}" ${!item.escaneado ? 'disabled' : ''} onclick="resolverProducto(${index})">
+                            Resolver SKU
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
             });
         }
 
-        window.addEventListener('click', function(e) {
-            if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && !profileDropdown.contains(e.target) && !profileToggle.contains(e.target)) {
-                sidebar.classList.remove('active');
-                profileDropdown.classList.remove('active');
-            }
-        });
+        function escanearProducto(index) {
+            mostrarLoader("Escaneando código de barras");
+            setTimeout(() => {
+                ocultarLoader();
+                listaConsultaItems[index].escaneado = true;
+                renderConsultaTabla();
+            }, 600);
+        }
 
-        // --- CONTROL DE SUBMENÚ REPORTES (FASE 2) ---
+        function resolverProducto(index) {
+            mostrarLoader("Registrando acción correctiva");
+            setTimeout(() => {
+                ocultarLoader();
+                listaConsultaItems.splice(index, 1);
+                renderConsultaTabla();
+
+                if (listaConsultaItems.length === 0) {
+                    const nuevoRep = {
+                        repId: 'REP-' + Math.floor(100 + Math.random() * 900),
+                        depto: userDeptoDisplay.textContent || 'General',
+                        estatus: 'Finalizado',
+                        fechaCreacion: new Date(),
+                        comentarioAdmin: ''
+                    };
+                    listaReportesRevision.unshift(nuevoRep);
+                    renderRevisionTabla();
+                    alert("¡Reporte finalizado correctamente! Se ha enviado a la sección de Revisión.");
+                }
+            }, 800);
+        }
+
+        function renderRevisionTabla() {
+            const tbody = document.getElementById('revisionTableBody');
+            tbody.innerHTML = '';
+
+            const ahora = new Date();
+
+            listaReportesRevision.forEach((rep, idx) => {
+                let badgeClase = 'estatus-finalizado';
+                let estatusTexto = rep.estatus;
+
+                const horasTranscurridas = (ahora - new Date(rep.fechaCreacion)) / (1000 * 60 * 60);
+                if (horasTranscurridas > 24 && estatusTexto !== 'Finalizado') {
+                    estatusTexto = 'Pendiente';
+                    badgeClase = 'estatus-pendiente';
+                } else if (estatusTexto === 'Caducado') {
+                    badgeClase = 'estatus-caducado';
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: bold;">${rep.repId}</td>
+                    <td>${rep.depto}</td>
+                    <td><span class="badge-estatus ${badgeClase}">${estatusTexto}</span></td>
+                    <td>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" id="comentario-${idx}" placeholder="Comentario opcional..." value="${rep.comentarioAdmin}" style="padding: 6px; font-size: 12px; width: 180px;">
+                            <button class="btn-action-table" style="background: #137333;" onclick="confirmarRevision(${idx})">Confirmar</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function confirmarRevision(idx) {
+            const input = document.getElementById(`comentario-${idx}`);
+            listaReportesRevision[idx].comentarioAdmin = input.value;
+            listaReportesRevision[idx].estatus = 'Finalizado';
+            renderRevisionTabla();
+            alert("¡Revisión confirmada y guardada con éxito!");
+        }
+
         function toggleSubmenuReportes() {
-            const submenu = document.getElementById('submenuReportes');
-            submenu.classList.toggle('active');
+            document.getElementById('submenuReportes').classList.toggle('active');
         }
 
-        function cambiarSubseccionReportes(subId, tituloFranja, elementoSub, guardar = true) {
+        function cambiarSubseccionReportes(subId, tituloFranja, elementoSub) {
             document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('selected'));
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('selected'));
-
             if (elementoSub) elementoSub.classList.add('selected');
             document.getElementById('menuReportesToggle').classList.add('selected');
             document.getElementById('submenuReportes').classList.add('active');
 
-            if (headerTitleDisplay) headerTitleDisplay.textContent = tituloFranja;
-
+            headerTitleDisplay.textContent = tituloFranja;
             document.querySelectorAll('.section-pane').forEach(pane => pane.classList.remove('active'));
-            const paneActivo = document.getElementById(`pane-${subId}`);
-            if (paneActivo) paneActivo.classList.add('active');
+            document.getElementById(`pane-${subId}`).classList.add('active');
+            tickerContainer.classList.add('hidden');
+            sidebar.classList.remove('active');
 
-            if (tickerContainer) tickerContainer.classList.add('hidden');
-
-            if (guardar) {
-                localStorage.setItem('lcc_seccion_activa', subId);
-                localStorage.setItem('lcc_titulo_activo', tituloFranja);
-            }
-            if (sidebar) sidebar.classList.remove('active');
+            if (subId === 'consulta-reporte') renderConsultaTabla();
+            if (subId === 'revision-reporte') renderRevisionTabla();
         }
 
-        function cambiarSeccion(nombreSeccion, tituloFranja, elementoMenu, guardar = true) {
+        function cambiarSeccion(nombreSeccion, tituloFranja, elementoMenu) {
             document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('selected'));
             document.querySelectorAll('.submenu-item').forEach(item => item.classList.remove('selected'));
             document.getElementById('submenuReportes').classList.remove('active');
+            if (elementoMenu) elementoMenu.classList.add('selected');
 
-            if (elementoMenu) {
-                elementoMenu.classList.add('selected');
-            } else {
-                const def = document.querySelector(`.menu-item[data-section="${nombreSeccion}"]`);
-                if (def) def.classList.add('selected');
-            }
-
-            if (headerTitleDisplay) headerTitleDisplay.textContent = tituloFranja;
-
+            headerTitleDisplay.textContent = tituloFranja;
             document.querySelectorAll('.section-pane').forEach(pane => pane.classList.remove('active'));
-            const paneActivo = document.getElementById(`pane-${nombreSeccion}`);
-            if (paneActivo) paneActivo.classList.add('active');
-
-            if (tickerContainer) {
-                if (['nps-casos', 'saber-mas', 'ayuda'].includes(nombreSeccion)) {
-                    tickerContainer.classList.add('hidden');
-                } else {
-                    tickerContainer.classList.remove('hidden');
-                }
-            }
-
-            if (guardar) {
-                localStorage.setItem('lcc_seccion_activa', nombreSeccion);
-                localStorage.setItem('lcc_titulo_activo', tituloFranja);
-            }
-            if (sidebar) sidebar.classList.remove('active');
+            document.getElementById(`pane-${nombreSeccion}`).classList.add('active');
+            tickerContainer.classList.remove('hidden');
+            sidebar.classList.remove('active');
         }
 
-        // --- ACCIONES ESPECÍFICAS DE REPORTES ---
         function handleUploadReport(e) {
             e.preventDefault();
-            mostrarLoader("Analizando archivo con IA");
+            mostrarLoader("Analizando con IA");
             setTimeout(() => {
                 ocultarLoader();
-                alert("¡Archivo procesado y base de datos (Google Sheets - Reportes) alimentada con éxito!");
+                alert("¡Archivo procesado y base de datos (Google Sheets) alimentada con éxito!");
                 document.getElementById('uploadReportForm').reset();
-            }, 1200);
-        }
-
-        function abrirCamaraValidacion(sku) {
-            alert(`Activando cámara del dispositivo para auditoría física del SKU: ${sku}`);
-        }
-
-        function aprobarReporteAdmin(id) {
-            alert(`Reporte #${id} aprobado y registrado en el historial oficial.`);
+            }, 1000);
         }
 
         function cerrarSesion() {
             mostrarLoader("Cerrando sesión");
             setTimeout(() => {
                 localStorage.removeItem('lcc_sesion');
-                localStorage.removeItem('lcc_active_tab_owner');
-                localStorage.removeItem('lcc_seccion_activa');
-                localStorage.removeItem('lcc_titulo_activo');
                 location.reload();
             }, 500);
         }
@@ -1238,45 +679,81 @@
                 const dept = selectDepartamento.value;
 
                 if (!/^[0-9]{9}$/.test(numEmp)) {
-                    mensajeAlerta.textContent = "El N° de Empleado debe contener exactamente 9 dígitos.";
+                    mensajeAlerta.textContent = "El N° de Empleado debe tener 9 dígitos.";
                     mensajeAlerta.className = "mensaje error";
                     return;
                 }
                 if (!dept) {
-                    mensajeAlerta.textContent = "Seleccione un departamento válido.";
+                    mensajeAlerta.textContent = "Seleccione un departamento.";
                     mensajeAlerta.className = "mensaje error";
                     return;
                 }
 
-                mostrarLoader("Verificando credenciales");
+                mostrarLoader("Verificando acceso");
                 btnIngresar.disabled = true;
 
                 const token = 'token_' + Math.random().toString(36).substring(2) + '_' + Date.now();
-                const url = `${WEB_APP_URL}?nombre=${encodeURIComponent(nom)}&departamento=${encodeURIComponent(dept)}&sessionToken=${encodeURIComponent(token)}`;
-
                 try {
-                    const res = await fetch(url);
+                    const res = await fetch(`${WEB_APP_URL}?nombre=${encodeURIComponent(nom)}&departamento=${encodeURIComponent(dept)}&sessionToken=${encodeURIComponent(token)}`);
                     const result = await res.json();
-
                     if (result && result.access) {
                         const datosSesion = { empleado: numEmp, nombre: nom, departamento: dept, isAdmin: result.isAdmin || false, sessionToken: token };
                         localStorage.setItem('lcc_sesion', JSON.stringify(datosSesion));
                         localStorage.setItem('lcc_active_tab_owner', tabId);
-                        verificarSesionGuardada();
-                        ocultarLoader();
+                        location.reload();
                     } else {
                         ocultarLoader();
-                        mensajeAlerta.textContent = (result && result.message) ? result.message : "Acceso denegado.";
+                        mensajeAlerta.textContent = result.message || "Acceso denegado.";
                         mensajeAlerta.className = "mensaje error";
                         btnIngresar.disabled = false;
                     }
                 } catch (err) {
                     ocultarLoader();
-                    mensajeAlerta.textContent = "Error de conexión con el servidor.";
+                    mensajeAlerta.textContent = "Error de conexión.";
                     mensajeAlerta.className = "mensaje error";
                     btnIngresar.disabled = false;
                 }
             });
+        }
+
+        async function cargarDepartamentos() {
+            try {
+                const res = await fetch(`${WEB_APP_URL}?action=getDepartamentos`);
+                const result = await res.json();
+                if (result && result.departments) {
+                    selectDepartamento.innerHTML = '<option value="" disabled selected>Seleccione su departamento</option>';
+                    result.departments.forEach(d => {
+                        const opt = document.createElement('option'); opt.value = d; opt.textContent = d;
+                        selectDepartamento.appendChild(opt);
+                    });
+                }
+            } catch (e) {
+                selectDepartamento.innerHTML = '<option value="Abarrotes">Abarrotes</option><option value="Electrónica">Electrónica</option>';
+            }
+        }
+        cargarDepartamentos();
+
+        const sesion = localStorage.getItem('lcc_sesion');
+        if (sesion && localStorage.getItem('lcc_active_tab_owner') === tabId) {
+            const d = JSON.parse(sesion);
+            loginSection.style.display = 'none';
+            dashboard.style.display = 'flex';
+            userNameDisplay.textContent = d.nombre;
+            userEmpDisplay.textContent = d.empleado;
+            userDeptoDisplay.textContent = d.departamento;
+            profileName.textContent = d.nombre;
+            profileEmp.textContent = d.empleado;
+            profileDept.textContent = d.departamento;
+            if (d.isAdmin) {
+                adminBadge.style.display = 'block';
+                profileRango.textContent = "🛡️ Administrador";
+                profileRango.className = "badge-rango badge-admin";
+                document.querySelectorAll('.admin-only-sub').forEach(el => el.style.display = 'block');
+            } else {
+                profileRango.textContent = "👤 Usuario Estándar";
+                profileRango.className = "badge-rango badge-user";
+                document.querySelectorAll('.admin-only-sub').forEach(el => el.style.display = 'none');
+            }
         }
     </script>
 </body>
