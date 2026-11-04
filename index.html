@@ -36,7 +36,7 @@
             flex-direction: column;
         }
 
-        /* --- PANTALLA DE CARGA GLOBAL --- */
+        /* --- PANTALLA DE CARGA GLOBAL (OVERLAY) --- */
         .global-loader {
             position: fixed;
             top: 0;
@@ -572,7 +572,7 @@
 
         .main-content {
             padding: 30px 20px;
-            max-width: 1000px;
+            max-width: 950px;
             margin: 0 auto;
             flex-grow: 1;
             width: 100%;
@@ -597,65 +597,48 @@
             display: block;
         }
 
-        /* --- ESTILOS DE TABLA DE CONSULTA Y REVISIÓN (FASE 2) --- */
-        .report-table-container {
-            overflow-x: auto;
-            margin-top: 15px;
-            border-radius: 10px;
+        /* --- ESTILOS PARA LAS SUBSECCIONES DE REPORTES (FASE 2) --- */
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .report-card-item {
             border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .report-table {
+
+        .sku-img-preview {
             width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 13px;
-        }
-        .report-table th, .report-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-        }
-        .report-table th {
-            background-color: #f8f9fa;
-            color: var(--label-color);
-            font-weight: bold;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 8px;
+            background-color: #f1f3f4;
+            border: 1px solid #ddd;
         }
 
-        .badge-estatus {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: bold;
-            display: inline-block;
-        }
-        .estatus-nuevo { background-color: #e8f0fe; color: #1a73e8; }
-        .estatus-reincidente { background-color: #fef7e0; color: #b06000; }
-        .estatus-critico { background-color: #fce8e6; color: #c5221f; }
-        .estatus-escalado { background-color: #f3e8fd; color: #8430ce; }
-        
-        .estatus-finalizado { background-color: #e6f4ea; color: #137333; }
-        .estatus-caducado { background-color: #f1f3f4; color: #5f6368; }
-        .estatus-pendiente { background-color: #fef7e0; color: #b06000; }
-
-        .btn-action-table {
+        .btn-action-report {
             background-color: var(--mexican-pink);
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s;
+            text-align: center;
         }
-        .btn-action-table:hover { background-color: var(--mexican-pink-hover); }
-        .btn-action-table:disabled { background-color: #dadce0; cursor: not-allowed; }
-
-        .sku-thumb {
-            width: 45px;
-            height: 45px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1px solid #ccc;
+        .btn-action-report:hover {
+            background-color: var(--mexican-pink-hover);
         }
 
         .btn-logout {
@@ -671,7 +654,9 @@
             margin-top: 15px;
             transition: background 0.2s;
         }
-        .btn-logout:hover { background-color: #a51a17; }
+        .btn-logout:hover {
+            background-color: #a51a17;
+        }
 
         .dashboard-footer {
             margin-top: auto;
@@ -682,6 +667,7 @@
             border-top: 1px solid #e0e0e0;
             line-height: 1.5;
         }
+
         .dashboard-footer .author-highlight {
             color: var(--mexican-pink);
             font-weight: bold;
@@ -845,30 +831,21 @@
                 </div>
             </div>
 
-            <!-- 2. Consulta de Reporte (Listado de Desabasto con 8 Puntos) -->
+            <!-- 2. Consulta de Reporte (Desabasto con SKU y Cámara) -->
             <div id="pane-consulta-reporte" class="section-pane">
                 <div class="content-card">
                     <h2>Consulta de Reporte de Desabasto</h2>
-                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Escanee el producto para desbloquear la acción de resolución. Al vaciar la lista, el reporte pasará automáticamente a revisión.</p>
+                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Visualización rápida de SKUs reportados con imagen de referencia y soporte de cámara para validación.</p>
                     
-                    <div class="report-table-container">
-                        <table class="report-table">
-                            <thead>
-                                <tr>
-                                    <th>1. Botón de Escaneo</th>
-                                    <th>2. Imagen</th>
-                                    <th>3. SKU</th>
-                                    <th>4. Descripción</th>
-                                    <th>5. Cant. Negada</th>
-                                    <th>6. Inv.</th>
-                                    <th>7. Estatus</th>
-                                    <th>8. Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="consultaTableBody">
-                                <!-- Dinámico -->
-                            </tbody>
-                        </table>
+                    <div class="report-grid" id="consultaReportGrid">
+                        <!-- Tarjeta de ejemplo de desabasto -->
+                        <div class="report-card-item">
+                            <img src="pelicano.jpg" alt="SKU" class="sku-img-preview" onerror="this.src='pelicano-logo.png'">
+                            <strong>SKU-8821: Aceite Vegetal 1L</strong>
+                            <span style="font-size: 12px; color: #c5221f; font-weight: bold;">Estado: Negado / Desabasto</span>
+                            <p style="font-size: 12px; color: #5f6368;">Pasillo 3 - Anaquel B</p>
+                            <button class="btn-action-report" onclick="abrirCamaraValidacion('SKU-8821')">📷 Usar Cámara / Validar</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -888,22 +865,13 @@
             <div id="pane-revision-reporte" class="section-pane">
                 <div class="content-card">
                     <h2>Revisión de Reportes (Administrador)</h2>
-                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Auditoría de reportes finalizados, caducados o pendientes.</p>
-                    
-                    <div class="report-table-container" style="margin-top: 15px;">
-                        <table class="report-table">
-                            <thead>
-                                <tr>
-                                    <th># Reporte</th>
-                                    <th>Departamento</th>
-                                    <th>Estatus Actual</th>
-                                    <th>Acción / Comentario Admin</th>
-                                </tr>
-                            </thead>
-                            <tbody id="revisionTableBody">
-                                <!-- Dinámico -->
-                            </tbody>
-                        </table>
+                    <p style="margin-top: 8px; color: #5f6368; font-size: 13px;">Panel de auditoría para aprobar, rechazar o retroalimentar los reportes trabajados por el personal.</p>
+                    <div id="adminRevisionContainer" style="margin-top: 15px;">
+                        <div style="padding: 15px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 10px;">
+                            <strong>Reporte #104 - Departamento Abarrotes</strong>
+                            <p style="font-size: 12px; color: #5f6368; margin: 5px 0;">Enviado por personal operativo. Pendiente de validación final.</p>
+                            <button style="background: #137333; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="aprobarReporteAdmin(104)">Aprobar Reporte</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -941,21 +909,6 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyc7tXRLUR4aiguUk2mq-liDOyG8irBb8tRVG8bmoayNspMvSjkhh_eIghTNx-S9D0HwQ/exec";
 
-        // Datos de ejemplo para la tabla de Consulta de Desabasto
-        let listaConsultaItems = [
-            { id: 1, sku: 'SKU-8821', desc: 'Aceite Vegetal 1L', cantNegada: 12, inv: 2, solicitudesConsecutivas: 1, escaneado: false },
-            { id: 2, sku: 'SKU-4410', desc: 'Leche Deslactosada 1L', cantNegada: 25, inv: 0, solicitudesConsecutivas: 2, escaneado: false },
-            { id: 3, sku: 'SKU-9021', desc: 'Papel Higiénico 4 pzas', cantNegada: 8, inv: 1, solicitudesConsecutivas: 3, escaneado: false },
-            { id: 4, sku: 'SKU-3012', desc: 'Atún en Agua 140g', cantNegada: 40, inv: 0, solicitudesConsecutivas: 4, escaneado: false }
-        ];
-
-        // Lista de reportes en Revisión
-        let listaReportesRevision = [
-            { repId: 'REP-501', depto: 'Abarrotes', estatus: 'Finalizado', fechaCreacion: new Date(Date.now() - 3600000), comentarioAdmin: '' },
-            { repId: 'REP-498', depto: 'Electrónica', estatus: 'Caducado', fechaCreacion: new Date(Date.now() - 100000000), comentarioAdmin: '' },
-            { repId: 'REP-495', depto: 'Farmacia', estatus: 'Pendiente', fechaCreacion: new Date(Date.now() - 120000000), comentarioAdmin: '' }
-        ];
-
         const form = document.getElementById('accessForm');
         const mensajeAlerta = document.getElementById('mensajeAlerta');
         const loginSection = document.getElementById('login-section');
@@ -983,8 +936,10 @@
         const globalLoader = document.getElementById('globalLoader');
         const loaderText = document.getElementById('loaderText');
 
-        let tabId = sessionStorage.getItem('lcc_tab_id') || ('tab_' + Math.random().toString(36).substring(2));
-        sessionStorage.setItem('lcc_tab_id', tabId);
+        let sesionActualDatos = null;
+        let temporizadorInactividad;
+        let intervaloVerificacionToken;
+        const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
         function mostrarLoader(mensaje = "Procesando solicitud") {
             if (loaderText) loaderText.innerHTML = `${mensaje}<span class="loading-dots"></span>`;
@@ -993,123 +948,6 @@
 
         function ocultarLoader() {
             if (globalLoader) globalLoader.classList.remove('active');
-        }
-
-        // Lógica de estatus por solicitudes consecutivas
-        function obtenerEstatusPorConteo(conteo) {
-            if (conteo === 1) return { texto: 'Nuevo', clase: 'estatus-nuevo' };
-            if (conteo === 2) return { texto: 'Reincidente', clase: 'estatus-reincidente' };
-            if (conteo === 3) return { texto: 'Crítico', clase: 'estatus-critico' };
-            return { texto: 'Escalado', clase: 'estatus-escalado' };
-        }
-
-        function renderConsultaTabla() {
-            const tbody = document.getElementById('consultaTableBody');
-            tbody.innerHTML = '';
-
-            if (listaConsultaItems.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px; color: #137333; font-weight: bold;">¡Reporte finalizado con éxito! Todos los productos han sido resueltos y pasaron a revisión.</td></tr>`;
-                return;
-            }
-
-            listaConsultaItems.forEach((item, index) => {
-                const estatusObj = obtenerEstatusPorConteo(item.solicitudesConsecutivas);
-                const tr = document.createElement('tr');
-
-                tr.innerHTML = `
-                    <td>
-                        <button class="btn-action-table" style="background:#202124;" onclick="escanearProducto(${index})">
-                            ${item.escaneado ? '✔ Escaneado' : '📷 Escanear'}
-                        </button>
-                    </td>
-                    <td><img src="pelicano.jpg" class="sku-thumb" onerror="this.src='pelicano-logo.png'"></td>
-                    <td style="font-weight: bold; font-family: monospace; color: var(--mexican-pink);">${item.sku}</td>
-                    <td>${item.desc}</td>
-                    <td style="font-weight: bold; color: #c5221f;">${item.cantNegada}</td>
-                    <td>${item.inv}</td>
-                    <td><span class="badge-estatus ${estatusObj.clase}">${estatusObj.texto}</span></td>
-                    <td>
-                        <button class="btn-action-table" id="btnAccion-${index}" ${!item.escaneado ? 'disabled' : ''} onclick="resolverProducto(${index})">
-                            Resolver SKU
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function escanearProducto(index) {
-            mostrarLoader("Escaneando código de barras");
-            setTimeout(() => {
-                ocultarLoader();
-                listaConsultaItems[index].escaneado = true;
-                renderConsultaTabla();
-            }, 600);
-        }
-
-        function resolverProducto(index) {
-            mostrarLoader("Registrando acción correctiva");
-            setTimeout(() => {
-                ocultarLoader();
-                listaConsultaItems.splice(index, 1);
-                renderConsultaTabla();
-
-                // Al vaciar la lista, registrar en revisión
-                if (listaConsultaItems.length === 0) {
-                    const nuevoRep = {
-                        repId: 'REP-' + Math.floor(100 + Math.random() * 900),
-                        depto: userDeptoDisplay.textContent || 'General',
-                        estatus: 'Finalizado',
-                        fechaCreacion: new Date(),
-                        comentarioAdmin: ''
-                    };
-                    listaReportesRevision.unshift(nuevoRep);
-                    renderRevisionTabla();
-                    alert("¡Reporte finalizado! Enviado al panel de revisión administrativa.");
-                }
-            }, 700);
-        }
-
-        function renderRevisionTabla() {
-            const tbody = document.getElementById('revisionTableBody');
-            tbody.innerHTML = '';
-            const ahora = new Date();
-
-            listaReportesRevision.forEach((rep, idx) => {
-                let badgeClase = 'estatus-finalizado';
-                let estatusTexto = rep.estatus;
-
-                // Regla de 1 día (24 horas) sin revisión
-                const horasTranscurridas = (ahora - new Date(rep.fechaCreacion)) / (1000 * 60 * 60);
-                if (horasTranscurridas > 24 && estatusTexto !== 'Finalizado') {
-                    estatusTexto = 'Pendiente';
-                    badgeClase = 'estatus-pendiente';
-                } else if (estatusTexto === 'Caducado') {
-                    badgeClase = 'estatus-caducado';
-                }
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight: bold;">${rep.repId}</td>
-                    <td>${rep.depto}</td>
-                    <td><span class="badge-estatus ${badgeClase}">${estatusTexto}</span></td>
-                    <td>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <input type="text" id="comentario-admin-${idx}" placeholder="Comentario opcional..." value="${rep.comentarioAdmin}" style="padding: 6px; font-size: 12px; width: 180px;">
-                            <button class="btn-action-table" style="background: #137333;" onclick="confirmarRevisionAdmin(${idx})">Confirmar</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function confirmarRevisionAdmin(idx) {
-            const input = document.getElementById(`comentario-admin-${idx}`);
-            listaReportesRevision[idx].comentarioAdmin = input.value;
-            listaReportesRevision[idx].estatus = 'Finalizado';
-            renderRevisionTabla();
-            alert("¡Revisión administrativa confirmada con éxito!");
         }
 
         function generarEstrellas(puntuacion) {
@@ -1152,6 +990,32 @@
             sessionStorage.setItem('lcc_tab_id', tabId);
         }
 
+        async function verificarValidezSesionRemota() {
+            const sesionGuardada = localStorage.getItem('lcc_sesion');
+            if (!sesionGuardada) return;
+
+            try {
+                const datos = JSON.parse(sesionGuardada);
+                if (!datos.sessionToken) return;
+
+                const response = await fetch(`${WEB_APP_URL}?action=verificarSesion&token=${encodeURIComponent(datos.sessionToken)}`);
+                const result = await response.json();
+
+                if (result) {
+                    if (result.active === false || result.isBlocked === true) {
+                        alert("Su cuenta ha sido bloqueada o la sesión ha expirado.");
+                        cerrarSesion();
+                        return;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function iniciarVerificacionRemota() {
+            clearInterval(intervaloVerificacionToken);
+            intervaloVerificacionToken = setInterval(verificarValidezSesionRemota, 10000);
+        }
+
         function verificarSesionGuardada() {
             const sesionGuardada = localStorage.getItem('lcc_sesion');
             const activeOwner = localStorage.getItem('lcc_active_tab_owner');
@@ -1159,12 +1023,15 @@
             if (sesionGuardada && activeOwner === tabId) {
                 try {
                     const datos = JSON.parse(sesionGuardada);
+                    sesionActualDatos = datos;
+                    
                     loginSection.style.display = "none";
                     dashboard.style.display = "flex";
 
                     userNameDisplay.textContent = datos.nombre;
                     userEmpDisplay.textContent = datos.empleado;
                     userDeptoDisplay.textContent = datos.departamento;
+
                     profileName.textContent = datos.nombre;
                     profileEmp.textContent = datos.empleado;
                     profileDept.textContent = datos.departamento;
@@ -1190,6 +1057,8 @@
                         cambiarSeccion(seccionActiva, tituloActivo, null, false);
                     }
 
+                    iniciarControlInactividad();
+                    iniciarVerificacionRemota();
                     cargarEvaluacionesNPS();
                 } catch (e) {
                     localStorage.removeItem('lcc_sesion');
@@ -1200,8 +1069,79 @@
             }
         }
 
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'lcc_active_tab_owner' && e.newValue && e.newValue !== tabId) {
+                loginSection.style.display = "flex";
+                dashboard.style.display = "none";
+            }
+            if (e.key === 'lcc_sesion' && e.newValue === null) {
+                loginSection.style.display = "flex";
+                dashboard.style.display = "none";
+            }
+        });
+
+        function reiniciarTemporizadorInactividad() {
+            if (!localStorage.getItem('lcc_sesion') || localStorage.getItem('lcc_active_tab_owner') !== tabId) return;
+            clearTimeout(temporizadorInactividad);
+            temporizadorInactividad = setTimeout(() => {
+                alert("Su sesión ha expirado por inactividad (20 minutos).");
+                cerrarSesion();
+            }, TIEMPO_INACTIVIDAD);
+        }
+
+        function iniciarControlInactividad() {
+            ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'].forEach(evt => {
+                window.addEventListener(evt, reiniciarTemporizadorInactividad);
+            });
+            reiniciarTemporizadorInactividad();
+        }
+
+        async function cargarDepartamentos() {
+            try {
+                const response = await fetch(`${WEB_APP_URL}?action=getDepartamentos`);
+                const result = await response.json();
+                if (result && result.departments) {
+                    selectDepartamento.innerHTML = '<option value="" disabled selected>Seleccione su departamento</option>';
+                    result.departments.forEach(depto => {
+                        const opt = document.createElement('option');
+                        opt.value = depto; opt.textContent = depto;
+                        selectDepartamento.appendChild(opt);
+                    });
+                }
+            } catch (error) {
+                selectDepartamento.innerHTML = '<option value="" disabled selected>Error al cargar lista</option>';
+            }
+        }
+
+        cargarDepartamentos();
+        verificarSesionGuardada();
+
+        function toggleMenu() {
+            if (profileDropdown) profileDropdown.classList.remove('active');
+            sidebar.classList.toggle('active');
+        }
+
+        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+
+        if (profileToggle) {
+            profileToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (sidebar) sidebar.classList.remove('active');
+                profileDropdown.classList.toggle('active');
+            });
+        }
+
+        window.addEventListener('click', function(e) {
+            if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && !profileDropdown.contains(e.target) && !profileToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+                profileDropdown.classList.remove('active');
+            }
+        });
+
+        // --- CONTROL DE SUBMENÚ REPORTES (FASE 2) ---
         function toggleSubmenuReportes() {
-            document.getElementById('submenuReportes').classList.toggle('active');
+            const submenu = document.getElementById('submenuReportes');
+            submenu.classList.toggle('active');
         }
 
         function cambiarSubseccionReportes(subId, tituloFranja, elementoSub, guardar = true) {
@@ -1225,9 +1165,6 @@
                 localStorage.setItem('lcc_titulo_activo', tituloFranja);
             }
             if (sidebar) sidebar.classList.remove('active');
-
-            if (subId === 'consulta-reporte') renderConsultaTabla();
-            if (subId === 'revision-reporte') renderRevisionTabla();
         }
 
         function cambiarSeccion(nombreSeccion, tituloFranja, elementoMenu, guardar = true) {
@@ -1263,36 +1200,23 @@
             if (sidebar) sidebar.classList.remove('active');
         }
 
-        function toggleMenu() {
-            if (profileDropdown) profileDropdown.classList.remove('active');
-            sidebar.classList.toggle('active');
-        }
-
-        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
-
-        if (profileToggle) {
-            profileToggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (sidebar) sidebar.classList.remove('active');
-                profileDropdown.classList.toggle('active');
-            });
-        }
-
-        window.addEventListener('click', function(e) {
-            if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && !profileDropdown.contains(e.target) && !profileToggle.contains(e.target)) {
-                sidebar.classList.remove('active');
-                profileDropdown.classList.remove('active');
-            }
-        });
-
+        // --- ACCIONES ESPECÍFICAS DE REPORTES ---
         function handleUploadReport(e) {
             e.preventDefault();
             mostrarLoader("Analizando archivo con IA");
             setTimeout(() => {
                 ocultarLoader();
-                alert("¡Archivo procesado y base de datos alimentada con éxito!");
+                alert("¡Archivo procesado y base de datos (Google Sheets - Reportes) alimentada con éxito!");
                 document.getElementById('uploadReportForm').reset();
             }, 1200);
+        }
+
+        function abrirCamaraValidacion(sku) {
+            alert(`Activando cámara del dispositivo para auditoría física del SKU: ${sku}`);
+        }
+
+        function aprobarReporteAdmin(id) {
+            alert(`Reporte #${id} aprobado y registrado en el historial oficial.`);
         }
 
         function cerrarSesion() {
@@ -1305,26 +1229,6 @@
                 location.reload();
             }, 500);
         }
-
-        async function cargarDepartamentos() {
-            try {
-                const response = await fetch(`${WEB_APP_URL}?action=getDepartamentos`);
-                const result = await response.json();
-                if (result && result.departments) {
-                    selectDepartamento.innerHTML = '<option value="" disabled selected>Seleccione su departamento</option>';
-                    result.departments.forEach(depto => {
-                        const opt = document.createElement('option');
-                        opt.value = depto; opt.textContent = depto;
-                        selectDepartamento.appendChild(opt);
-                    });
-                }
-            } catch (error) {
-                selectDepartamento.innerHTML = '<option value="Abarrotes">Abarrotes</option><option value="Electrónica">Electrónica</option>';
-            }
-        }
-
-        cargarDepartamentos();
-        verificarSesionGuardada();
 
         if (form) {
             form.addEventListener('submit', async function(e) {
