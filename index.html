@@ -358,6 +358,8 @@
         .input-edit-sku { font-size: 11px; font-weight: bold; padding: 2px 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 130px; }
         .input-edit-desc { font-size: 13px; font-weight: bold; padding: 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 100%; }
 
+        .input-edit-cant { font-size: 12px; font-weight: bold; padding: 4px; border: 1px solid var(--mexican-pink); border-radius: 6px; width: 60px; text-align: center; }
+
         .negado-card-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
         .negado-inv-badge { background-color: #f1f3f4; color: #3c4043; padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
         .negado-inv-dot { width: 7px; height: 7px; border-radius: 50%; background-color: #34a853; }
@@ -944,15 +946,16 @@
             }
         }
 
+        /* --- PROCESAMIENTO POR TABLAS Y POSICIONAMIENTO DEL PDF --- */
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
-            mostrarLoader(`Analizando "${file.name}" de forma estructurada`);
+            mostrarLoader(`Analizando tablas del reporte: "${file.name}"`);
 
             if (file.name.toLowerCase().endsWith('.pdf')) {
                 try {
                     const arrayBuffer = await file.arrayBuffer();
                     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    let palabrasTexto = [];
+                    let itemsPagina = [];
 
                     for (let i = 1; i <= pdf.numPages; i++) {
                         const page = await pdf.getPage(i);
@@ -960,88 +963,97 @@
                         content.items.forEach(item => {
                             const str = item.str.trim();
                             if (str.length > 0) {
-                                palabrasTexto.push(str);
+                                itemsPagina.push({
+                                    text: str,
+                                    x: item.transform[4],
+                                    y: item.transform[5]
+                                });
                             }
                         });
                     }
 
-                    extraerDatosDesdeTokens(palabrasTexto, file.name);
+                    // Ordenamos de arriba a abajo y de izquierda a derecha
+                    itemsPagina.sort((a, b) => b.y - a.y || a.x - b.x);
+
+                    extraerDatosPorTablasYSecciones(itemsPagina, file.name);
                 } catch (e) {
-                    alert("Error al leer el archivo PDF.");
+                    alert("Error al procesar las tablas del PDF.");
                     ocultarLoader();
                 }
             } else {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    extraerDatosConInteligencia(e.target.result, file.name);
+                    const tokensLineas = e.target.result.split(/\s+/).map(t => ({ text: t }));
+                    extraerDatosPorTablasYSecciones(tokensLineas, file.name);
                 };
                 reader.readAsText(file);
             }
         }
 
-        /* --- EXTRACCIÓN BASADA EN TOKENS / PALABRAS --- */
-        function extraerDatosDesdeTokens(tokens, nombreArchivo) {
+        function extraerDatosPorTablasYSecciones(items, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Extracción completa por bloques completada.`;
+            document.getElementById('uploadSub').textContent = `Análisis por secciones y tablas completado con éxito.`;
 
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
-            let i = 0;
 
-            const palabrasOmitir = [
+            // Palabras de relleno o encabezados que deben ser ignoradas estrictamente en las descripciones
+            const encabezadosIgnorar = [
                 "GRUPO", "LACOMER", "REPORTE", "DE", "AUDITORÍA", "ARTÍCULOS", "NEGADOS", "LCC",
-                "COMERCIAL", "CITY", "FRESKO", "SUCURSAL", "FOLIO", "DIVISIÓN", "FECHA", "CREACIÓN",
-                "ESTATUS", "FINALIZADO", "CANTIDAD", "DETALLE", "INCIDENCIA", "CÓDIGO", "BARRAS",
-                "DESCRIPCIÓN", "ARTÍCULO", "PEDIDA", "ENTREGADA", "NEGADA", "%", "EXHIBIDO", "BODEGA",
-                "PROCESO", "MERMA", "DEVOLUCIÓN", "ACTULIZACIÓN", "STOCK", "MALA", "CALIDAD",
-                "CADUCADO", "OFERTA", "CAMBIO", "FISICO", "PÁGINA", "1", "2", "3", "S.DE", "R.L.", "C.V."
+                "COMERCIAL", "CITY", "FRESKO", "SUCURSAL", "QUERETARO", "MILENIO", "FOLIO", "DIVISIÓN",
+                "FECHA", "CREACIÓN", "ESTATUS", "FINALIZADO", "CÓDIGO", "BARRAS", "DESCRIPCIÓN",
+                "ARTÍCULO", "CANTIDAD", "PEDIDA", "ENTREGADA", "NEGADA", "%", "DETALLE", "INCIDENCIA",
+                "EXHIBIDO", "EN", "BODEGA", "PROCESO", "MERMA", "DEVOLUCIÓN", "ACTULIZACIÓN", "STOCK",
+                "MALA", "CALIDAD", "CADUCADO", "POR", "OFERTA", "CAMBIO", "FISICO", "PÁGINA", "S.DE", "R.L.", "C.V."
             ];
 
+            let tokens = items.map(item => item.text);
+            let i = 0;
+
             while (i < tokens.length) {
-                let tokenUpper = tokens[i].toUpperCase();
+                let tUpper = tokens[i].toUpperCase();
 
-                if (tokenUpper.includes("ALIMENTACION")) deptoActual = "Alimentación";
-                else if (tokenUpper.includes("PANADERIA")) deptoActual = "Panadería";
-                else if (tokenUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
-                else if (tokenUpper.includes("HIGIENE")) deptoActual = "Higiene y Belleza";
-                else if (tokenUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
-                else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
-                else if (tokenUpper.includes("MARCA")) deptoActual = "Marca Propia";
+                // 1. Identificación de Secciones / Departamentos en el documento
+                if (tUpper.includes("ALIMENTACION") || tUpper.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
+                else if (tUpper.includes("PANADERIA") || tUpper.includes("PANADERÍA")) deptoActual = "Panadería";
+                else if (tUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
+                else if (tUpper.includes("HIGIENE")) deptoActual = "Higiene y Belleza";
+                else if (tUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
+                else if (tUpper.includes("HOGAR")) deptoActual = "Hogar";
+                else if (tUpper.includes("MARCA")) deptoActual = "Marca Propia";
 
+                // 2. Detección estricta de SKU (Códigos de barras de 4 a 14 dígitos que inician filas)
                 if (/^\d{4,14}$/.test(tokens[i])) {
-                    let posibleSku = tokens[i];
+                    let skuVal = tokens[i];
 
-                    if (posibleSku !== "2026" && !posibleSku.startsWith("1454") && !palabrasOmitir.includes(posibleSku)) {
-                        let skuVal = posibleSku;
-                        let descPalabras = [];
-                        let cantidadNegada = 1.0;
-
+                    // Excluimos años de cabecera o folios conocidos
+                    if (skuVal !== "2026" && !skuVal.startsWith("1454") && !encabezadosIgnorar.includes(skuVal)) {
+                        let descTokens = [];
                         let j = i + 1;
+
+                        // Recolectamos la descripción asociada a este SKU hasta encontrar el siguiente SKU o sección
                         while (j < tokens.length) {
-                            let t = tokens[j];
-                            let tUpper = t.toUpperCase();
+                            let sigToken = tokens[j];
+                            let sigUpper = sigToken.toUpperCase();
 
-                            if (/^\d{4,14}$/.test(t) && t !== "2026" && !t.startsWith("1454")) break;
-                            if (tUpper.includes("FOLIO") || tUpper.includes("DIVISIÓN") || tUpper.includes("ESTATUS")) break;
+                            // Si topamos con otro SKU o encabezado de sección, cerramos el bloque
+                            if (/^\d{4,14}$/.test(sigToken) && sigToken !== "2026" && !sigToken.startsWith("1454")) break;
+                            if (sigUpper.includes("FOLIO") || sigUpper.includes("DIVISIÓN") || sigUpper.includes("ESTATUS")) break;
 
-                            if (/^\d+(\.\d+)?%?$/.test(t) || t === "100%") {
-                                let num = parseFloat(t);
-                                if (!isNaN(num) && num > 0 && num < 100 && t !== "100%") {
-                                    cantidadNegada = num;
-                                }
-                            } else if (!palabrasOmitir.includes(tUpper)) {
-                                descPalabras.push(t);
+                            // Omitimos números aislados de cantidades o porcentajes
+                            if (!/^\d+(\.\d+)?%?$/.test(sigToken) && !encabezadosIgnorar.includes(sigUpper)) {
+                                descTokens.push(sigToken);
                             }
                             j++;
                         }
 
-                        let descVal = descPalabras.join(" ").trim();
+                        let descVal = descTokens.join(" ").trim();
 
                         if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
                             nuevosProductos.push({
                                 sku: skuVal,
                                 desc: descVal.toUpperCase(),
-                                cant: cantidadNegada,
+                                cant: "", // Inventario dejado completamente vacío para llenado manual
                                 depto: deptoActual,
                                 img: "pelicano-logo.png"
                             });
@@ -1087,6 +1099,8 @@
                 card.className = 'negado-card-item';
                 card.setAttribute('data-depto', item.depto);
 
+                const textoCantidadDisplay = item.cant !== "" ? `${item.cant} pzas` : `— pzas`;
+
                 card.innerHTML = `
                     <div class="negado-card-left">
                         <div class="negado-img-wrapper">
@@ -1099,7 +1113,7 @@
                         </div>
                     </div>
                     <div class="negado-card-right">
-                        <div class="negado-inv-badge"><span class="negado-inv-dot"></span> ${item.cant} pzas</div>
+                        <div class="negado-inv-badge"><span class="negado-inv-dot"></span> <span class="cant-val">${textoCantidadDisplay}</span></div>
                         <div class="negado-depto-badge">${item.depto}</div>
                     </div>
                 `;
@@ -1148,9 +1162,11 @@
                 cards.forEach((card, idx) => {
                     const skuInput = card.querySelector('.input-edit-sku');
                     const descInput = card.querySelector('.input-edit-desc');
+                    const cantInput = card.querySelector('.input-edit-cant');
                     if (skuInput && descInput && listaPendientesGlobal[idx]) {
                         listaPendientesGlobal[idx].sku = skuInput.value;
                         listaPendientesGlobal[idx].desc = descInput.value;
+                        if (cantInput) listaPendientesGlobal[idx].cant = cantInput.value;
                     }
                 });
 
@@ -1165,6 +1181,7 @@
             cards.forEach((card, idx) => {
                 const skuSpan = card.querySelector('.sku-val');
                 const descSpan = card.querySelector('.desc-val');
+                const cantSpan = card.querySelector('.cant-val');
                 const btnImg = card.querySelector('.btn-change-img');
 
                 if (btnImg) btnImg.style.display = activar ? 'flex' : 'none';
@@ -1173,6 +1190,9 @@
                     if (!skuSpan.querySelector('input')) {
                         skuSpan.innerHTML = `<input type="text" class="input-edit-sku" value="${skuSpan.textContent}">`;
                         descSpan.innerHTML = `<input type="text" class="input-edit-desc" value="${descSpan.textContent}">`;
+                        
+                        let valActualCant = listaPendientesGlobal[idx] ? listaPendientesGlobal[idx].cant : "";
+                        cantSpan.innerHTML = `<input type="number" class="input-edit-cant" placeholder="0" value="${valActualCant}">`;
                     }
                 }
             });
@@ -1304,6 +1324,7 @@
                 let htmlResumen = `<div style="display:flex; flex-direction:column; gap:10px;">`;
                 
                 listaPendientesGlobal.forEach(item => {
+                    const cantTexto = item.cant !== "" ? `${item.cant} pzas` : "— pzas";
                     htmlResumen += `
                         <div class="negado-card-item">
                             <div class="negado-card-left">
@@ -1314,7 +1335,7 @@
                                 </div>
                             </div>
                             <div class="negado-card-right">
-                                <div class="negado-inv-badge"><span class="negado-inv-dot"></span> ${item.cant} pzas</div>
+                                <div class="negado-inv-badge"><span class="negado-inv-dot"></span> ${cantTexto}</div>
                                 <div class="negado-depto-badge">${item.depto}</div>
                             </div>
                         </div>
