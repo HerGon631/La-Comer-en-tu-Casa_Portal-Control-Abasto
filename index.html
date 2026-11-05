@@ -36,7 +36,7 @@
             flex-direction: column;
         }
 
-        /* --- PANTALLA DE CARGA GLOBAL (OVERLAY) --- */
+        /* --- PANTALLA DE CARGA GLOBAL --- */
         .global-loader {
             position: fixed;
             top: 0;
@@ -240,11 +240,6 @@
             transform: scale(0.98);
         }
 
-        button.btn-primary:disabled {
-            opacity: 0.85;
-            cursor: not-allowed;
-        }
-
         .mensaje {
             margin-top: 15px;
             text-align: center;
@@ -255,7 +250,6 @@
         .error { color: var(--error-color); }
         .success { color: var(--success-color); }
 
-        /* --- PUNTO 8: SELLO DE AUTORÍA Y FOOTER EN LOGIN --- */
         .login-footer {
             margin-top: 25px;
             padding-top: 15px;
@@ -308,17 +302,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.2s;
-        }
-        .menu-btn:active {
-            transform: scale(0.9);
         }
 
         .header-title {
             color: white;
             font-size: 18px;
             font-weight: bold;
-            letter-spacing: 0.5px;
         }
 
         .profile-container {
@@ -333,25 +322,14 @@
             background-color: white;
             border: 2px solid rgba(255, 255, 255, 0.9);
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
             overflow: hidden;
             padding: 0;
-        }
-
-        .profile-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         .profile-btn img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 50%;
         }
 
         .profile-dropdown {
@@ -365,19 +343,11 @@
             padding: 20px;
             display: none;
             z-index: 1200;
-            color: var(--text-color);
-            text-align: left;
             border: 1px solid #eee;
-            animation: dropdownFade 0.2s ease-out;
         }
 
         .profile-dropdown.active {
             display: block;
-        }
-
-        @keyframes dropdownFade {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .profile-dropdown h3 {
@@ -408,14 +378,8 @@
             font-weight: bold;
             margin-top: 5px;
         }
-        .badge-admin {
-            background-color: #e6f4ea;
-            color: #137333;
-        }
-        .badge-user {
-            background-color: #f1f3f4;
-            color: #5f6368;
-        }
+        .badge-admin { background-color: #e6f4ea; color: #137333; }
+        .badge-user { background-color: #f1f3f4; color: #5f6368; }
 
         .sidebar {
             position: fixed;
@@ -431,9 +395,7 @@
             flex-direction: column;
         }
 
-        .sidebar.active {
-            left: 0;
-        }
+        .sidebar.active { left: 0; }
 
         .sidebar-header {
             background-color: var(--mexican-pink);
@@ -472,64 +434,20 @@
             font-weight: 600;
             color: var(--text-color);
             cursor: pointer;
-            display: block;
-            position: relative;
             margin: 4px 10px;
             border-radius: 10px;
-            transition: background-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
-                        color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
-                        transform 0.25s ease,
-                        box-shadow 0.3s ease;
-        }
-
-        .menu-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%) scaleY(0);
-            width: 4px;
-            height: 60%;
-            background-color: var(--mexican-pink);
-            border-radius: 0 4px 4px 0;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+            transition: all 0.25s ease;
         }
 
         .menu-item:hover {
             background-color: var(--pink-transparent-30);
             color: var(--mexican-pink);
-            transform: translateX(6px);
-        }
-
-        .menu-item:hover::before {
-            transform: translateY(-50%) scaleY(1);
-        }
-
-        .menu-item:active {
-            transform: translateX(3px) scale(0.98);
         }
 
         .menu-item.selected {
             background-color: var(--mexican-pink);
             color: #ffffff;
             font-weight: bold;
-            box-shadow: 0 4px 12px rgba(228, 0, 124, 0.25);
-            transform: translateX(4px);
-        }
-
-        .menu-item.selected::before {
-            transform: translateY(-50%) scaleY(1);
-            background-color: #ffffff;
-        }
-
-        .menu-item.menu-tap-anim {
-            animation: menuTapFlash 0.35s ease-out;
-        }
-
-        @keyframes menuTapFlash {
-            0% { transform: translateX(6px) scale(1); }
-            50% { transform: translateX(2px) scale(0.97); }
-            100% { transform: translateX(4px) scale(1); }
         }
 
         .ticker-container {
@@ -541,26 +459,16 @@
             position: sticky;
             top: 65px;
             z-index: 90;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-            pointer-events: none;
-            user-select: none;
         }
 
-        .ticker-container.hidden {
-            display: none;
-        }
+        .ticker-container.hidden { display: none; }
 
         .ticker-track {
             display: inline-block;
             white-space: nowrap;
-            opacity: 0;
-            transform: translateX(100%);
-            transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .ticker-track.loaded {
-            opacity: 1;
-            transform: translateX(0);
             animation: tickerScroll 80s linear infinite;
         }
 
@@ -570,24 +478,11 @@
             gap: 10px;
             margin-right: 50px;
             font-size: 13px;
-            color: #333;
         }
 
-        .ticker-stars {
-            font-size: 12px;
-            letter-spacing: 1px;
-        }
-
-        .ticker-comment {
-            font-style: italic;
-            color: #444;
-        }
-
-        .ticker-client {
-            font-weight: bold;
-            color: var(--mexican-pink);
-            font-style: normal;
-        }
+        .ticker-stars { font-size: 12px; }
+        .ticker-comment { font-style: italic; }
+        .ticker-client { font-weight: bold; color: var(--mexican-pink); }
 
         @keyframes tickerScroll {
             0% { transform: translateX(0); }
@@ -595,8 +490,8 @@
         }
 
         .main-content {
-            padding: 30px 20px;
-            max-width: 900px;
+            padding: 25px 20px;
+            max-width: 1000px;
             margin: 0 auto;
             flex-grow: 1;
             width: 100%;
@@ -606,20 +501,14 @@
 
         .content-card {
             background: #ffffff;
-            padding: 30px;
+            padding: 25px;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 20px;
         }
 
-        .section-pane {
-            display: none;
-            flex-grow: 1;
-        }
-
-        .section-pane.active {
-            display: block;
-        }
+        .section-pane { display: none; flex-grow: 1; }
+        .section-pane.active { display: block; }
 
         .btn-logout {
             background-color: #c5221f;
@@ -632,13 +521,289 @@
             cursor: pointer;
             width: 100%;
             margin-top: 15px;
-            transition: background 0.2s;
-        }
-        .btn-logout:hover {
-            background-color: #a51a17;
         }
 
-        /* --- PUNTO 8: SELLO DE AUTORÍA Y FOOTER EN DASHBOARD --- */
+        /* --- FASE 2: SUB-NAVEGACIÓN Y MÓDULO DE REPORTES --- */
+        .subnav-tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+            padding-bottom: 2px;
+        }
+
+        .subnav-tab {
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--label-color);
+            background: #f1f3f4;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .subnav-tab:hover {
+            background: var(--pink-transparent-30);
+            color: var(--mexican-pink);
+        }
+
+        .subnav-tab.active {
+            background: var(--mexican-pink);
+            color: white;
+            box-shadow: 0 -2px 8px rgba(228, 0, 124, 0.2);
+        }
+
+        .report-subpane { display: none; }
+        .report-subpane.active { display: block; }
+
+        /* --- BARRA DE CARGA COMPACTA --- */
+        .upload-bar-compact {
+            background: linear-gradient(135deg, #ffffff 0%, #fff0f5 100%);
+            border: 2px dashed rgba(228, 0, 124, 0.4);
+            border-radius: 12px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+
+        .upload-bar-compact:hover, .upload-bar-compact.dragover {
+            border-color: var(--mexican-pink);
+            background-color: rgba(228, 0, 124, 0.05);
+        }
+
+        .upload-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .upload-icon {
+            font-size: 24px;
+        }
+
+        .upload-text-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .upload-text-sub {
+            font-size: 11px;
+            color: var(--label-color);
+        }
+
+        .btn-upload-trigger {
+            background-color: var(--mexican-pink);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(228, 0, 124, 0.25);
+            transition: background 0.2s;
+        }
+
+        .btn-upload-trigger:hover {
+            background-color: var(--mexican-pink-hover);
+        }
+
+        /* --- TABLA EXTENDIDA "NEGADOS A IMPORTAR" --- */
+        .negados-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .negados-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #111;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .negados-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-action-accept {
+            background-color: #137333;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 6px rgba(19, 115, 51, 0.25);
+        }
+
+        .btn-action-refresh {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #dadce0;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--label-color);
+            background-color: #fff;
+            width: auto;
+        }
+
+        /* RECIPIENTE DE LA TABLA EXPANDIDO (MAXIMIZADO VERTICALMENTE) */
+        .negados-table-container {
+            max-height: 580px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            background: #fafafa;
+            padding: 8px;
+        }
+
+        .negados-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* TARJETAS COMPLETAS (TAMAÑO ORIGINAL CONSERVADO) */
+        .negado-card-item {
+            background: white;
+            border-radius: 10px;
+            padding: 12px 16px;
+            border: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+
+        .negado-card-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-grow: 1;
+        }
+
+        .negado-img-thumb {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #eee;
+            background-color: #fff;
+        }
+
+        .negado-details {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .negado-sku {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--label-color);
+            letter-spacing: 0.5px;
+        }
+
+        .negado-desc {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .negado-card-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .negado-inv-badge {
+            background-color: #f1f3f4;
+            color: #3c4043;
+            padding: 5px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .negado-inv-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #34a853;
+        }
+
+        .negado-depto-badge {
+            background-color: rgba(228, 0, 124, 0.1);
+            color: var(--mexican-pink);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .btn-delete-row {
+            background: none;
+            border: none;
+            color: #d93025;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+        }
+
+        .btn-delete-row:hover {
+            background-color: #fce8e6;
+        }
+
+        .empty-negados {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--label-color);
+            font-size: 14px;
+        }
+
         .dashboard-footer {
             margin-top: auto;
             padding: 20px 0 10px 0;
@@ -657,7 +822,7 @@
 </head>
 <body>
 
-    <!-- OVERLAY DE CARGA CON IMAGEN DEL PELÍCANO -->
+    <!-- PANTALLA DE CARGA GLOBAL -->
     <div id="globalLoader" class="global-loader">
         <div class="loader-logo-wrapper">
             <div class="loader-spin-ring"></div>
@@ -666,6 +831,7 @@
         <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
     </div>
 
+    <!-- PANTALLA DE LOGIN -->
     <div id="login-section" class="login-wrapper">
         <div class="login-card">
             <div class="logo-container">LC</div>
@@ -695,7 +861,6 @@
             </form>
             <div id="mensajeAlerta" class="mensaje"></div>
 
-            <!-- SELLO DE AUTORÍA EN LOGIN (PUNTO 8) -->
             <footer class="login-footer">
                 © 2026 La Comer en tu Casa — Sistema de Control & Abasto.<br>
                 Desarrollado por <span class="author-highlight">Angelo Arturo</span>.
@@ -703,6 +868,7 @@
         </div>
     </div>
 
+    <!-- DASHBOARD PRINCIPAL -->
     <div id="dashboard">
         <header class="header-bar">
             <div class="header-left">
@@ -759,6 +925,7 @@
         </nav>
 
         <main class="main-content">
+            <!-- SECCIÓN: INICIO -->
             <div id="pane-inicio" class="section-pane active">
                 <div class="content-card">
                     <h2>¡Bienvenido, <span id="userNameDisplay"></span>!</h2>
@@ -770,10 +937,10 @@
                     </div>
 
                     <p class="success" style="margin-top: 15px;">Acceso autorizado correctamente por la base de datos.</p>
-                    <button onclick="cerrarSesion()" class="btn-logout" style="width: auto; padding: 10px 20px;">Cerrar Sesión</button>
                 </div>
             </div>
 
+            <!-- SECCIÓN: MI DEPARTAMENTO -->
             <div id="pane-departamento" class="section-pane">
                 <div class="content-card">
                     <h2>Mi departamento</h2>
@@ -781,6 +948,7 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN: INDICADORES -->
             <div id="pane-indicadores" class="section-pane">
                 <div class="content-card">
                     <h2>Indicadores</h2>
@@ -788,35 +956,161 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN: REPORTES (MÓDULO DE FASE 2) -->
             <div id="pane-reportes" class="section-pane">
                 <div class="content-card">
-                    <h2>Reportes</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Consulta de reportes comparativos y archivos de control.</p>
+                    <!-- SUB-NAVEGACIÓN INTERNA -->
+                    <div class="subnav-tabs">
+                        <button class="subnav-tab active" onclick="cambiarSubpestana('alta-reportes', this)">📝 Alta de reportes</button>
+                        <button class="subnav-tab" onclick="cambiarSubpestana('reportes-activos', this)">⚡ Reportes activos</button>
+                        <button class="subnav-tab" onclick="cambiarSubpestana('historial-reportes', this)">📜 Historial</button>
+                    </div>
+
+                    <!-- SUB-PESTAÑA 1: ALTA DE REPORTES -->
+                    <div id="subpane-alta-reportes" class="report-subpane active">
+                        <!-- BARRA DELGADA COMPACTA DE CARGA DE ARCHIVOS -->
+                        <div class="upload-bar-compact" id="dropArea">
+                            <div class="upload-info">
+                                <span class="upload-icon">📄</span>
+                                <div>
+                                    <div class="upload-text-title" id="uploadTitle">Arrastra un archivo o haz clic para examinar</div>
+                                    <div class="upload-text-sub" id="uploadSub">Soporta formatos PDF, Excel o Imagen del reporte de negados</div>
+                                </div>
+                            </div>
+                            <input type="file" id="fileInput" accept=".pdf,.xlsx,.csv,.jpg,.png" style="display:none;" onchange="simularCargaArchivo(this.files[0])">
+                            <button class="btn-upload-trigger" onclick="document.getElementById('fileInput').click()">📁 Subir archivo</button>
+                        </div>
+
+                        <!-- ENCABEZADO Y ACCIONES DE NEGADOS IMPORTADOS -->
+                        <div class="negados-header-bar">
+                            <div class="negados-title">
+                                📋 NEGADOS A IMPORTAR
+                                <span id="countNegados" style="font-size:12px; color:var(--mexican-pink); background:rgba(228,0,124,0.1); padding:2px 8px; border-radius:12px;">4 productos</span>
+                            </div>
+                            <div class="negados-actions">
+                                <button class="btn-action-accept" onclick="aceptarImportacion()">✓ Aceptar</button>
+                                <button class="btn-action-refresh" onclick="refreshExtraccion()">🔄 Refresh</button>
+                                <select class="filter-select" id="filterDepto" onchange="filtrarNegadosPorDepto(this.value)">
+                                    <option value="todos">Filtrar por departamento</option>
+                                    <option value="Abarrotes">Abarrotes</option>
+                                    <option value="Despensa">Despensa</option>
+                                    <option value="Lácteos">Lácteos</option>
+                                    <option value="Dulcería">Dulcería</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- TABLA EXTENDIDA DE PREVISUALIZACIÓN -->
+                        <div class="negados-table-container">
+                            <div class="negados-list" id="negadosListContainer">
+                                <!-- TARJETA 1 -->
+                                <div class="negado-card-item" data-depto="Abarrotes">
+                                    <div class="negado-card-left">
+                                        <img src="https://via.placeholder.com/48/ffffff/E4007C?text=Aceite" alt="Aceite" class="negado-img-thumb" onerror="this.src='pelicano-logo.png'">
+                                        <div class="negado-details">
+                                            <span class="negado-sku">SKU: 853807005033</span>
+                                            <span class="negado-desc">Aceite De Aguacate Puro Chosen Foods 134 grs</span>
+                                        </div>
+                                    </div>
+                                    <div class="negado-card-right">
+                                        <div class="negado-inv-badge"><span class="negado-inv-dot"></span> 28 pzas</div>
+                                        <div class="negado-depto-badge">Abarrotes</div>
+                                        <button class="btn-delete-row" title="Eliminar fila" onclick="eliminarFilaNegado(this)">⛔</button>
+                                    </div>
+                                </div>
+
+                                <!-- TARJETA 2 -->
+                                <div class="negado-card-item" data-depto="Despensa">
+                                    <div class="negado-card-left">
+                                        <img src="https://via.placeholder.com/48/ffffff/E4007C?text=Pasta" alt="Pasta" class="negado-img-thumb" onerror="this.src='pelicano-logo.png'">
+                                        <div class="negado-details">
+                                            <span class="negado-sku">SKU: 731234567890</span>
+                                            <span class="negado-desc">Pasta Importada Italia, 500g</span>
+                                        </div>
+                                    </div>
+                                    <div class="negado-card-right">
+                                        <div class="negado-inv-badge"><span class="negado-inv-dot"></span> 50 pzas</div>
+                                        <div class="negado-depto-badge">Despensa</div>
+                                        <button class="btn-delete-row" title="Eliminar fila" onclick="eliminarFilaNegado(this)">⛔</button>
+                                    </div>
+                                </div>
+
+                                <!-- TARJETA 3 -->
+                                <div class="negado-card-item" data-depto="Lácteos">
+                                    <div class="negado-card-left">
+                                        <img src="https://via.placeholder.com/48/ffffff/E4007C?text=Yogur" alt="Yogur" class="negado-img-thumb" onerror="this.src='pelicano-logo.png'">
+                                        <div class="negado-details">
+                                            <span class="negado-sku">SKU: 987654321098</span>
+                                            <span class="negado-desc">Yogur Griego Importado, 1kg</span>
+                                        </div>
+                                    </div>
+                                    <div class="negado-card-right">
+                                        <div class="negado-inv-badge"><span class="negado-inv-dot"></span> 12 pzas</div>
+                                        <div class="negado-depto-badge">Lácteos</div>
+                                        <button class="btn-delete-row" title="Eliminar fila" onclick="eliminarFilaNegado(this)">⛔</button>
+                                    </div>
+                                </div>
+
+                                <!-- TARJETA 4 -->
+                                <div class="negado-card-item" data-depto="Dulcería">
+                                    <div class="negado-card-left">
+                                        <img src="https://via.placeholder.com/48/ffffff/E4007C?text=Choc" alt="Chocolate" class="negado-img-thumb" onerror="this.src='pelicano-logo.png'">
+                                        <div class="negado-details">
+                                            <span class="negado-sku">SKU: 112233445566</span>
+                                            <span class="negado-desc">Chocolate Suizo Artesanal, 100g</span>
+                                        </div>
+                                    </div>
+                                    <div class="negado-card-right">
+                                        <div class="negado-inv-badge"><span class="negado-inv-dot"></span> 100 pzas</div>
+                                        <div class="negado-depto-badge">Dulcería</div>
+                                        <button class="btn-delete-row" title="Eliminar fila" onclick="eliminarFilaNegado(this)">⛔</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-PESTAÑA 2: REPORTES ACTIVOS -->
+                    <div id="subpane-reportes-activos" class="report-subpane">
+                        <h3>⚡ Reportes Activos por Departamento</h3>
+                        <p style="margin-top: 8px; color: var(--label-color); font-size: 13px;">Listado de incidencias enviadas y pendientes de atención en piso.</p>
+                        <div id="contenedorActivos" style="margin-top: 20px;">
+                            <div class="empty-negados">No hay reportes activos en este momento. Haz clic en "Aceptar" en la pestaña Alta de reportes para enviar registros.</div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-PESTAÑA 3: HISTORIAL -->
+                    <div id="subpane-historial-reportes" class="report-subpane">
+                        <h3>📜 Historial General de Negados</h3>
+                        <p style="margin-top: 8px; color: var(--label-color); font-size: 13px;">Consulta de reportes pasados registrados en Google Sheets.</p>
+                    </div>
                 </div>
             </div>
 
+            <!-- SECCIÓN: NPS Y CASOS -->
             <div id="pane-nps-casos" class="section-pane">
                 <div class="content-card">
                     <h2>NPS y Casos</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Apartado reservado para la gestión y análisis de evaluaciones y casos operativos.</p>
+                    <p style="margin-top: 10px; color: #5f6368;">Gestión de evaluaciones de clientes.</p>
                 </div>
             </div>
 
+            <!-- SECCIÓN: SABER MÁS -->
             <div id="pane-saber-mas" class="section-pane">
                 <div class="content-card">
                     <h2>Saber más</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Documentación de procesos, manuales y políticas de operación.</p>
+                    <p style="margin-top: 10px; color: #5f6368;">Documentación de procesos y manuales.</p>
                 </div>
             </div>
 
+            <!-- SECCIÓN: AYUDA -->
             <div id="pane-ayuda" class="section-pane">
                 <div class="content-card">
                     <h2>Ayuda</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Canales de soporte técnico y asistencia del portal.</p>
+                    <p style="margin-top: 10px; color: #5f6368;">Soporte técnico y asistencia.</p>
                 </div>
             </div>
 
-            <!-- SELLO DE AUTORÍA EN DASHBOARD (PUNTO 8) -->
             <footer class="dashboard-footer">
                 © 2026 La Comer en tu Casa — Sistema de Control & Abasto.<br>
                 Desarrollado por <span class="author-highlight">Angelo Arturo</span>.
@@ -860,18 +1154,12 @@
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
         function mostrarLoader(mensaje = "Verificando acceso") {
-            if (loaderText) {
-                loaderText.innerHTML = `${mensaje}<span class="loading-dots"></span>`;
-            }
-            if (globalLoader) {
-                globalLoader.classList.add('active');
-            }
+            if (loaderText) loaderText.innerHTML = `${mensaje}<span class="loading-dots"></span>`;
+            if (globalLoader) globalLoader.classList.add('active');
         }
 
         function ocultarLoader() {
-            if (globalLoader) {
-                globalLoader.classList.remove('active');
-            }
+            if (globalLoader) globalLoader.classList.remove('active');
         }
 
         function generarEstrellas(puntuacion) {
@@ -885,7 +1173,6 @@
             try {
                 const response = await fetch(`${WEB_APP_URL}?action=getNps`);
                 const result = await response.json();
-                
                 const tickerTrack = document.getElementById('tickerTrack');
                 if (!tickerTrack) return;
 
@@ -895,7 +1182,6 @@
                 if (lista.length === 0) return;
 
                 let renderList = [...lista, ...lista];
-
                 renderList.forEach(item => {
                     const estrellas = generarEstrellas(item.puntuacion);
                     itemsHtml += `
@@ -908,12 +1194,7 @@
                 });
 
                 tickerTrack.innerHTML = itemsHtml;
-
-                const totalComentarios = lista.length;
-                const segundosDinamicos = Math.max(50, totalComentarios * 16);
-                tickerTrack.style.animationDuration = segundosDinamicos + 's';
                 tickerTrack.classList.add('loaded');
-
             } catch (error) {}
         }
 
@@ -923,66 +1204,6 @@
             sessionStorage.setItem('lcc_tab_id', tabId);
         }
 
-        async function verificarValidezSesionRemota() {
-            const sesionGuardada = localStorage.getItem('lcc_sesion');
-            if (!sesionGuardada) return;
-
-            try {
-                const datos = JSON.parse(sesionGuardada);
-                if (!datos.sessionToken) return;
-
-                const response = await fetch(`${WEB_APP_URL}?action=verificarSesion&token=${encodeURIComponent(datos.sessionToken)}`);
-                const result = await response.json();
-
-                if (result) {
-                    if (result.active === false || result.isBlocked === true) {
-                        alert("Su cuenta ha sido bloqueada o la sesión ha expirado.");
-                        cerrarSesion();
-                        return;
-                    }
-
-                    let hubicambios = false;
-
-                    if (result.nombre && result.nombre !== datos.nombre) {
-                        datos.nombre = result.nombre;
-                        userNameDisplay.textContent = result.nombre;
-                        profileName.textContent = result.nombre;
-                        hubicambios = true;
-                    }
-
-                    if (result.departamento && result.departamento !== datos.departamento) {
-                        datos.departamento = result.departamento;
-                        userDeptoDisplay.textContent = result.departamento;
-                        profileDept.textContent = result.departamento;
-                        hubicambios = true;
-                    }
-
-                    if (result.isAdmin !== undefined && result.isAdmin !== datos.isAdmin) {
-                        datos.isAdmin = result.isAdmin;
-                        if (datos.isAdmin) {
-                            adminBadge.style.display = "block";
-                            profileRango.textContent = "🛡️ Administrador";
-                            profileRango.className = "badge-rango badge-admin";
-                        } else {
-                            adminBadge.style.display = "none";
-                            profileRango.textContent = "👤 Usuario Estándar";
-                            profileRango.className = "badge-rango badge-user";
-                        }
-                        hubicambios = true;
-                    }
-
-                    if (hubicambios) {
-                        localStorage.setItem('lcc_sesion', JSON.stringify(datos));
-                    }
-                }
-            } catch (e) {}
-        }
-
-        function iniciarVerificacionRemota() {
-            clearInterval(intervaloVerificacionToken);
-            intervaloVerificacionToken = setInterval(verificarValidezSesionRemota, 10000);
-        }
-
         function verificarSesionGuardada() {
             const sesionGuardada = localStorage.getItem('lcc_sesion');
             const activeOwner = localStorage.getItem('lcc_active_tab_owner');
@@ -990,7 +1211,6 @@
             if (sesionGuardada && activeOwner === tabId) {
                 try {
                     const datos = JSON.parse(sesionGuardada);
-                    
                     loginSection.style.display = "none";
                     dashboard.style.display = "flex";
 
@@ -1019,7 +1239,6 @@
                     cambiarSeccion(seccionActiva, tituloActivo, itemMenu, false);
 
                     iniciarControlInactividad();
-                    iniciarVerificacionRemota();
                     cargarEvaluacionesNPS();
                 } catch (e) {
                     localStorage.removeItem('lcc_sesion');
@@ -1030,26 +1249,8 @@
             }
         }
 
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'lcc_active_tab_owner') {
-                const newOwner = e.newValue;
-                if (newOwner && newOwner !== tabId) {
-                    loginSection.style.display = "flex";
-                    dashboard.style.display = "none";
-                    clearTimeout(temporizadorInactividad);
-                    clearInterval(intervaloVerificacionToken);
-                }
-            }
-            if (e.key === 'lcc_sesion' && e.newValue === null) {
-                loginSection.style.display = "flex";
-                dashboard.style.display = "none";
-                clearTimeout(temporizadorInactividad);
-                clearInterval(intervaloVerificacionToken);
-            }
-        });
-
         function reiniciarTemporizadorInactividad() {
-            if (!localStorage.getItem('lcc_sesion') || localStorage.getItem('lcc_active_tab_owner') !== tabId) return;
+            if (!localStorage.getItem('lcc_sesion')) return;
             clearTimeout(temporizadorInactividad);
             temporizadorInactividad = setTimeout(() => {
                 alert("Su sesión ha expirado por inactividad (20 minutos).");
@@ -1061,8 +1262,6 @@
             window.addEventListener('mousemove', reiniciarTemporizadorInactividad);
             window.addEventListener('mousedown', reiniciarTemporizadorInactividad);
             window.addEventListener('keypress', reiniciarTemporizadorInactividad);
-            window.addEventListener('touchstart', reiniciarTemporizadorInactividad);
-            window.addEventListener('scroll', reiniciarTemporizadorInactividad);
             reiniciarTemporizadorInactividad();
         }
 
@@ -1079,8 +1278,6 @@
                         option.textContent = depto;
                         selectDepartamento.appendChild(option);
                     });
-                } else {
-                    selectDepartamento.innerHTML = '<option value="" disabled selected>No se encontraron departamentos</option>';
                 }
             } catch (error) {
                 selectDepartamento.innerHTML = '<option value="" disabled selected>Error al cargar lista</option>';
@@ -1095,13 +1292,7 @@
             sidebar.classList.toggle('active');
         }
 
-        if (menuToggle) {
-            menuToggle.addEventListener('click', toggleMenu);
-            menuToggle.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                toggleMenu();
-            }, {passive: false});
-        }
+        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
 
         if (profileToggle) {
             profileToggle.addEventListener('click', function(e) {
@@ -1109,12 +1300,6 @@
                 if (sidebar) sidebar.classList.remove('active');
                 profileDropdown.classList.toggle('active');
             });
-            profileToggle.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (sidebar) sidebar.classList.remove('active');
-                profileDropdown.classList.toggle('active');
-            }, {passive: false});
         }
 
         function cerrarTodo() {
@@ -1132,16 +1317,7 @@
             const items = document.querySelectorAll('.menu-item');
             items.forEach(item => item.classList.remove('selected'));
 
-            if (elementoMenu) {
-                elementoMenu.classList.add('selected');
-                elementoMenu.classList.add('menu-tap-anim');
-                setTimeout(() => {
-                    elementoMenu.classList.remove('menu-tap-anim');
-                }, 350);
-            } else {
-                const itemPorDefecto = document.querySelector(`.menu-item[data-section="${nombreSeccion}"]`);
-                if (itemPorDefecto) itemPorDefecto.classList.add('selected');
-            }
+            if (elementoMenu) elementoMenu.classList.add('selected');
 
             if (headerTitleDisplay) headerTitleDisplay.textContent = tituloFranja;
 
@@ -1149,23 +1325,12 @@
             panes.forEach(pane => pane.classList.remove('active'));
 
             const paneActivo = document.getElementById(`pane-${nombreSeccion}`);
-            if (paneActivo) {
-                paneActivo.classList.add('active');
-            }
-
-            if (tickerContainer) {
-                if (nombreSeccion === 'nps-casos' || nombreSeccion === 'saber-mas' || nombreSeccion === 'ayuda') {
-                    tickerContainer.classList.add('hidden');
-                } else {
-                    tickerContainer.classList.remove('hidden');
-                }
-            }
+            if (paneActivo) paneActivo.classList.add('active');
 
             if (guardar) {
                 localStorage.setItem('lcc_seccion_activa', nombreSeccion);
                 localStorage.setItem('lcc_titulo_activo', tituloFranja);
             }
-
             cerrarTodo();
         }
 
@@ -1174,53 +1339,105 @@
             setTimeout(() => {
                 localStorage.removeItem('lcc_sesion');
                 localStorage.removeItem('lcc_active_tab_owner');
-                localStorage.removeItem('lcc_seccion_activa');
-                localStorage.removeItem('lcc_titulo_activo');
-                clearInterval(intervaloVerificacionToken);
                 location.reload();
             }, 500);
+        }
+
+        /* --- FUNCIONES DE SUB-NAVEGACIÓN DE REPORTES --- */
+        function cambiarSubpestana(subId, btnElement) {
+            const tabs = document.querySelectorAll('.subnav-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            if (btnElement) btnElement.classList.add('active');
+
+            const subpanes = document.querySelectorAll('.report-subpane');
+            subpanes.forEach(sp => sp.classList.remove('active'));
+
+            const activeSubpane = document.getElementById(`subpane-${subId}`);
+            if (activeSubpane) activeSubpane.classList.add('active');
+        }
+
+        function simularCargaArchivo(file) {
+            if (!file) return;
+            mostrarLoader(`Extrayendo datos de "${file.name}" mediante IA`);
+            setTimeout(() => {
+                ocultarLoader();
+                document.getElementById('uploadTitle').textContent = `Archivo procesado: ${file.name}`;
+                document.getElementById('uploadSub').textContent = `Se extrajeron los productos negados correctamente.`;
+                actualizarConteoNegados();
+            }, 1200);
+        }
+
+        function refreshExtraccion() {
+            mostrarLoader("Volviendo a procesar documento (Refresh)");
+            setTimeout(() => {
+                ocultarLoader();
+                alert("Extracción de datos refrescada con éxito.");
+            }, 1000);
+        }
+
+        function aceptarImportacion() {
+            const container = document.getElementById('negadosListContainer');
+            const items = container.querySelectorAll('.negado-card-item');
+
+            if (items.length === 0) {
+                alert("No hay productos negados en la lista para importar.");
+                return;
+            }
+
+            mostrarLoader("Generando reportes por departamento");
+            setTimeout(() => {
+                ocultarLoader();
+                const contenedorActivos = document.getElementById('contenedorActivos');
+                let htmlResumen = `<div style="display:flex; flex-direction:column; gap:10px;">`;
+                
+                items.forEach(item => {
+                    htmlResumen += item.outerHTML;
+                });
+                htmlResumen += `</div>`;
+
+                contenedorActivos.innerHTML = htmlResumen;
+                container.innerHTML = `<div class="empty-negados">No hay productos pendientes por importar.</div>`;
+                actualizarConteoNegados();
+
+                cambiarSubpestana('reportes-activos', document.querySelectorAll('.subnav-tab')[1]);
+                alert("Reportes generados e importados a Reportes Activos exitosamente.");
+            }, 1200);
+        }
+
+        function eliminarFilaNegado(btn) {
+            const card = btn.closest('.negado-card-item');
+            if (card) {
+                card.remove();
+                actualizarConteoNegados();
+            }
+        }
+
+        function filtrarNegadosPorDepto(depto) {
+            const items = document.querySelectorAll('#negadosListContainer .negado-card-item');
+            items.forEach(item => {
+                if (depto === 'todos' || item.getAttribute('data-depto') === depto) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function actualizarConteoNegados() {
+            const items = document.querySelectorAll('#negadosListContainer .negado-card-item');
+            const countLabel = document.getElementById('countNegados');
+            if (countLabel) countLabel.textContent = `${items.length} productos`;
         }
 
         if (form) {
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                
-                const numEmpleadoField = document.getElementById('empleado');
-                const nombreField = document.getElementById('nombre');
-                
-                if (!numEmpleadoField || !nombreField || !selectDepartamento) return;
-
-                const numEmpleado = numEmpleadoField.value.trim();
-                const nombre = nombreField.value.trim();
+                const numEmpleado = document.getElementById('empleado').value.trim();
+                const nombre = document.getElementById('nombre').value.trim();
                 const departamento = selectDepartamento.value;
 
-                const regex9Digitos = /^[0-9]{9}$/;
-                if (!regex9Digitos.test(numEmpleado)) {
-                    if (mensajeAlerta) {
-                        mensajeAlerta.textContent = "El N° de Empleado debe contener exactamente 9 dígitos numéricos.";
-                        mensajeAlerta.className = "mensaje error";
-                    }
-                    return;
-                }
-
-                if (!departamento) {
-                    if (mensajeAlerta) {
-                        mensajeAlerta.textContent = "Por favor seleccione un departamento válido.";
-                        mensajeAlerta.className = "mensaje error";
-                    }
-                    return;
-                }
-
-                if (mensajeAlerta) {
-                    mensajeAlerta.textContent = "";
-                }
-                
                 mostrarLoader("Verificando credenciales");
-                if (btnIngresar) {
-                    btnIngresar.disabled = true;
-                }
-
-                const sessionToken = 'token_' + Math.random().toString(36).substring(2) + '_' + Date.now();
+                const sessionToken = 'token_' + Math.random().toString(36).substring(2);
                 const urlFinal = `${WEB_APP_URL}?nombre=${encodeURIComponent(nombre)}&departamento=${encodeURIComponent(departamento)}&sessionToken=${encodeURIComponent(sessionToken)}`;
 
                 try {
@@ -1235,31 +1452,19 @@
                             isAdmin: result.isAdmin || false,
                             sessionToken: sessionToken
                         };
-                        
                         localStorage.setItem('lcc_sesion', JSON.stringify(datosSesion));
                         localStorage.setItem('lcc_active_tab_owner', tabId);
-
                         verificarSesionGuardada();
                         ocultarLoader();
                     } else {
                         ocultarLoader();
-                        if (mensajeAlerta) {
-                            mensajeAlerta.textContent = (result && result.message) ? result.message : "Acceso denegado. Verifique sus datos.";
-                            mensajeAlerta.className = "mensaje error";
-                        }
-                        if (btnIngresar) {
-                            btnIngresar.disabled = false;
-                        }
+                        mensajeAlerta.textContent = result.message || "Acceso denegado.";
+                        mensajeAlerta.className = "mensaje error";
                     }
                 } catch (error) {
                     ocultarLoader();
-                    if (mensajeAlerta) {
-                        mensajeAlerta.textContent = "Error de conexión con el servidor.";
-                        mensajeAlerta.className = "mensaje error";
-                    }
-                    if (btnIngresar) {
-                        btnIngresar.disabled = false;
-                    }
+                    mensajeAlerta.textContent = "Error de conexión.";
+                    mensajeAlerta.className = "mensaje error";
                 }
             });
         }
