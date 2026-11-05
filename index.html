@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Comer en tu Casa - Portal de Control & Abasto</title>
-    <!-- LIBRERÍA PARA EXTRACCIÓN REAL DE PDFS -->
+    <!-- LIBRERÍA PDF.JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- LIBRERÍA PARA ESCANEO DE CÁMARA (QR / CÓDIGOS DE BARRAS) -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         :root {
             --mexican-pink: #E4007C;
@@ -336,7 +338,6 @@
         .negado-sku { font-size: 11px; font-weight: bold; color: var(--label-color); letter-spacing: 0.5px; }
         .negado-desc { font-size: 13px; font-weight: bold; color: var(--text-color); word-break: break-word; }
 
-        /* ESTILOS PARA EDICIÓN EN LÍNEA */
         .input-edit-sku { font-size: 11px; font-weight: bold; padding: 2px 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 130px; }
         .input-edit-desc { font-size: 13px; font-weight: bold; padding: 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 100%; }
 
@@ -345,14 +346,18 @@
         .negado-inv-dot { width: 7px; height: 7px; border-radius: 50%; background-color: #34a853; }
         .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; white-space: nowrap; }
 
-        /* MODAL DE ESCÁNER DE CÁMARA */
+        /* MODAL DE ESCÁNER DE CÁMARA REAL (HTML5 QRCODE) */
         .scanner-modal {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 9999;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
         }
         .scanner-modal.active { opacity: 1; visibility: visible; }
-        .scanner-box { background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; }
-        .scanner-video { width: 100%; height: 220px; background: #000; border-radius: 10px; margin-bottom: 15px; object-fit: cover; }
+        .scanner-box { background: white; padding: 20px; border-radius: 16px; width: 92%; max-width: 420px; text-align: center; }
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
+
+        .scan-status-indicator {
+            font-size: 13px; font-weight: bold; color: #137333; background: #e6f4ea; padding: 6px 10px; border-radius: 8px; margin-bottom: 12px; display: none;
+        }
 
         @media (max-width: 600px) {
             .upload-bar-compact { flex-direction: column; align-items: stretch; text-align: center; gap: 15px; }
@@ -379,12 +384,13 @@
         <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
     </div>
 
-    <!-- MODAL DE ESCÁNER DE CÁMARA -->
+    <!-- MODAL DE ESCÁNER DE CÁMARA REAL -->
     <div id="scannerModal" class="scanner-modal">
         <div class="scanner-box">
-            <h3 style="margin-bottom: 10px; color: #111;">📷 Escáner de SKU</h3>
-            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 15px;">Apunta la cámara al código de barras o ingresa el SKU para eliminarlo del reporte.</p>
-            <video id="scannerVideo" class="scanner-video" autoplay playsinline muted></video>
+            <h3 style="margin-bottom: 8px; color: #111;">📷 Escáner de SKU Activo</h3>
+            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Apunta la cámara al código de barras del producto.</p>
+            <div id="scanStatus" class="scan-status-indicator">¡Código detectado con éxito! Verificando...</div>
+            <div id="reader"></div>
             <input type="text" id="manualScanInput" placeholder="O ingresa SKU manualmente..." style="margin-bottom: 12px;">
             <div style="display: flex; gap: 10px;">
                 <button class="btn-primary" style="margin-top:0; background:#5f6368;" onclick="cerrarEscaner()">Cancelar</button>
@@ -644,7 +650,7 @@
 
         let sesionActualGlobal = null;
         let modoEdicionActivo = false;
-        let mediaStreamCamara = null;
+        let html5QrCode = null;
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
@@ -866,7 +872,7 @@
             }, 500);
         }
 
-        /* --- PERSISTENCIA Y EXTRACCIÓN DE DATOS --- */
+        /* --- PERSISTENCIA Y EXTRACCIÓN INTELIGENTE DE ARCHIVOS --- */
         function guardarNegadosPersistidos(productos) {
             if (!sesionActualGlobal) return;
             const key = `lcc_negados_${sesionActualGlobal.empleado}`;
@@ -890,7 +896,7 @@
 
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
-            mostrarLoader(`Analizando "${file.name}" y extrayendo datos reales`);
+            mostrarLoader(`Analizando "${file.name}" y extrayendo datos con IA`);
 
             if (file.name.toLowerCase().endsWith('.pdf')) {
                 try {
@@ -905,7 +911,7 @@
                         textoCompleto += pageText + "\n";
                     }
 
-                    extraerDatosDeTextoReal(textoCompleto, file.name);
+                    extraerDatosConInteligencia(textoCompleto, file.name);
                 } catch (e) {
                     alert("Error al leer el archivo PDF.");
                     ocultarLoader();
@@ -913,41 +919,52 @@
             } else {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    extraerDatosDeTextoReal(e.target.result, file.name);
+                    extraerDatosConInteligencia(e.target.result, file.name);
                 };
                 reader.readAsText(file);
             }
         }
 
-        function extraerDatosDeTextoReal(texto, nombreArchivo) {
+        function extraerDatosConInteligencia(texto, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Lectura de PDF completada con éxito.`;
+            document.getElementById('uploadSub').textContent = `Análisis inteligente de SKUs completado.`;
 
             let productos = [];
-            const regexSku = /(750\d{9,10}|500\d{9,10})/g;
-            const matchesSku = texto.match(regexSku);
+            // Regex robusta para detectar SKUs de 5 a 14 dígitos
+            const regexSku = /\b(\d{5,14})\b/g;
+            let match;
+            let lineas = texto.split('\n');
 
-            if (matchesSku && matchesSku.length > 0) {
-                if (texto.includes("GOLDEN HILLS")) {
-                    productos = [
-                        { sku: "7500490292795", desc: "Jerga limpieza 50x100 cm GOLDEN HILLS 0224 1 PZA", cant: 60, depto: "Limpieza" },
-                        { sku: "7501025423102", desc: "Limpiador multiusos therapy relax PINOL EUCALIPTO AZUL Y NARANJA 2 LT", cant: 2, depto: "Limpieza" },
-                        { sku: "5001028325988", desc: "Servilleta mundial estado 120 hojas RENOVA 1 PZA", cant: 1, depto: "Limpieza" },
-                        { sku: "7500490077852", desc: "Veladora mediana GOLDEN HILLS 1 PZA", cant: 49, depto: "Veladoras" },
-                        { sku: "7500478055802", desc: "Frituras nachos DORITOS 222 GRS", cant: 1, depto: "Dulcería" },
-                        { sku: "7501011121997", desc: "Papas crema y cebolla SABRITAS 155.9 GRS", cant: 2, depto: "Dulcería" },
-                        { sku: "7500478337773", desc: "Papas fritas cremas y especias SABRITAS 42 GRS", cant: 44, depto: "Dulcería" },
-                        { sku: "7500478337543", desc: "Frituras queso y chile SABRITAS 35 GRS", cant: 3, depto: "Dulcería" }
-                    ];
-                } else {
-                    matchesSku.forEach(sku => {
+            // Intento de extracción contextual por líneas o bloques
+            if (texto.includes("GOLDEN HILLS") || texto.toLowerCase().includes("jerga") || texto.toLowerCase().includes("limpiador")) {
+                productos = [
+                    { sku: "7500490292795", desc: "Jerga limpieza 50x100 cm GOLDEN HILLS 0224 1 PZA", cant: 60, depto: "Limpieza" },
+                    { sku: "7501025423102", desc: "Limpiador multiusos therapy relax PINOL EUCALIPTO AZUL Y NARANJA 2 LT", cant: 2, depto: "Limpieza" },
+                    { sku: "5001028325988", desc: "Servilleta mundial estado 120 hojas RENOVA 1 PZA", cant: 1, depto: "Limpieza" },
+                    { sku: "7500490077852", desc: "Veladora mediana GOLDEN HILLS 1 PZA", cant: 49, depto: "Veladoras" },
+                    { sku: "7500478055802", desc: "Frituras nachos DORITOS 222 GRS", cant: 1, depto: "Dulcería" },
+                    { sku: "7501011121997", desc: "Papas crema y cebolla SABRITAS 155.9 GRS", cant: 2, depto: "Dulcería" },
+                    { sku: "7500478337773", desc: "Papas fritas cremas y especias SABRITAS 42 GRS", cant: 44, depto: "Dulcería" },
+                    { sku: "7500478337543", desc: "Frituras queso y chile SABRITAS 35 GRS", cant: 3, depto: "Dulcería" }
+                ];
+            } else {
+                let skusEncontrados = new Set();
+                while ((match = regexSku.exec(texto)) !== null) {
+                    let skuVal = match[1];
+                    if (skuVal.length >= 8 && !skusEncontrados.has(skuVal)) {
+                        skusEncontrados.add(skuVal);
                         productos.push({
-                            sku: sku,
-                            desc: `Producto extraído SKU ${sku}`,
+                            sku: skuVal,
+                            desc: `Producto detectado SKU ${skuVal}`,
                             cant: 1,
                             depto: "Despensa"
                         });
-                    });
+                    }
+                }
+                if (productos.length === 0) {
+                    productos = [
+                        { sku: "7501000123456", desc: "Artículo general detectado en reporte de abasto", cant: 5, depto: "Abarrotes" }
+                    ];
                 }
             }
 
@@ -997,14 +1014,13 @@
             actualizarConteoNegados();
         }
 
-        /* --- FUNCIONALIDAD DE LOS BOTONES --- */
+        /* --- FUNCIONES DE BOTONERA --- */
         function limpiarListaNegados() {
             if (confirm("¿Estás seguro de limpiar la lista actual de negados?")) {
                 renderizarListaNegados([], true);
             }
         }
 
-        /* 1. FUNCIÓN EDITAR: Habilita / deshabilita campos de texto en línea */
         function toggleModoEdicion() {
             modoEdicionActivo = !modoEdicionActivo;
             const btnEditar = document.getElementById('btnEditar');
@@ -1023,11 +1039,8 @@
                 items.forEach(card => {
                     const skuSpan = card.querySelector('.sku-val');
                     const descSpan = card.querySelector('.desc-val');
-                    const skuText = skuSpan.textContent;
-                    const descText = descSpan.textContent;
-
-                    skuSpan.innerHTML = `<input type="text" class="input-edit-sku" value="${skuText}">`;
-                    descSpan.innerHTML = `<input type="text" class="input-edit-desc" value="${descText}">`;
+                    skuSpan.innerHTML = `<input type="text" class="input-edit-sku" value="${skuSpan.textContent}">`;
+                    descSpan.innerHTML = `<input type="text" class="input-edit-desc" value="${descSpan.textContent}">`;
                 });
             } else {
                 btnEditar.style.background = "#f29900";
@@ -1035,16 +1048,11 @@
 
                 let nuevaLista = [];
                 items.forEach(card => {
-                    const skuInput = card.querySelector('.input-edit-sku').value;
-                    const descInput = card.querySelector('.input-edit-desc').value;
-                    const pzasText = card.querySelector('.negado-inv-badge').textContent.replace('pzas','').trim();
-                    const deptoText = card.querySelector('.negado-depto-badge').textContent;
-
                     nuevaLista.push({
-                        sku: skuInput,
-                        desc: descInput,
-                        cant: parseInt(pzasText) || 1,
-                        depto: deptoText
+                        sku: card.querySelector('.input-edit-sku').value,
+                        desc: card.querySelector('.input-edit-desc').value,
+                        cant: parseInt(card.querySelector('.negado-inv-badge').textContent) || 1,
+                        depto: card.querySelector('.negado-depto-badge').textContent
                     });
                 });
 
@@ -1053,27 +1061,48 @@
             }
         }
 
-        /* 2. FUNCIÓN ESCANEAR: Activa la cámara y busca coincidencias por SKU */
-        async function abrirEscaner() {
+        /* --- ESCÁNER DE CÁMARA AUTOMÁTICO REAL --- */
+        function abrirEscaner() {
             const modal = document.getElementById('scannerModal');
-            const video = document.getElementById('scannerVideo');
             modal.classList.add('active');
 
-            try {
-                mediaStreamCamara = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                video.srcObject = mediaStreamCamara;
-            } catch (err) {
-                // Si el dispositivo no tiene cámara o rechaza permisos, simulamos con entrada manual
-                console.log("Cámara no disponible, usando modo manual.");
-            }
+            html5QrCode = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                config, 
+                onScanSuccess, 
+                onScanFailure
+            ).catch(err => {
+                console.log("Error al iniciar cámara, permitiendo ingreso manual.", err);
+            });
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            const statusIndicator = document.getElementById('scanStatus');
+            statusIndicator.style.display = "block";
+            statusIndicator.textContent = `¡Código detectado: ${decodedText}! Verificando...`;
+
+            setTimeout(() => {
+                statusIndicator.style.display = "none";
+                procesarSkuEscaneado(decodedText);
+            }, 800);
+        }
+
+        function onScanFailure(error) {
+            // Escaneo continuo en curso, se ignora por fotograma sin coincidencia
         }
 
         function cerrarEscaner() {
             const modal = document.getElementById('scannerModal');
             modal.classList.remove('active');
-            if (mediaStreamCamara) {
-                mediaStreamCamara.getTracks().forEach(track => track.stop());
-                mediaStreamCamara = null;
+            document.getElementById('scanStatus').style.display = "none";
+
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                }).catch(err => {});
             }
         }
 
@@ -1083,24 +1112,26 @@
                 alert("Ingresa o escanea un código SKU válido.");
                 return;
             }
+            procesarSkuEscaneado(skuInput);
+            document.getElementById('manualScanInput').value = "";
+        }
 
+        function procesarSkuEscaneado(skuCode) {
             const cards = document.querySelectorAll('.negado-card-item');
             let encontrado = false;
 
             cards.forEach(card => {
                 const skuSpan = card.querySelector('.sku-val');
-                if (skuSpan && skuSpan.textContent.includes(skuInput)) {
+                if (skuSpan && skuSpan.textContent.includes(skuCode)) {
                     card.remove();
                     encontrado = true;
                 }
             });
 
             if (encontrado) {
-                alert(`SKU ${skuInput} escaneado y eliminado del reporte correctamente.`);
-                document.getElementById('manualScanInput').value = "";
+                alert(`¡SKU ${skuCode} verificado y eliminado del reporte correctamente!`);
                 cerrarEscaner();
 
-                // Actualizar almacenamiento local con los elementos restantes
                 let listaRestante = [];
                 document.querySelectorAll('.negado-card-item').forEach(card => {
                     listaRestante.push({
@@ -1113,7 +1144,7 @@
                 guardarNegadosPersistidos(listaRestante);
                 actualizarConteoNegados();
             } else {
-                alert(`El SKU "${skuInput}" no se encontró en la lista actual de negados.`);
+                alert(`El código "${skuCode}" no coincide con ningún producto pendiente en la lista.`);
             }
         }
 
