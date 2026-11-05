@@ -946,7 +946,7 @@
             }
         }
 
-        /* --- PROCESAMIENTO GENERAL QUIRÚRGICO (CÓDIGO DE BARRAS Y DESCRIPCIÓN) --- */
+        /* --- PROCESAMIENTO GENERAL UNIVERSAL (SKU Y DESCRIPCIÓN LIMPIA) --- */
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
             mostrarLoader(`Analizando reporte oficial: "${file.name}"`);
@@ -968,7 +968,7 @@
                         });
                     }
 
-                    extraerSoloCodigoYDescripcionGeneral(tokensDocumento, file.name);
+                    extraerSoloCodigoYDescripcionUniversal(tokensDocumento, file.name);
                 } catch (e) {
                     alert("Error al leer el archivo PDF.");
                     ocultarLoader();
@@ -977,20 +977,20 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const tokens = e.target.result.split(/\s+/).filter(t => t.length > 0);
-                    extraerSoloCodigoYDescripcionGeneral(tokens, file.name);
+                    extraerSoloCodigoYDescripcionUniversal(tokens, file.name);
                 };
                 reader.readAsText(file);
             }
         }
 
-        function extraerSoloCodigoYDescripcionGeneral(tokens, nombreArchivo) {
+        function extraerSoloCodigoYDescripcionUniversal(tokens, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Extracción general universal de SKU y Descripción completada.`;
+            document.getElementById('uploadSub').textContent = `Extracción universal estricta completada.`;
 
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
 
-            // Palabras prohibidas universales y patrones institucionales para corte inmediato
+            // Palabras prohibidas universales para corte inmediato
             const palabrasCorteSistema = [
                 "PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS",
                 "NEGADOS", "SUCURSAL", "QUERETARO", "MILENIO", "CÓDIGO", "BARRAS", "DESCRIPCIÓN",
@@ -1017,7 +1017,6 @@
                 if (/^\d{4,14}$/.test(tokens[i])) {
                     let skuVal = tokens[i];
 
-                    // Ignorar años sueltos u otros identificadores genéricos
                     if (skuVal !== "2026" && !skuVal.startsWith("1454")) {
                         let descTokens = [];
                         let j = i + 1;
@@ -1029,24 +1028,33 @@
                             // Si hallamos otro SKU, cortamos
                             if (/^\d{4,14}$/.test(sigToken) && sigToken !== "2026" && !sigToken.startsWith("1454")) break;
 
-                            // Reglas universales de corte para eliminar fechas (ej. 05/11/2026), horas (11:09), porcentajes o textos de cabecera
+                            // Filtros estrictos universales para eliminar fechas, horas, la palabra PÁGINA, números de página o cantidades corporativas
+                            const esPaginacion = sigUpper === "PÁGINA" || sigUpper === "DE" || /^\d+$/.test(sigToken);
                             const esFechaOCoordenada = /\d{2}\/\d{2}\/\d{4}/.test(sigToken) || /\d{2}:\d{2}/.test(sigToken);
                             const esCantidadCorporativa = /^\d+(\.\d+)?%?$/.test(sigToken) || /^\d+\.\d+$/.test(sigToken);
 
+                            // Si el token es parte de la paginación partida (ej. palabra "2" o "3" después de página), evaluamos cortar
                             if (
                                 palabrasCorteSistema.includes(sigUpper) || 
                                 sigToken === "%" || 
                                 esFechaOCoordenada ||
-                                esCantidadCorporativa
+                                esCantidadCorporativa ||
+                                (esPaginacion && (descTokens.includes("PÁGINA") || descTokens.length > 0 && descTokens[descTokens.length-1].toUpperCase() === "PÁGINA"))
                             ) {
+                                // Si detectamos la palabra PÁGINA en los tokens acumulados recientes, cortamos todo lo sobrante
                                 break;
                             }
+
+                            if (sigUpper === "PÁGINA") break;
 
                             descTokens.push(sigToken);
                             j++;
                         }
 
-                        let descVal = descTokens.join(" ").trim();
+                        // Limpieza general post-unión por si quedó alguna traza de la palabra PÁGINA o números de página pegados
+                        let descVal = descTokens.join(" ")
+                            .replace(/PÁGINA.*$/i, "")
+                            .trim();
 
                         if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
                             nuevosProductos.push({
