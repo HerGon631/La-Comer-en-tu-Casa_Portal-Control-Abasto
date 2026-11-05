@@ -946,58 +946,52 @@
             }
         }
 
-        /* --- PROCESAMIENTO POR TABLAS Y POSICIONAMIENTO DEL PDF --- */
+        /* --- PROCESAMIENTO ROBUTO POR SECCIONES Y TABLAS --- */
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
-            mostrarLoader(`Analizando tablas del reporte: "${file.name}"`);
+            mostrarLoader(`Analizando reporte oficial: "${file.name}"`);
 
             if (file.name.toLowerCase().endsWith('.pdf')) {
                 try {
                     const arrayBuffer = await file.arrayBuffer();
                     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    let itemsPagina = [];
+                    let tokensDocumento = [];
 
+                    // Extraemos los tokens de texto ordenados secuencialmente por página
                     for (let i = 1; i <= pdf.numPages; i++) {
                         const page = await pdf.getPage(i);
                         const content = await page.getTextContent();
                         content.items.forEach(item => {
                             const str = item.str.trim();
                             if (str.length > 0) {
-                                itemsPagina.push({
-                                    text: str,
-                                    x: item.transform[4],
-                                    y: item.transform[5]
-                                });
+                                tokensDocumento.push(str);
                             }
                         });
                     }
 
-                    // Ordenamos de arriba a abajo y de izquierda a derecha
-                    itemsPagina.sort((a, b) => b.y - a.y || a.x - b.x);
-
-                    extraerDatosPorTablasYSecciones(itemsPagina, file.name);
+                    extraerDatosPorSeccionesYTablas(tokensDocumento, file.name);
                 } catch (e) {
-                    alert("Error al procesar las tablas del PDF.");
+                    alert("Error al leer el archivo PDF.");
                     ocultarLoader();
                 }
             } else {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const tokensLineas = e.target.result.split(/\s+/).map(t => ({ text: t }));
-                    extraerDatosPorTablasYSecciones(tokensLineas, file.name);
+                    const tokens = e.target.result.split(/\s+/).filter(t => t.length > 0);
+                    extraerDatosPorSeccionesYTablas(tokens, file.name);
                 };
                 reader.readAsText(file);
             }
         }
 
-        function extraerDatosPorTablasYSecciones(items, nombreArchivo) {
+        function extraerDatosPorSeccionesYTablas(tokens, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
             document.getElementById('uploadSub').textContent = `Análisis por secciones y tablas completado con éxito.`;
 
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
 
-            // Palabras de relleno o encabezados que deben ser ignoradas estrictamente en las descripciones
+            // Palabras clave de encabezados corporativos que debemos omitir estrictamente en la descripción
             const encabezadosIgnorar = [
                 "GRUPO", "LACOMER", "REPORTE", "DE", "AUDITORÍA", "ARTÍCULOS", "NEGADOS", "LCC",
                 "COMERCIAL", "CITY", "FRESKO", "SUCURSAL", "QUERETARO", "MILENIO", "FOLIO", "DIVISIÓN",
@@ -1007,40 +1001,38 @@
                 "MALA", "CALIDAD", "CADUCADO", "POR", "OFERTA", "CAMBIO", "FISICO", "PÁGINA", "S.DE", "R.L.", "C.V."
             ];
 
-            let tokens = items.map(item => item.text);
             let i = 0;
-
             while (i < tokens.length) {
-                let tUpper = tokens[i].toUpperCase();
+                let tokenUpper = tokens[i].toUpperCase();
 
-                // 1. Identificación de Secciones / Departamentos en el documento
-                if (tUpper.includes("ALIMENTACION") || tUpper.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
-                else if (tUpper.includes("PANADERIA") || tUpper.includes("PANADERÍA")) deptoActual = "Panadería";
-                else if (tUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
-                else if (tUpper.includes("HIGIENE")) deptoActual = "Higiene y Belleza";
-                else if (tUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
-                else if (tUpper.includes("HOGAR")) deptoActual = "Hogar";
-                else if (tUpper.includes("MARCA")) deptoActual = "Marca Propia";
+                // 1. Detección de Secciones / Departamentos en el flujo de la tabla
+                if (tokenUpper.includes("ALIMENTACION") || tokenUpper.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
+                else if (tokenUpper.includes("PANADERIA") || tokenUpper.includes("PANADERÍA")) deptoActual = "Panadería";
+                else if (tokenUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
+                else if (tokenUpper.includes("HIGIENE")) deptoActual = "Higiene y Belleza";
+                else if (tokenUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
+                else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
+                else if (tokenUpper.includes("MARCA")) deptoActual = "Marca Propia";
 
-                // 2. Detección estricta de SKU (Códigos de barras de 4 a 14 dígitos que inician filas)
+                // 2. Detección estricta de SKU (Código de barras de 4 a 14 dígitos que inicia la fila)
                 if (/^\d{4,14}$/.test(tokens[i])) {
                     let skuVal = tokens[i];
 
-                    // Excluimos años de cabecera o folios conocidos
+                    // Excluimos años (ej. 2026), folios administrativos o números de encabezado
                     if (skuVal !== "2026" && !skuVal.startsWith("1454") && !encabezadosIgnorar.includes(skuVal)) {
                         let descTokens = [];
                         let j = i + 1;
 
-                        // Recolectamos la descripción asociada a este SKU hasta encontrar el siguiente SKU o sección
+                        // Extraemos las palabras que pertenecen a la Descripción del Producto
                         while (j < tokens.length) {
                             let sigToken = tokens[j];
                             let sigUpper = sigToken.toUpperCase();
 
-                            // Si topamos con otro SKU o encabezado de sección, cerramos el bloque
+                            // Si topamos con el siguiente SKU o un encabezado de sección/folio, cerramos el bloque
                             if (/^\d{4,14}$/.test(sigToken) && sigToken !== "2026" && !sigToken.startsWith("1454")) break;
                             if (sigUpper.includes("FOLIO") || sigUpper.includes("DIVISIÓN") || sigUpper.includes("ESTATUS")) break;
 
-                            // Omitimos números aislados de cantidades o porcentajes
+                            // Filtramos porcentajes, números aislados de cantidades y encabezados
                             if (!/^\d+(\.\d+)?%?$/.test(sigToken) && !encabezadosIgnorar.includes(sigUpper)) {
                                 descTokens.push(sigToken);
                             }
@@ -1053,7 +1045,7 @@
                             nuevosProductos.push({
                                 sku: skuVal,
                                 desc: descVal.toUpperCase(),
-                                cant: "", // Inventario dejado completamente vacío para llenado manual
+                                cant: "", // Dejado completamente vacío para llenado manual en piso
                                 depto: deptoActual,
                                 img: "pelicano-logo.png"
                             });
