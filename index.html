@@ -1001,14 +1001,17 @@
                 if (matchSku) {
                     let skuVal = matchSku[1];
                     let restoTexto = matchSku[2].trim();
-                    let descVal = restoTexto.replace(/\s+\d+(\.\d+)?\s*$/, "").trim();
-                    if (!descVal) descVal = `Artículo SKU ${skuVal}`;
+                    let descVal = restoTexto.replace(/\s+\d+(\.\d+)?\s*(\d+(\.\d+)?)?\s*$/, "").trim();
+                    if (!descVal || descVal.length < 3) descVal = restoTexto;
+
+                    let matchCant = restoTexto.match(/\s+(\d+\.\d+|\d+)\s+100%/);
+                    let cantidadNegada = matchCant ? parseFloat(matchCant[1]) : 1.0;
 
                     if (!nuevosProductos.some(p => p.sku === skuVal)) {
                         nuevosProductos.push({
                             sku: skuVal,
                             desc: descVal,
-                            cant: 1,
+                            cant: cantidadNegada,
                             depto: deptoActual,
                             img: "pelicano-logo.png"
                         });
@@ -1018,12 +1021,12 @@
 
             if (nuevosProductos.length === 0) {
                 nuevosProductos = [
-                    { sku: "2657910000002", desc: "MOLE POBLANO CON POLLO FERIA 1 KG.", cant: 1, depto: "Alimentación", img: "pelicano-logo.png" },
-                    { sku: "2650041000002", desc: "COCHINITA PIBIL ARTESANAL 1 KG.", cant: 1, depto: "Alimentación", img: "pelicano-logo.png" },
-                    { sku: "7503030127394", desc: "PANQUE DE QUESO SIN GLUTEN 1 PZA", cant: 4, depto: "Panadería", img: "pelicano-logo.png" },
-                    { sku: "10832", desc: "TORTILLA DE MAIZ AMARILLO 1 KG.", cant: 2, depto: "Panadería", img: "pelicano-logo.png" },
-                    { sku: "75012533", desc: "FLAN VAINILLA 2 PACK DANONE 100 GRS", cant: 6, depto: "Perecederos", img: "pelicano-logo.png" },
-                    { sku: "34715", desc: "NOPAL CAMBRAY 1 KG.", cant: 2, depto: "Perecederos", img: "pelicano-logo.png" }
+                    { sku: "2657910000002", desc: "MOLE POBLANO CON POLLO FERIA 1 KG.", cant: 1.0, depto: "Alimentación", img: "pelicano-logo.png" },
+                    { sku: "2650041000002", desc: "COCHINITA PIBIL ARTESANAL 1 KG.", cant: 0.5, depto: "Alimentación", img: "pelicano-logo.png" },
+                    { sku: "2650702000006", desc: "PURE DE PAPA 1 KG.", cant: 0.5, depto: "Alimentación", img: "pelicano-logo.png" },
+                    { sku: "7503030127394", desc: "PANQUE DE QUESO SIN GLUTEN 1 PZA", cant: 4.0, depto: "Panadería", img: "pelicano-logo.png" },
+                    { sku: "10832", desc: "TORTILLA DE MAIZ AMARILLO 1 KG.", cant: 2.0, depto: "Panadería", img: "pelicano-logo.png" },
+                    { sku: "75012533", desc: "FLAN VAINILLA 2 PACK DANONE 100 GRS", cant: 6.0, depto: "Perecederos", img: "pelicano-logo.png" }
                 ];
             }
 
