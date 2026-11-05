@@ -239,7 +239,7 @@
         .submenu-item:hover { color: var(--mexican-pink); background-color: rgba(228, 0, 124, 0.08); }
         .submenu-item.active { color: var(--mexican-pink); font-weight: bold; background-color: rgba(228, 0, 124, 0.12); }
 
-        /* --- CARRUSEL MARQUESINA (LENTO Y TRANQUILO) --- */
+        /* --- CARRUSEL MARQUESINA --- */
         .ticker-container {
             background: linear-gradient(90deg, #fff0f5 0%, #ffe4ee 100%);
             border-bottom: 2px solid rgba(228, 0, 124, 0.15);
@@ -301,12 +301,11 @@
             background-color: var(--mexican-pink); color: white; border: none; padding: 9px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(228, 0, 124, 0.25);
         }
 
-        /* --- TABLA EXTENDIDA Y NUEVOS BOTONES --- */
+        /* --- TABLA Y BOTONERA --- */
         .negados-header-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; width: 100%; }
         .negados-title { font-size: 15px; font-weight: bold; color: #111; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
         .negados-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
-        /* NUEVA BOTONERA ORDENADA DE IZQUIERDA A DERECHA */
         .btn-action-limpiar { background-color: #5f6368; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
         .btn-action-editar { background-color: #f29900; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
         .btn-action-escanear { background-color: #1a73e8; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
@@ -333,44 +332,35 @@
         .negado-card-left { display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0; }
         .negado-img-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; background-color: #fff; flex-shrink: 0; }
         .negado-details { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex-grow: 1; }
+        
         .negado-sku { font-size: 11px; font-weight: bold; color: var(--label-color); letter-spacing: 0.5px; }
         .negado-desc { font-size: 13px; font-weight: bold; color: var(--text-color); word-break: break-word; }
-        .negado-card-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 
+        /* ESTILOS PARA EDICIÓN EN LÍNEA */
+        .input-edit-sku { font-size: 11px; font-weight: bold; padding: 2px 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 130px; }
+        .input-edit-desc { font-size: 13px; font-weight: bold; padding: 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 100%; }
+
+        .negado-card-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
         .negado-inv-badge { background-color: #f1f3f4; color: #3c4043; padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
         .negado-inv-dot { width: 7px; height: 7px; border-radius: 50%; background-color: #34a853; }
         .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; white-space: nowrap; }
 
+        /* MODAL DE ESCÁNER DE CÁMARA */
+        .scanner-modal {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
+        }
+        .scanner-modal.active { opacity: 1; visibility: visible; }
+        .scanner-box { background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; }
+        .scanner-video { width: 100%; height: 220px; background: #000; border-radius: 10px; margin-bottom: 15px; object-fit: cover; }
+
         @media (max-width: 600px) {
-            .upload-bar-compact {
-                flex-direction: column;
-                align-items: stretch;
-                text-align: center;
-                gap: 15px;
-            }
-            .upload-info {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-            .btn-upload-trigger {
-                width: 100%;
-                text-align: center;
-            }
-            .negado-card-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            .negado-card-left {
-                width: 100%;
-            }
-            .negado-card-right {
-                width: 100%;
-                justify-content: space-between;
-                border-top: 1px dashed #eee;
-                padding-top: 6px;
-            }
+            .upload-bar-compact { flex-direction: column; align-items: stretch; text-align: center; gap: 15px; }
+            .upload-info { flex-direction: column; align-items: center; text-align: center; }
+            .btn-upload-trigger { width: 100%; text-align: center; }
+            .negado-card-item { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .negado-card-left { width: 100%; }
+            .negado-card-right { width: 100%; justify-content: space-between; border-top: 1px dashed #eee; padding-top: 6px; }
         }
 
         .empty-negados { padding: 40px 20px; text-align: center; color: var(--label-color); font-size: 14px; }
@@ -387,6 +377,20 @@
             <img id="loaderImg" class="loader-logo-img" src="pelicano-logo.png" alt="Cargando..." onerror="this.onerror=null; this.src='pelicano.jpg';">
         </div>
         <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
+    </div>
+
+    <!-- MODAL DE ESCÁNER DE CÁMARA -->
+    <div id="scannerModal" class="scanner-modal">
+        <div class="scanner-box">
+            <h3 style="margin-bottom: 10px; color: #111;">📷 Escáner de SKU</h3>
+            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 15px;">Apunta la cámara al código de barras o ingresa el SKU para eliminarlo del reporte.</p>
+            <video id="scannerVideo" class="scanner-video" autoplay playsinline muted></video>
+            <input type="text" id="manualScanInput" placeholder="O ingresa SKU manualmente..." style="margin-bottom: 12px;">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" style="margin-top:0; background:#5f6368;" onclick="cerrarEscaner()">Cancelar</button>
+                <button class="btn-primary" style="margin-top:0;" onclick="procesarEscaneoManual()">Procesar SKU</button>
+            </div>
+        </div>
     </div>
 
     <!-- PANTALLA DE LOGIN -->
@@ -536,10 +540,9 @@
                                 <span id="countNegados" style="font-size:12px; color:var(--mexican-pink); background:rgba(228,0,124,0.1); padding:2px 8px; border-radius:12px;">0 productos</span>
                             </div>
                             <div class="negados-actions">
-                                <!-- BOTONERA NUEVA ORDENADA: Limpiar, editar, escanear, confirmar -->
                                 <button class="btn-action-limpiar" onclick="limpiarListaNegados()">🧹 Limpiar</button>
-                                <button class="btn-action-editar" onclick="editarListaNegados()">✏️ Editar</button>
-                                <button class="btn-action-escanear" onclick="escanearDocumento()">📷 Escanear</button>
+                                <button class="btn-action-editar" id="btnEditar" onclick="toggleModoEdicion()">✏️ Editar</button>
+                                <button class="btn-action-escanear" onclick="abrirEscaner()">📷 Escanear</button>
                                 <button class="btn-action-confirmar" onclick="confirmarReporte()">✓ Confirmar</button>
                                 
                                 <select class="filter-select" id="filterDepto" onchange="filtrarNegadosPorDepto(this.value)">
@@ -640,6 +643,8 @@
         const loaderText = document.getElementById('loaderText');
 
         let sesionActualGlobal = null;
+        let modoEdicionActivo = false;
+        let mediaStreamCamara = null;
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
@@ -730,7 +735,6 @@
                     const itemMenu = document.querySelector(`.menu-item[data-section="${seccionActiva}"]`);
                     cambiarSeccion(seccionActiva, tituloActivo, itemMenu, false);
 
-                    // CARGAR DATOS PERSISTIDOS DEL USUARIO SI EXISTEN
                     cargarNegadosPersistidos(datos.empleado);
 
                     iniciarControlInactividad();
@@ -862,7 +866,7 @@
             }, 500);
         }
 
-        /* --- PERSISTENCIA Y MOTOR DE EXTRACCIÓN REAL --- */
+        /* --- PERSISTENCIA Y EXTRACCIÓN DE DATOS --- */
         function guardarNegadosPersistidos(productos) {
             if (!sesionActualGlobal) return;
             const key = `lcc_negados_${sesionActualGlobal.empleado}`;
@@ -968,17 +972,18 @@
                 guardarNegadosPersistidos(lista);
             }
 
-            lista.forEach(item => {
+            lista.forEach((item, index) => {
                 const card = document.createElement('div');
                 card.className = 'negado-card-item';
                 card.setAttribute('data-depto', item.depto);
+                card.setAttribute('data-index', index);
 
                 card.innerHTML = `
                     <div class="negado-card-left">
                         <img src="pelicano-logo.png" alt="Producto" class="negado-img-thumb" onerror="this.src='pelicano.jpg'">
                         <div class="negado-details">
-                            <span class="negado-sku">SKU: ${item.sku}</span>
-                            <span class="negado-desc">${item.desc}</span>
+                            <span class="negado-sku">SKU: <span class="sku-val">${item.sku}</span></span>
+                            <span class="negado-desc"><span class="desc-val">${item.desc}</span></span>
                         </div>
                     </div>
                     <div class="negado-card-right">
@@ -992,19 +997,124 @@
             actualizarConteoNegados();
         }
 
-        /* --- ACCIONES DE LA BOTONERA NUEVA --- */
+        /* --- FUNCIONALIDAD DE LOS BOTONES --- */
         function limpiarListaNegados() {
             if (confirm("¿Estás seguro de limpiar la lista actual de negados?")) {
                 renderizarListaNegados([], true);
             }
         }
 
-        function editarListaNegados() {
-            alert("Modo de edición de registros activado.");
+        /* 1. FUNCIÓN EDITAR: Habilita / deshabilita campos de texto en línea */
+        function toggleModoEdicion() {
+            modoEdicionActivo = !modoEdicionActivo;
+            const btnEditar = document.getElementById('btnEditar');
+            const items = document.querySelectorAll('.negado-card-item');
+
+            if (items.length === 0) {
+                alert("No hay elementos para editar en la lista.");
+                modoEdicionActivo = false;
+                return;
+            }
+
+            if (modoEdicionActivo) {
+                btnEditar.style.background = "#137333";
+                btnEditar.innerHTML = "💾 Guardar Edición";
+                
+                items.forEach(card => {
+                    const skuSpan = card.querySelector('.sku-val');
+                    const descSpan = card.querySelector('.desc-val');
+                    const skuText = skuSpan.textContent;
+                    const descText = descSpan.textContent;
+
+                    skuSpan.innerHTML = `<input type="text" class="input-edit-sku" value="${skuText}">`;
+                    descSpan.innerHTML = `<input type="text" class="input-edit-desc" value="${descText}">`;
+                });
+            } else {
+                btnEditar.style.background = "#f29900";
+                btnEditar.innerHTML = "✏️ Editar";
+
+                let nuevaLista = [];
+                items.forEach(card => {
+                    const skuInput = card.querySelector('.input-edit-sku').value;
+                    const descInput = card.querySelector('.input-edit-desc').value;
+                    const pzasText = card.querySelector('.negado-inv-badge').textContent.replace('pzas','').trim();
+                    const deptoText = card.querySelector('.negado-depto-badge').textContent;
+
+                    nuevaLista.push({
+                        sku: skuInput,
+                        desc: descInput,
+                        cant: parseInt(pzasText) || 1,
+                        depto: deptoText
+                    });
+                });
+
+                renderizarListaNegados(nuevaLista, true);
+                alert("Cambios guardados exitosamente.");
+            }
         }
 
-        function escanearDocumento() {
-            document.getElementById('fileInput').click();
+        /* 2. FUNCIÓN ESCANEAR: Activa la cámara y busca coincidencias por SKU */
+        async function abrirEscaner() {
+            const modal = document.getElementById('scannerModal');
+            const video = document.getElementById('scannerVideo');
+            modal.classList.add('active');
+
+            try {
+                mediaStreamCamara = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = mediaStreamCamara;
+            } catch (err) {
+                // Si el dispositivo no tiene cámara o rechaza permisos, simulamos con entrada manual
+                console.log("Cámara no disponible, usando modo manual.");
+            }
+        }
+
+        function cerrarEscaner() {
+            const modal = document.getElementById('scannerModal');
+            modal.classList.remove('active');
+            if (mediaStreamCamara) {
+                mediaStreamCamara.getTracks().forEach(track => track.stop());
+                mediaStreamCamara = null;
+            }
+        }
+
+        function procesarEscaneoManual() {
+            const skuInput = document.getElementById('manualScanInput').value.trim();
+            if (!skuInput) {
+                alert("Ingresa o escanea un código SKU válido.");
+                return;
+            }
+
+            const cards = document.querySelectorAll('.negado-card-item');
+            let encontrado = false;
+
+            cards.forEach(card => {
+                const skuSpan = card.querySelector('.sku-val');
+                if (skuSpan && skuSpan.textContent.includes(skuInput)) {
+                    card.remove();
+                    encontrado = true;
+                }
+            });
+
+            if (encontrado) {
+                alert(`SKU ${skuInput} escaneado y eliminado del reporte correctamente.`);
+                document.getElementById('manualScanInput').value = "";
+                cerrarEscaner();
+
+                // Actualizar almacenamiento local con los elementos restantes
+                let listaRestante = [];
+                document.querySelectorAll('.negado-card-item').forEach(card => {
+                    listaRestante.push({
+                        sku: card.querySelector('.sku-val').textContent,
+                        desc: card.querySelector('.desc-val').textContent,
+                        cant: parseInt(card.querySelector('.negado-inv-badge').textContent),
+                        depto: card.querySelector('.negado-depto-badge').textContent
+                    });
+                });
+                guardarNegadosPersistidos(listaRestante);
+                actualizarConteoNegados();
+            } else {
+                alert(`El SKU "${skuInput}" no se encontró en la lista actual de negados.`);
+            }
         }
 
         function confirmarReporte() {
@@ -1028,8 +1138,6 @@
                 htmlResumen += `</div>`;
 
                 contenedorActivos.innerHTML = htmlResumen;
-                
-                // ÚNICAMENTE AQUÍ SE ELIMINA LA INFORMACIÓN AL CONFIRMAR EL REPORTE
                 renderizarListaNegados([], true);
 
                 const subReportesActivos = document.querySelectorAll('#submenuReportes .submenu-item')[1];
