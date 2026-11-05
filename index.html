@@ -946,7 +946,7 @@
             }
         }
 
-        /* --- PROCESAMIENTO QUIRÚRGICO EXCLUSIVO (CÓDIGO DE BARRAS Y DESCRIPCIÓN) --- */
+        /* --- PROCESAMIENTO GENERAL QUIRÚRGICO (CÓDIGO DE BARRAS Y DESCRIPCIÓN) --- */
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
             mostrarLoader(`Analizando reporte oficial: "${file.name}"`);
@@ -968,7 +968,7 @@
                         });
                     }
 
-                    extraerSoloCodigoYDescripcion(tokensDocumento, file.name);
+                    extraerSoloCodigoYDescripcionGeneral(tokensDocumento, file.name);
                 } catch (e) {
                     alert("Error al leer el archivo PDF.");
                     ocultarLoader();
@@ -977,34 +977,34 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const tokens = e.target.result.split(/\s+/).filter(t => t.length > 0);
-                    extraerSoloCodigoYDescripcion(tokens, file.name);
+                    extraerSoloCodigoYDescripcionGeneral(tokens, file.name);
                 };
                 reader.readAsText(file);
             }
         }
 
-        function extraerSoloCodigoYDescripcion(tokens, nombreArchivo) {
+        function extraerSoloCodigoYDescripcionGeneral(tokens, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Extracción exclusiva de Código de Barras y Descripción completada.`;
+            document.getElementById('uploadSub').textContent = `Extracción general universal de SKU y Descripción completada.`;
 
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
 
-            // Palabras prohibidas que cortan inmediatamente la descripción del artículo
+            // Palabras prohibidas universales y patrones institucionales para corte inmediato
             const palabrasCorteSistema = [
                 "PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS",
                 "NEGADOS", "SUCURSAL", "QUERETARO", "MILENIO", "CÓDIGO", "BARRAS", "DESCRIPCIÓN",
                 "ARTÍCULO", "DETALLE", "INCIDENCIA", "EXHIBIDO", "BODEGA", "PROCESO", "MERMA",
                 "DEVOLUCIÓN", "ACTULIZACIÓN", "STOCK", "MALA", "CALIDAD", "CADUCADO", "CAMBIO",
                 "FISICO", "PEDIDA", "ENTREGADA", "NEGADA", "DIVISIÓN", "ESTATUS", "FECHA", "CREACIÓN",
-                "FOLIO", "FINALIZADO", "CANTIDAD", "%"
+                "FOLIO", "FINALIZADO", "CANTIDAD", "%", "S.DE", "R.L.", "C.V."
             ];
 
             let i = 0;
             while (i < tokens.length) {
                 let tokenUpper = tokens[i].toUpperCase();
 
-                // Detección de Departamentos en el reporte
+                // Detección general de Departamentos
                 if (tokenUpper.includes("ALIMENTACION") || tokenUpper.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
                 else if (tokenUpper.includes("PANADERIA") || tokenUpper.includes("PANADERÍA")) deptoActual = "Panadería";
                 else if (tokenUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
@@ -1013,11 +1013,11 @@
                 else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
                 else if (tokenUpper.includes("MARCA")) deptoActual = "Marca Propia";
 
-                // Detección estricta de Código de Barras / SKU (4 a 14 dígitos numéricos)
+                // Detección general de SKU (4 a 14 dígitos numéricos)
                 if (/^\d{4,14}$/.test(tokens[i])) {
                     let skuVal = tokens[i];
 
-                    // Ignorar años de cabecera como 2026 o folios administrativos específicos
+                    // Ignorar años sueltos u otros identificadores genéricos
                     if (skuVal !== "2026" && !skuVal.startsWith("1454")) {
                         let descTokens = [];
                         let j = i + 1;
@@ -1026,15 +1026,18 @@
                             let sigToken = tokens[j];
                             let sigUpper = sigToken.toUpperCase();
 
-                            // Si hallamos otro código de barras, terminamos la descripción actual
+                            // Si hallamos otro SKU, cortamos
                             if (/^\d{4,14}$/.test(sigToken) && sigToken !== "2026" && !sigToken.startsWith("1454")) break;
 
-                            // Si hallamos palabras del sistema, porcentajes o números decimales de cantidad corporativa (ej. 0.5, 0.0), cortamos de inmediato
+                            // Reglas universales de corte para eliminar fechas (ej. 05/11/2026), horas (11:09), porcentajes o textos de cabecera
+                            const esFechaOCoordenada = /\d{2}\/\d{2}\/\d{4}/.test(sigToken) || /\d{2}:\d{2}/.test(sigToken);
+                            const esCantidadCorporativa = /^\d+(\.\d+)?%?$/.test(sigToken) || /^\d+\.\d+$/.test(sigToken);
+
                             if (
                                 palabrasCorteSistema.includes(sigUpper) || 
                                 sigToken === "%" || 
-                                /^\d+(\.\d+)?%?$/.test(sigToken) || 
-                                /^\d+\.\d+$/.test(sigToken)
+                                esFechaOCoordenada ||
+                                esCantidadCorporativa
                             ) {
                                 break;
                             }
@@ -1049,7 +1052,7 @@
                             nuevosProductos.push({
                                 sku: skuVal,
                                 desc: descVal.toUpperCase(),
-                                cant: "", // Vacío por defecto para llenado manual en piso
+                                cant: "", // Vacío por defecto para llenado manual general en piso
                                 depto: deptoActual,
                                 img: "pelicano-logo.png"
                             });
