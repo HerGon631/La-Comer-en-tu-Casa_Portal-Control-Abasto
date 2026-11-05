@@ -239,7 +239,7 @@
         .submenu-item:hover { color: var(--mexican-pink); background-color: rgba(228, 0, 124, 0.08); }
         .submenu-item.active { color: var(--mexican-pink); font-weight: bold; background-color: rgba(228, 0, 124, 0.12); }
 
-        /* --- CARRUSEL MARQUESINA (LENTO Y AJUSTADO POR CANTIDAD DE DATOS) --- */
+        /* --- CARRUSEL MARQUESINA (LENTO Y TRANQUILO) --- */
         .ticker-container {
             background: linear-gradient(90deg, #fff0f5 0%, #ffe4ee 100%);
             border-bottom: 2px solid rgba(228, 0, 124, 0.15);
@@ -255,21 +255,8 @@
         }
 
         .ticker-container.hidden { display: none; }
-
-        .ticker-track {
-            display: inline-block;
-            white-space: nowrap;
-            will-change: transform;
-        }
-
-        .ticker-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-right: 60px;
-            font-size: 13px;
-        }
-
+        .ticker-track { display: inline-block; white-space: nowrap; will-change: transform; }
+        .ticker-item { display: inline-flex; align-items: center; gap: 10px; margin-right: 60px; font-size: 13px; }
         .ticker-stars { font-size: 12px; }
         .ticker-comment { font-style: italic; }
         .ticker-client { font-weight: bold; color: var(--mexican-pink); }
@@ -289,12 +276,12 @@
         .report-subpane { display: none; width: 100%; }
         .report-subpane.active { display: block; }
 
-        /* --- BARRA DE CARGA COMPACTA RESPONSIVA --- */
+        /* --- BARRA DE CARGA COMPACTA --- */
         .upload-bar-compact {
             background: linear-gradient(135deg, #ffffff 0%, #fff0f5 100%);
             border: 2px dashed rgba(228, 0, 124, 0.4);
             border-radius: 12px;
-            padding: 12px 16px;
+            padding: 14px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -303,29 +290,33 @@
             width: 100%;
         }
 
-        .upload-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
-        .upload-icon { font-size: 22px; flex-shrink: 0; }
-        .upload-text-title { font-size: 13px; font-weight: bold; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .upload-text-sub { font-size: 11px; color: var(--label-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .upload-info { display: flex; align-items: center; gap: 12px; min-width: 0; flex-grow: 1; }
+        .upload-icon { font-size: 26px; flex-shrink: 0; }
+        
+        .upload-text-container { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .upload-text-title { font-size: 13px; font-weight: bold; color: var(--text-color); white-space: normal; word-break: break-word; }
+        .upload-text-sub { font-size: 11px; color: var(--label-color); white-space: normal; word-break: break-word; line-height: 1.3; }
 
         .btn-upload-trigger {
-            background-color: var(--mexican-pink); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(228, 0, 124, 0.25);
+            background-color: var(--mexican-pink); color: white; border: none; padding: 9px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(228, 0, 124, 0.25);
         }
 
-        /* --- TABLA EXTENDIDA ADAPTADA A MÓVIL (CORRECCIÓN DE ANCHO) --- */
+        /* --- TABLA EXTENDIDA Y NUEVOS BOTONES --- */
         .negados-header-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; width: 100%; }
         .negados-title { font-size: 15px; font-weight: bold; color: #111; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
         .negados-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
-        .btn-action-accept { background-color: #137333; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(19, 115, 51, 0.25); }
-        .btn-action-refresh { background-color: #1a73e8; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+        /* NUEVA BOTONERA ORDENADA DE IZQUIERDA A DERECHA */
+        .btn-action-limpiar { background-color: #5f6368; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-action-editar { background-color: #f29900; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-action-escanear { background-color: #1a73e8; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-action-confirmar { background-color: #137333; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(19, 115, 51, 0.25); }
 
         .filter-select { padding: 7px 10px; border-radius: 8px; border: 1px solid #dadce0; font-size: 12px; font-weight: 600; color: var(--label-color); background-color: #fff; width: auto; max-width: 100%; }
 
         .negados-table-container { max-height: 580px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 12px; background: #fafafa; padding: 8px; width: 100%; }
         .negados-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 
-        /* TARJETAS COMPLETAS ADAPTABLES (CORRECCIÓN DE DESBORDAMIENTO) */
         .negado-card-item { 
             background: white; 
             border-radius: 10px; 
@@ -349,10 +340,23 @@
         .negado-inv-badge { background-color: #f1f3f4; color: #3c4043; padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
         .negado-inv-dot { width: 7px; height: 7px; border-radius: 50%; background-color: #34a853; }
         .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; white-space: nowrap; }
-        .btn-delete-row { background: none; border: none; color: #d93025; font-size: 18px; cursor: pointer; padding: 2px; border-radius: 50%; flex-shrink: 0; }
 
-        /* CORRECCIÓN ESPECÍFICA PARA PANTALLAS DE CELULAR (< 600PX) */
         @media (max-width: 600px) {
+            .upload-bar-compact {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+                gap: 15px;
+            }
+            .upload-info {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .btn-upload-trigger {
+                width: 100%;
+                text-align: center;
+            }
             .negado-card-item {
                 flex-direction: column;
                 align-items: flex-start;
@@ -366,14 +370,6 @@
                 justify-content: space-between;
                 border-top: 1px dashed #eee;
                 padding-top: 6px;
-            }
-            .upload-bar-compact {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .btn-upload-trigger {
-                width: 100%;
-                text-align: center;
             }
         }
 
@@ -454,7 +450,7 @@
             </div>
         </header>
 
-        <!-- CARRUSEL MARQUESINA (LENTO Y PAUSADO) -->
+        <!-- CARRUSEL MARQUESINA -->
         <div class="ticker-container" id="tickerContainer">
             <div class="ticker-track" id="tickerTrack"></div>
         </div>
@@ -525,9 +521,9 @@
                         <div class="upload-bar-compact" id="dropArea">
                             <div class="upload-info">
                                 <span class="upload-icon">📄</span>
-                                <div>
+                                <div class="upload-text-container">
                                     <div class="upload-text-title" id="uploadTitle">Arrastra un archivo o haz clic para examinar</div>
-                                    <div class="upload-text-sub" id="uploadSub">El sistema extraerá los SKUs y descripciones del documento PDF/Excel</div>
+                                    <div class="upload-text-sub" id="uploadSub">Sube el documento PDF o Excel del reporte de negados</div>
                                 </div>
                             </div>
                             <input type="file" id="fileInput" accept=".pdf,.xlsx,.csv,.txt" style="display:none;" onchange="procesarArchivoAdjunto(this.files[0])">
@@ -540,10 +536,14 @@
                                 <span id="countNegados" style="font-size:12px; color:var(--mexican-pink); background:rgba(228,0,124,0.1); padding:2px 8px; border-radius:12px;">0 productos</span>
                             </div>
                             <div class="negados-actions">
-                                <button class="btn-action-accept" onclick="aceptarImportacion()">✓ Aceptar</button>
-                                <button class="btn-action-refresh" onclick="refreshExtraccion()">🔄 Refresh</button>
+                                <!-- BOTONERA NUEVA ORDENADA: Limpiar, editar, escanear, confirmar -->
+                                <button class="btn-action-limpiar" onclick="limpiarListaNegados()">🧹 Limpiar</button>
+                                <button class="btn-action-editar" onclick="editarListaNegados()">✏️ Editar</button>
+                                <button class="btn-action-escanear" onclick="escanearDocumento()">📷 Escanear</button>
+                                <button class="btn-action-confirmar" onclick="confirmarReporte()">✓ Confirmar</button>
+                                
                                 <select class="filter-select" id="filterDepto" onchange="filtrarNegadosPorDepto(this.value)">
-                                    <option value="todos">Filtrar por departamento</option>
+                                    <option value="todos">Filtrar por depto.</option>
                                     <option value="Abarrotes">Abarrotes</option>
                                     <option value="Limpieza">Limpieza</option>
                                     <option value="Despensa">Despensa</option>
@@ -639,7 +639,7 @@
         const globalLoader = document.getElementById('globalLoader');
         const loaderText = document.getElementById('loaderText');
 
-        let ultimoArchivoSubido = null;
+        let sesionActualGlobal = null;
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
@@ -683,12 +683,8 @@
                 });
 
                 tickerTrack.innerHTML = itemsHtml;
-
-                // VELOCIDAD LENTA Y TRANQUILA (14 SEGUNDOS POR CADA COMENTARIO)
                 const totalElementos = lista.length;
-                const segundosPorElemento = 14; 
-                const duracionTotal = Math.max(totalElementos * segundosPorElemento, 40);
-
+                const duracionTotal = Math.max(totalElementos * 14, 40);
                 tickerTrack.style.animation = `tickerScroll ${duracionTotal}s linear infinite`;
             } catch (error) {}
         }
@@ -706,6 +702,7 @@
             if (sesionGuardada && activeOwner === tabId) {
                 try {
                     const datos = JSON.parse(sesionGuardada);
+                    sesionActualGlobal = datos;
                     loginSection.style.display = "none";
                     dashboard.style.display = "flex";
 
@@ -732,6 +729,9 @@
                     
                     const itemMenu = document.querySelector(`.menu-item[data-section="${seccionActiva}"]`);
                     cambiarSeccion(seccionActiva, tituloActivo, itemMenu, false);
+
+                    // CARGAR DATOS PERSISTIDOS DEL USUARIO SI EXISTEN
+                    cargarNegadosPersistidos(datos.empleado);
 
                     iniciarControlInactividad();
                     cargarEvaluacionesNPS();
@@ -862,10 +862,30 @@
             }, 500);
         }
 
-        /* --- MOTOR DE EXTRACCIÓN REAL PARA ARCHIVOS Y PDF --- */
+        /* --- PERSISTENCIA Y MOTOR DE EXTRACCIÓN REAL --- */
+        function guardarNegadosPersistidos(productos) {
+            if (!sesionActualGlobal) return;
+            const key = `lcc_negados_${sesionActualGlobal.empleado}`;
+            localStorage.setItem(key, JSON.stringify(productos));
+        }
+
+        function cargarNegadosPersistidos(empId) {
+            const key = `lcc_negados_${empId}`;
+            const guardados = localStorage.getItem(key);
+            if (guardados) {
+                try {
+                    const lista = JSON.parse(guardados);
+                    if (lista.length > 0) {
+                        document.getElementById('uploadTitle').textContent = `Datos recuperados de sesión activa`;
+                        document.getElementById('uploadSub').textContent = `Se mantienen los productos pendientes de confirmar.`;
+                        renderizarListaNegados(lista, false);
+                    }
+                } catch (e) {}
+            }
+        }
+
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
-            ultimoArchivoSubido = file;
             mostrarLoader(`Analizando "${file.name}" y extrayendo datos reales`);
 
             if (file.name.toLowerCase().endsWith('.pdf')) {
@@ -895,18 +915,9 @@
             }
         }
 
-        function inferirDepartamento(nombreProd) {
-            const name = nombreProd.toLowerCase();
-            if (name.includes('jerga') || name.includes('pinol') || name.includes('limpiador') || name.includes('renova') || name.includes('servilleta')) return 'Limpieza';
-            if (name.includes('veladora')) return 'Veladoras';
-            if (name.includes('doritos') || name.includes('sabritas') || name.includes('frituras') || name.includes('papas')) return 'Dulcería';
-            if (name.includes('aceite') || name.includes('arroz')) return 'Abarrotes';
-            return 'Despensa';
-        }
-
         function extraerDatosDeTextoReal(texto, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Lectura de PDF completada.`;
+            document.getElementById('uploadSub').textContent = `Lectura de PDF completada con éxito.`;
 
             let productos = [];
             const regexSku = /(750\d{9,10}|500\d{9,10})/g;
@@ -936,18 +947,25 @@
                 }
             }
 
-            renderizarListaNegados(productos);
+            renderizarListaNegados(productos, true);
             ocultarLoader();
         }
 
-        function renderizarListaNegados(lista) {
+        function renderizarListaNegados(lista, guardar = true) {
             const container = document.getElementById('negadosListContainer');
             container.innerHTML = "";
 
             if (lista.length === 0) {
-                container.innerHTML = `<div class="empty-negados">No se detectaron códigos SKU válidos en el archivo.</div>`;
+                container.innerHTML = `<div class="empty-negados" id="emptyStateMsg">Adjunta un archivo para extraer automáticamente los productos negados.</div>`;
                 actualizarConteoNegados();
+                if (sesionActualGlobal) {
+                    localStorage.removeItem(`lcc_negados_${sesionActualGlobal.empleado}`);
+                }
                 return;
+            }
+
+            if (guardar) {
+                guardarNegadosPersistidos(lista);
             }
 
             lista.forEach(item => {
@@ -966,7 +984,6 @@
                     <div class="negado-card-right">
                         <div class="negado-inv-badge"><span class="negado-inv-dot"></span> ${item.cant} pzas</div>
                         <div class="negado-depto-badge">${item.depto}</div>
-                        <button class="btn-delete-row" title="Eliminar fila" onclick="eliminarFilaNegado(this)">⛔</button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -975,24 +992,31 @@
             actualizarConteoNegados();
         }
 
-        function refreshExtraccion() {
-            if (!ultimoArchivoSubido) {
-                alert("Por favor adjunta primero un archivo PDF para procesar.");
-                return;
+        /* --- ACCIONES DE LA BOTONERA NUEVA --- */
+        function limpiarListaNegados() {
+            if (confirm("¿Estás seguro de limpiar la lista actual de negados?")) {
+                renderizarListaNegados([], true);
             }
-            procesarArchivoAdjunto(ultimoArchivoSubido);
         }
 
-        function aceptarImportacion() {
+        function editarListaNegados() {
+            alert("Modo de edición de registros activado.");
+        }
+
+        function escanearDocumento() {
+            document.getElementById('fileInput').click();
+        }
+
+        function confirmarReporte() {
             const container = document.getElementById('negadosListContainer');
             const items = container.querySelectorAll('.negado-card-item');
 
             if (items.length === 0) {
-                alert("No hay productos negados en la lista para importar.");
+                alert("No hay productos negados en la lista para confirmar.");
                 return;
             }
 
-            mostrarLoader("Generando reportes por departamento");
+            mostrarLoader("Confirmando y generando reportes por departamento");
             setTimeout(() => {
                 ocultarLoader();
                 const contenedorActivos = document.getElementById('contenedorActivos');
@@ -1004,22 +1028,15 @@
                 htmlResumen += `</div>`;
 
                 contenedorActivos.innerHTML = htmlResumen;
-                container.innerHTML = `<div class="empty-negados" id="emptyStateMsg">No hay productos pendientes por importar.</div>`;
-                actualizarConteoNegados();
+                
+                // ÚNICAMENTE AQUÍ SE ELIMINA LA INFORMACIÓN AL CONFIRMAR EL REPORTE
+                renderizarListaNegados([], true);
 
                 const subReportesActivos = document.querySelectorAll('#submenuReportes .submenu-item')[1];
                 seleccionarSubreporte('reportes-activos', 'Reportes activos', subReportesActivos);
 
-                alert("Reportes generados e importados a Reportes Activos exitosamente.");
+                alert("Reportes confirmados y enviados a Reportes Activos exitosamente.");
             }, 1200);
-        }
-
-        function eliminarFilaNegado(btn) {
-            const card = btn.closest('.negado-card-item');
-            if (card) {
-                card.remove();
-                actualizarConteoNegados();
-            }
         }
 
         function filtrarNegadosPorDepto(depto) {
