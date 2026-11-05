@@ -346,7 +346,6 @@
         .negado-img-wrapper { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
         .negado-img-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; background-color: #fff; }
         
-        /* BOTÓN DE CAMBIO DE IMAGEN: OCULTO POR DEFECTO, SOLO ACTIVO EN EDICIÓN */
         .btn-change-img {
             position: absolute; bottom: -4px; right: -4px; background: var(--mexican-pink); color: white; border: none; border-radius: 50%;
             width: 20px; height: 20px; font-size: 10px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -364,7 +363,6 @@
         .negado-inv-dot { width: 7px; height: 7px; border-radius: 50%; background-color: #34a853; }
         .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; white-space: nowrap; }
 
-        /* MODAL DE ESCÁNER DE CÁMARA */
         .scanner-modal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
@@ -377,7 +375,6 @@
             font-size: 13px; font-weight: bold; color: #137333; background: #e6f4ea; padding: 6px 10px; border-radius: 8px; margin-bottom: 12px; display: none;
         }
 
-        /* MODAL SELECTOR DE ORIGEN DE IMAGEN */
         .img-modal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 10000;
             display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
@@ -920,7 +917,7 @@
             }, 500);
         }
 
-        /* --- PERSISTENCIA COMPLETA (ESTADO, EDICIONES, ARCHIVO) --- */
+        /* --- PERSISTENCIA COMPLETA --- */
         function guardarEstadoCompleto() {
             if (!sesionActualGlobal) return;
             const payload = {
@@ -978,56 +975,75 @@
             }
         }
 
+        /* --- EXTRACCIÓN ALGORÍTMICA 100% DINÁMICA Y UNIVERSAL --- */
         function extraerDatosConInteligencia(texto, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Extracción completa de artículos del PDF exitosa.`;
+            document.getElementById('uploadSub').textContent = `Análisis universal y extracción de datos completada.`;
 
             let nuevosProductos = [];
             const lineas = texto.split('\n');
             let deptoActual = "Abarrotes";
 
-            lineas.forEach(linea => {
-                let lineaTrim = linea.trim();
+            for (let i = 0; i < lineas.length; i++) {
+                let lineaTrim = lineas[i].trim();
+                const upperLine = lineaTrim.toUpperCase();
 
-                if (lineaTrim.includes("ALIMENTACION")) deptoActual = "Alimentación";
-                else if (lineaTrim.includes("PANADERIA")) deptoActual = "Panadería";
-                else if (lineaTrim.includes("PERECEDEROS")) deptoActual = "Perecederos";
-                else if (lineaTrim.includes("HIGIENE")) deptoActual = "Higiene y Belleza";
-                else if (lineaTrim.includes("ABARROTES")) deptoActual = "Abarrotes";
-                else if (lineaTrim.includes("HOGAR")) deptoActual = "Hogar";
+                // Detección dinámica de divisiones / departamentos
+                if (upperLine.includes("ALIMENTACION") || upperLine.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
+                else if (upperLine.includes("PANADERIA") || upperLine.includes("PANADERÍA")) deptoActual = "Panadería";
+                else if (upperLine.includes("PERECEDEROS")) deptoActual = "Perecederos";
+                else if (upperLine.includes("HIGIENE")) deptoActual = "Higiene y Belleza";
+                else if (upperLine.includes("ABARROTES")) deptoActual = "Abarrotes";
+                else if (upperLine.includes("HOGAR")) deptoActual = "Hogar";
+                else if (upperLine.includes("MARCA PROPIA")) deptoActual = "Marca Propia";
 
-                const matchSku = lineaTrim.match(/^(\d{5,14})\s+(.+)$/);
+                // Patrón universal: Detecta cualquier línea que comience con SKU (4 a 14 dígitos)
+                const matchSku = lineaTrim.match(/^(\d{4,14})\b/);
                 
                 if (matchSku) {
                     let skuVal = matchSku[1];
-                    let restoTexto = matchSku[2].trim();
-                    let descVal = restoTexto.replace(/\s+\d+(\.\d+)?\s*(\d+(\.\d+)?)?\s*$/, "").trim();
-                    if (!descVal || descVal.length < 3) descVal = restoTexto;
+                    let restoTexto = lineaTrim.replace(skuVal, "").trim();
 
-                    let matchCant = restoTexto.match(/\s+(\d+\.\d+|\d+)\s+100%/);
-                    let cantidadNegada = matchCant ? parseFloat(matchCant[1]) : 1.0;
+                    // Si la descripción está corta o partida, unimos con la siguiente línea
+                    if (restoTexto.length < 4 && i + 1 < lineas.length) {
+                        restoTexto += " " + lineas[i + 1].trim();
+                    }
 
+                    // Extraemos la cantidad (enteros o decimales como 1.0, 0.5, 2, 4.0, etc.)
+                    let cantidadNegada = 1.0;
+                    const matchesNums = restoTexto.match(/(\d+\.\d+|\d+)/g);
+                    if (matchesNums && matchesNums.length > 0) {
+                        let posibleCant = parseFloat(matchesNums[0]);
+                        if (posibleCant < 1000) {
+                            cantidadNegada = posibleCant;
+                        }
+                    }
+
+                    // Limpiamos la descripción removiendo porcentajes e indicadores de columna
+                    let descripcion = restoTexto
+                        .replace(/\b(100%|\d+\.\d+|\d+)\b/g, "")
+                        .replace(/\s{2,}/g, " ")
+                        .trim();
+
+                    if (!descripcion || descripcion.length < 2) {
+                        descripcion = `Artículo Negado SKU ${skuVal}`;
+                    }
+
+                    // Evitamos duplicados durante la misma lectura
                     if (!nuevosProductos.some(p => p.sku === skuVal)) {
                         nuevosProductos.push({
                             sku: skuVal,
-                            desc: descVal,
+                            desc: descripcion.toUpperCase(),
                             cant: cantidadNegada,
                             depto: deptoActual,
                             img: "pelicano-logo.png"
                         });
                     }
                 }
-            });
+            }
 
             if (nuevosProductos.length === 0) {
-                nuevosProductos = [
-                    { sku: "2657910000002", desc: "MOLE POBLANO CON POLLO FERIA 1 KG.", cant: 1.0, depto: "Alimentación", img: "pelicano-logo.png" },
-                    { sku: "2650041000002", desc: "COCHINITA PIBIL ARTESANAL 1 KG.", cant: 0.5, depto: "Alimentación", img: "pelicano-logo.png" },
-                    { sku: "2650702000006", desc: "PURE DE PAPA 1 KG.", cant: 0.5, depto: "Alimentación", img: "pelicano-logo.png" },
-                    { sku: "7503030127394", desc: "PANQUE DE QUESO SIN GLUTEN 1 PZA", cant: 4.0, depto: "Panadería", img: "pelicano-logo.png" },
-                    { sku: "10832", desc: "TORTILLA DE MAIZ AMARILLO 1 KG.", cant: 2.0, depto: "Panadería", img: "pelicano-logo.png" },
-                    { sku: "75012533", desc: "FLAN VAINILLA 2 PACK DANONE 100 GRS", cant: 6.0, depto: "Perecederos", img: "pelicano-logo.png" }
-                ];
+                alert("No se detectaron códigos de barras válidos en este archivo. Asegúrate de adjuntar un reporte PDF oficial válido.");
             }
 
             listaPendientesGlobal = [...listaPendientesGlobal, ...nuevosProductos];
@@ -1069,7 +1085,6 @@
                     <div class="negado-card-left">
                         <div class="negado-img-wrapper">
                             <img src="${item.img || 'pelicano-logo.png'}" alt="Producto" class="negado-img-thumb" onerror="this.src='pelicano.jpg'">
-                            <!-- EL BOTÓN DE CAMBIO DE IMAGEN SOLO SE MUESTRA SI MODO EDICIÓN ESTÁ ACTIVO -->
                             <button class="btn-change-img" id="btnImgChange_${indexReal}" style="display: ${modoEdicionActivo && pestanaActualPreview === 'pendientes' ? 'flex' : 'none'};" onclick="abrirModalCambiarImagen(${indexReal})" title="Modificar imagen">📷</button>
                         </div>
                         <div class="negado-details">
@@ -1090,7 +1105,7 @@
             }
         }
 
-        /* --- ACCIONES DE BOTONERA Y EDICIÓN DE IMAGEN --- */
+        /* --- BOTONERA Y EDICIONES --- */
         function limpiarListaNegados() {
             if (confirm("¿Estás seguro de limpiar toda la lista de registros?")) {
                 listaPendientesGlobal = [];
@@ -1157,7 +1172,6 @@
             });
         }
 
-        /* Selector de origen de imagen (Cámara o Archivo) */
         function abrirModalCambiarImagen(index) {
             indexEditandoImg = index;
             document.getElementById('imgSourceModal').classList.add('active');
@@ -1197,7 +1211,7 @@
             fileInputTemp.click();
         }
 
-        /* --- ESCÁNER CON ENFRIAMIENTO DE 5 SEGUNDOS --- */
+        /* --- ESCÁNER DE CÁMARA (5S ENFRIAMIENTO) --- */
         function abrirEscaner() {
             const modal = document.getElementById('scannerModal');
             modal.classList.add('active');
