@@ -949,7 +949,7 @@
 
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
-            mostrarLoader(`Analizando "${file.name}" y extrayendo datos con IA`);
+            mostrarLoader(`Analizando "${file.name}" y extrayendo datos del PDF`);
 
             if (file.name.toLowerCase().endsWith('.pdf')) {
                 try {
@@ -980,26 +980,30 @@
 
         function extraerDatosConInteligencia(texto, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Extracción de artículos negados del PDF completada.`;
+            document.getElementById('uploadSub').textContent = `Extracción completa de artículos del PDF exitosa.`;
 
             let nuevosProductos = [];
             const lineas = texto.split('\n');
             let deptoActual = "Abarrotes";
 
             lineas.forEach(linea => {
-                if (linea.includes("ALIMENTACION")) deptoActual = "Alimentación";
-                else if (linea.includes("PANADERIA")) deptoActual = "Panadería";
-                else if (linea.includes("PERECEDEROS")) deptoActual = "Perecederos";
-                else if (linea.includes("HIGIENE")) deptoActual = "Higiene y Belleza";
-                else if (linea.includes("ABARROTES")) deptoActual = "Abarrotes";
-                else if (linea.includes("HOGAR")) deptoActual = "Hogar";
+                let lineaTrim = linea.trim();
 
-                const matchLinea = linea.match(/(\d{5,14})\s+(.{5,60}?\s+\d+\s*(?:KG|PZA|GRS|ML|PACK))/i);
+                if (lineaTrim.includes("ALIMENTACION")) deptoActual = "Alimentación";
+                else if (lineaTrim.includes("PANADERIA")) deptoActual = "Panadería";
+                else if (lineaTrim.includes("PERECEDEROS")) deptoActual = "Perecederos";
+                else if (lineaTrim.includes("HIGIENE")) deptoActual = "Higiene y Belleza";
+                else if (lineaTrim.includes("ABARROTES")) deptoActual = "Abarrotes";
+                else if (lineaTrim.includes("HOGAR")) deptoActual = "Hogar";
+
+                const matchSku = lineaTrim.match(/^(\d{5,14})\s+(.+)$/);
                 
-                if (matchLinea) {
-                    let skuVal = matchLinea[1];
-                    let descVal = matchLinea[2].trim();
-                    
+                if (matchSku) {
+                    let skuVal = matchSku[1];
+                    let restoTexto = matchSku[2].trim();
+                    let descVal = restoTexto.replace(/\s+\d+(\.\d+)?\s*$/, "").trim();
+                    if (!descVal) descVal = `Artículo SKU ${skuVal}`;
+
                     if (!nuevosProductos.some(p => p.sku === skuVal)) {
                         nuevosProductos.push({
                             sku: skuVal,
