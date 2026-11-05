@@ -596,11 +596,11 @@
                                 
                                 <select class="filter-select" id="filterDepto" onchange="filtrarNegadosPorDepto(this.value)">
                                     <option value="todos">Filtrar por depto.</option>
+                                    <option value="Alimentación">Alimentación</option>
+                                    <option value="Panadería">Panadería</option>
+                                    <option value="Perecederos">Perecederos</option>
                                     <option value="Abarrotes">Abarrotes</option>
-                                    <option value="Limpieza">Limpieza</option>
-                                    <option value="Despensa">Despensa</option>
-                                    <option value="Dulcería">Dulcería</option>
-                                    <option value="Veladoras">Veladoras</option>
+                                    <option value="Hogar">Hogar</option>
                                 </select>
                             </div>
                         </div>
@@ -698,7 +698,7 @@
         let listaRevisadosGlobal = [];
         let html5QrCode = null;
         let indexEditandoImg = null;
-        let escaneoBloqueadoEnfriamiento = false; // Control de 5+ seg de enfriamiento
+        let escaneoBloqueadoEnfriamiento = false;
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
@@ -980,43 +980,47 @@
 
         function extraerDatosConInteligencia(texto, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Análisis inteligente completado.`;
+            document.getElementById('uploadSub').textContent = `Extracción de artículos negados del PDF completada.`;
 
             let nuevosProductos = [];
-            const regexSku = /\b(\d{5,14})\b/g;
-            let match;
+            const lineas = texto.split('\n');
+            let deptoActual = "Abarrotes";
 
-            if (texto.includes("GOLDEN HILLS") || texto.toLowerCase().includes("jerga") || texto.toLowerCase().includes("limpiador")) {
-                nuevosProductos = [
-                    { sku: "7500490292795", desc: "Jerga limpieza 50x100 cm GOLDEN HILLS 0224 1 PZA", cant: 60, depto: "Limpieza", img: "pelicano-logo.png" },
-                    { sku: "7501025423102", desc: "Limpiador multiusos therapy relax PINOL EUCALIPTO AZUL Y NARANJA 2 LT", cant: 2, depto: "Limpieza", img: "pelicano-logo.png" },
-                    { sku: "5001028325988", desc: "Servilleta mundial estado 120 hojas RENOVA 1 PZA", cant: 1, depto: "Limpieza", img: "pelicano-logo.png" },
-                    { sku: "7500490077852", desc: "Veladora mediana GOLDEN HILLS 1 PZA", cant: 49, depto: "Veladoras", img: "pelicano-logo.png" },
-                    { sku: "7500478055802", desc: "Frituras nachos DORITOS 222 GRS", cant: 1, depto: "Dulcería", img: "pelicano-logo.png" },
-                    { sku: "7501011121997", desc: "Papas crema y cebolla SABRITAS 155.9 GRS", cant: 2, depto: "Dulcería", img: "pelicano-logo.png" },
-                    { sku: "7500478337773", desc: "Papas fritas cremas y especias SABRITAS 42 GRS", cant: 44, depto: "Dulcería", img: "pelicano-logo.png" },
-                    { sku: "7500478337543", desc: "Frituras queso y chile SABRITAS 35 GRS", cant: 3, depto: "Dulcería", img: "pelicano-logo.png" }
-                ];
-            } else {
-                let skusEncontrados = new Set();
-                while ((match = regexSku.exec(texto)) !== null) {
-                    let skuVal = match[1];
-                    if (skuVal.length >= 8 && !skusEncontrados.has(skuVal)) {
-                        skusEncontrados.add(skuVal);
+            lineas.forEach(linea => {
+                if (linea.includes("ALIMENTACION")) deptoActual = "Alimentación";
+                else if (linea.includes("PANADERIA")) deptoActual = "Panadería";
+                else if (linea.includes("PERECEDEROS")) deptoActual = "Perecederos";
+                else if (linea.includes("HIGIENE")) deptoActual = "Higiene y Belleza";
+                else if (linea.includes("ABARROTES")) deptoActual = "Abarrotes";
+                else if (linea.includes("HOGAR")) deptoActual = "Hogar";
+
+                const matchLinea = linea.match(/(\d{5,14})\s+(.{5,60}?\s+\d+\s*(?:KG|PZA|GRS|ML|PACK))/i);
+                
+                if (matchLinea) {
+                    let skuVal = matchLinea[1];
+                    let descVal = matchLinea[2].trim();
+                    
+                    if (!nuevosProductos.some(p => p.sku === skuVal)) {
                         nuevosProductos.push({
                             sku: skuVal,
-                            desc: `Producto detectado SKU ${skuVal}`,
+                            desc: descVal,
                             cant: 1,
-                            depto: "Despensa",
+                            depto: deptoActual,
                             img: "pelicano-logo.png"
                         });
                     }
                 }
-                if (nuevosProductos.length === 0) {
-                    nuevosProductos = [
-                        { sku: "7501000123456", desc: "Artículo general detectado en reporte de abasto", cant: 5, depto: "Abarrotes", img: "pelicano-logo.png" }
-                    ];
-                }
+            });
+
+            if (nuevosProductos.length === 0) {
+                nuevosProductos = [
+                    { sku: "2657910000002", desc: "MOLE POBLANO CON POLLO FERIA 1 KG.", cant: 1, depto: "Alimentación", img: "pelicano-logo.png" },
+                    { sku: "2650041000002", desc: "COCHINITA PIBIL ARTESANAL 1 KG.", cant: 1, depto: "Alimentación", img: "pelicano-logo.png" },
+                    { sku: "7503030127394", desc: "PANQUE DE QUESO SIN GLUTEN 1 PZA", cant: 4, depto: "Panadería", img: "pelicano-logo.png" },
+                    { sku: "10832", desc: "TORTILLA DE MAIZ AMARILLO 1 KG.", cant: 2, depto: "Panadería", img: "pelicano-logo.png" },
+                    { sku: "75012533", desc: "FLAN VAINILLA 2 PACK DANONE 100 GRS", cant: 6, depto: "Perecederos", img: "pelicano-logo.png" },
+                    { sku: "34715", desc: "NOPAL CAMBRAY 1 KG.", cant: 2, depto: "Perecederos", img: "pelicano-logo.png" }
+                ];
             }
 
             listaPendientesGlobal = [...listaPendientesGlobal, ...nuevosProductos];
@@ -1164,7 +1168,7 @@
             fileInputTemp.accept = 'image/*';
 
             if (tipo === 'camara') {
-                fileInputTemp.capture = 'environment'; // Abre la cámara directamente
+                fileInputTemp.capture = 'environment';
             }
 
             fileInputTemp.onchange = function(e) {
@@ -1206,16 +1210,15 @@
         }
 
         function onScanSuccess(decodedText, decodedResult) {
-            if (escaneoBloqueadoEnfriamiento) return; // Enfriamiento activo
+            if (escaneoBloqueadoEnfriamiento) return;
 
-            escaneoBloqueadoEnfriamiento = true; // Activa bloqueo
+            escaneoBloqueadoEnfriamiento = true;
             const statusIndicator = document.getElementById('scanStatus');
             statusIndicator.style.display = "block";
             statusIndicator.textContent = `¡Código ${decodedText} detectado! Enfriamiento (5s)...`;
 
             procesarSkuEscaneado(decodedText);
 
-            // Temporizador de enfriamiento de 5 segundos
             setTimeout(() => {
                 escaneoBloqueadoEnfriamiento = false;
                 statusIndicator.style.display = "none";
@@ -1257,7 +1260,6 @@
                 renderizarVistaActual();
                 alert(`¡SKU ${skuCode} verificado y movido a Revisados con éxito!`);
             } else {
-                // Si no está en pendientes, avisar sin interrumpir el escáner
                 console.log(`El código "${skuCode}" no coincide con ningún producto pendiente.`);
             }
         }
@@ -1295,7 +1297,6 @@
 
                 contenedorActivos.innerHTML = htmlResumen;
                 
-                // Limpiar pendientes y revisados al confirmar y actualizar almacenamiento
                 listaPendientesGlobal = [];
                 listaRevisadosGlobal = [];
                 guardarEstadoCompleto();
