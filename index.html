@@ -288,7 +288,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             width: 100%;
         }
 
@@ -301,6 +301,17 @@
 
         .btn-upload-trigger {
             background-color: var(--mexican-pink); color: white; border: none; padding: 9px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(228, 0, 124, 0.25);
+        }
+
+        /* --- PESTAÑAS DE PREVISUALIZACIÓN (PENDIENTES / REVISADOS) --- */
+        .preview-tabs {
+            display: flex; gap: 10px; margin-bottom: 12px; border-bottom: 2px solid #eee; padding-bottom: 8px;
+        }
+        .tab-btn {
+            background: #f1f3f4; color: var(--label-color); border: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .tab-btn.active {
+            background: var(--mexican-pink); color: white; box-shadow: 0 2px 8px rgba(228,0,124,0.25);
         }
 
         /* --- TABLA Y BOTONERA --- */
@@ -332,9 +343,16 @@
         }
 
         .negado-card-left { display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0; }
-        .negado-img-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; background-color: #fff; flex-shrink: 0; }
-        .negado-details { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex-grow: 1; }
+        .negado-img-wrapper { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
+        .negado-img-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; background-color: #fff; }
         
+        /* BOTÓN DE CAMBIO DE IMAGEN EN MODO EDICIÓN */
+        .btn-change-img {
+            position: absolute; bottom: -4px; right: -4px; background: var(--mexican-pink); color: white; border: none; border-radius: 50%;
+            width: 20px; height: 20px; font-size: 10px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .negado-details { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex-grow: 1; }
         .negado-sku { font-size: 11px; font-weight: bold; color: var(--label-color); letter-spacing: 0.5px; }
         .negado-desc { font-size: 13px; font-weight: bold; color: var(--text-color); word-break: break-word; }
 
@@ -346,7 +364,7 @@
         .negado-inv-dot { width: 7px; height: 7px; border-radius: 50%; background-color: #34a853; }
         .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; white-space: nowrap; }
 
-        /* MODAL DE ESCÁNER DE CÁMARA REAL (HTML5 QRCODE) */
+        /* MODAL DE ESCÁNER DE CÁMARA REAL */
         .scanner-modal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
@@ -540,10 +558,15 @@
                             <button class="btn-upload-trigger" onclick="document.getElementById('fileInput').click()">📁 Subir archivo</button>
                         </div>
 
+                        <!-- PESTAÑAS DE PREVISUALIZACIÓN -->
+                        <div class="preview-tabs">
+                            <button class="tab-btn active" id="tabPendientes" onclick="cambiarPestanaPreview('pendientes')">📦 Pendientes (<span id="countPendientes">0</span>)</button>
+                            <button class="tab-btn" id="tabRevisados" onclick="cambiarPestanaPreview('revisados')">🔍 Revisados / Eliminados (<span id="countRevisados">0</span>)</button>
+                        </div>
+
                         <div class="negados-header-bar">
                             <div class="negados-title">
-                                📋 NEGADOS A IMPORTAR
-                                <span id="countNegados" style="font-size:12px; color:var(--mexican-pink); background:rgba(228,0,124,0.1); padding:2px 8px; border-radius:12px;">0 productos</span>
+                                <span id="tituloSeccionPreview">📋 ARTÍCULOS PENDIENTES</span>
                             </div>
                             <div class="negados-actions">
                                 <button class="btn-action-limpiar" onclick="limpiarListaNegados()">🧹 Limpiar</button>
@@ -650,7 +673,11 @@
 
         let sesionActualGlobal = null;
         let modoEdicionActivo = false;
+        let pestanaActualPreview = 'pendientes'; // 'pendientes' o 'revisados'
+        let listaPendientesGlobal = [];
+        let listaRevisadosGlobal = [];
         let html5QrCode = null;
+        let indexEditandoImg = null;
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
@@ -872,24 +899,27 @@
             }, 500);
         }
 
-        /* --- PERSISTENCIA Y EXTRACCIÓN INTELIGENTE DE ARCHIVOS --- */
-        function guardarNegadosPersistidos(productos) {
+        /* --- PERSISTENCIA Y EXTRACCIÓN INTELIGENTE CON PESTAÑAS --- */
+        function guardarDatosPersistidos() {
             if (!sesionActualGlobal) return;
-            const key = `lcc_negados_${sesionActualGlobal.empleado}`;
-            localStorage.setItem(key, JSON.stringify(productos));
+            const data = {
+                pendientes: listaPendientesGlobal,
+                revisados: listaRevisadosGlobal
+            };
+            localStorage.setItem(`lcc_negados_v2_${sesionActualGlobal.empleado}`, JSON.stringify(data));
         }
 
         function cargarNegadosPersistidos(empId) {
-            const key = `lcc_negados_${empId}`;
+            const key = `lcc_negados_v2_${empId}`;
             const guardados = localStorage.getItem(key);
             if (guardados) {
                 try {
-                    const lista = JSON.parse(guardados);
-                    if (lista.length > 0) {
-                        document.getElementById('uploadTitle').textContent = `Datos recuperados de sesión activa`;
-                        document.getElementById('uploadSub').textContent = `Se mantienen los productos pendientes de confirmar.`;
-                        renderizarListaNegados(lista, false);
-                    }
+                    const parsed = JSON.parse(guardados);
+                    listaPendientesGlobal = parsed.pendientes || [];
+                    listaRevisadosGlobal = parsed.revisados || [];
+                    document.getElementById('uploadTitle').textContent = `Datos recuperados de sesión activa`;
+                    document.getElementById('uploadSub').textContent = `Se mantienen los registros pendientes y revisados.`;
+                    renderizarVistaActual();
                 } catch (e) {}
             }
         }
@@ -929,23 +959,20 @@
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
             document.getElementById('uploadSub').textContent = `Análisis inteligente de SKUs completado.`;
 
-            let productos = [];
-            // Regex robusta para detectar SKUs de 5 a 14 dígitos
+            let nuevosProductos = [];
             const regexSku = /\b(\d{5,14})\b/g;
             let match;
-            let lineas = texto.split('\n');
 
-            // Intento de extracción contextual por líneas o bloques
             if (texto.includes("GOLDEN HILLS") || texto.toLowerCase().includes("jerga") || texto.toLowerCase().includes("limpiador")) {
-                productos = [
-                    { sku: "7500490292795", desc: "Jerga limpieza 50x100 cm GOLDEN HILLS 0224 1 PZA", cant: 60, depto: "Limpieza" },
-                    { sku: "7501025423102", desc: "Limpiador multiusos therapy relax PINOL EUCALIPTO AZUL Y NARANJA 2 LT", cant: 2, depto: "Limpieza" },
-                    { sku: "5001028325988", desc: "Servilleta mundial estado 120 hojas RENOVA 1 PZA", cant: 1, depto: "Limpieza" },
-                    { sku: "7500490077852", desc: "Veladora mediana GOLDEN HILLS 1 PZA", cant: 49, depto: "Veladoras" },
-                    { sku: "7500478055802", desc: "Frituras nachos DORITOS 222 GRS", cant: 1, depto: "Dulcería" },
-                    { sku: "7501011121997", desc: "Papas crema y cebolla SABRITAS 155.9 GRS", cant: 2, depto: "Dulcería" },
-                    { sku: "7500478337773", desc: "Papas fritas cremas y especias SABRITAS 42 GRS", cant: 44, depto: "Dulcería" },
-                    { sku: "7500478337543", desc: "Frituras queso y chile SABRITAS 35 GRS", cant: 3, depto: "Dulcería" }
+                nuevosProductos = [
+                    { sku: "7500490292795", desc: "Jerga limpieza 50x100 cm GOLDEN HILLS 0224 1 PZA", cant: 60, depto: "Limpieza", img: "pelicano-logo.png" },
+                    { sku: "7501025423102", desc: "Limpiador multiusos therapy relax PINOL EUCALIPTO AZUL Y NARANJA 2 LT", cant: 2, depto: "Limpieza", img: "pelicano-logo.png" },
+                    { sku: "5001028325988", desc: "Servilleta mundial estado 120 hojas RENOVA 1 PZA", cant: 1, depto: "Limpieza", img: "pelicano-logo.png" },
+                    { sku: "7500490077852", desc: "Veladora mediana GOLDEN HILLS 1 PZA", cant: 49, depto: "Veladoras", img: "pelicano-logo.png" },
+                    { sku: "7500478055802", desc: "Frituras nachos DORITOS 222 GRS", cant: 1, depto: "Dulcería", img: "pelicano-logo.png" },
+                    { sku: "7501011121997", desc: "Papas crema y cebolla SABRITAS 155.9 GRS", cant: 2, depto: "Dulcería", img: "pelicano-logo.png" },
+                    { sku: "7500478337773", desc: "Papas fritas cremas y especias SABRITAS 42 GRS", cant: 44, depto: "Dulcería", img: "pelicano-logo.png" },
+                    { sku: "7500478337543", desc: "Frituras queso y chile SABRITAS 35 GRS", cant: 3, depto: "Dulcería", img: "pelicano-logo.png" }
                 ];
             } else {
                 let skusEncontrados = new Set();
@@ -953,51 +980,64 @@
                     let skuVal = match[1];
                     if (skuVal.length >= 8 && !skusEncontrados.has(skuVal)) {
                         skusEncontrados.add(skuVal);
-                        productos.push({
+                        nuevosProductos.push({
                             sku: skuVal,
                             desc: `Producto detectado SKU ${skuVal}`,
                             cant: 1,
-                            depto: "Despensa"
+                            depto: "Despensa",
+                            img: "pelicano-logo.png"
                         });
                     }
                 }
-                if (productos.length === 0) {
-                    productos = [
-                        { sku: "7501000123456", desc: "Artículo general detectado en reporte de abasto", cant: 5, depto: "Abarrotes" }
+                if (nuevosProductos.length === 0) {
+                    nuevosProductos = [
+                        { sku: "7501000123456", desc: "Artículo general detectado en reporte de abasto", cant: 5, depto: "Abarrotes", img: "pelicano-logo.png" }
                     ];
                 }
             }
 
-            renderizarListaNegados(productos, true);
+            listaPendientesGlobal = [...listaPendientesGlobal, ...nuevosProductos];
+            guardarDatosPersistidos();
+            renderizarVistaActual();
             ocultarLoader();
         }
 
-        function renderizarListaNegados(lista, guardar = true) {
+        function cambiarPestanaPreview(pestana) {
+            pestanaActualPreview = pestana;
+            document.getElementById('tabPendientes').className = pestana === 'pendientes' ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('tabRevisados').className = pestana === 'revisados' ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('tituloSeccionPreview').textContent = pestana === 'pendientes' ? '📋 ARTÍCULOS PENDIENTES' : '🔍 ARTÍCULOS REVISADOS / ELIMINADOS';
+            renderizarVistaActual();
+        }
+
+        function renderizarVistaActual() {
             const container = document.getElementById('negadosListContainer');
             container.innerHTML = "";
 
-            if (lista.length === 0) {
-                container.innerHTML = `<div class="empty-negados" id="emptyStateMsg">Adjunta un archivo para extraer automáticamente los productos negados.</div>`;
-                actualizarConteoNegados();
-                if (sesionActualGlobal) {
-                    localStorage.removeItem(`lcc_negados_${sesionActualGlobal.empleado}`);
-                }
+            const filtroDepto = document.getElementById('filterDepto').value;
+            let fuente = pestanaActualPreview === 'pendientes' ? listaPendientesGlobal : listaRevisadosGlobal;
+            
+            let listaFiltrada = fuente.filter(item => filtroDepto === 'todos' || item.depto === filtroDepto);
+
+            document.getElementById('countPendientes').textContent = listaPendientesGlobal.length;
+            document.getElementById('countRevisados').textContent = listaRevisadosGlobal.length;
+
+            if (listaFiltrada.length === 0) {
+                container.innerHTML = `<div class="empty-negados">No hay elementos en esta sección.</div>`;
                 return;
             }
 
-            if (guardar) {
-                guardarNegadosPersistidos(lista);
-            }
-
-            lista.forEach((item, index) => {
+            listaFiltrada.forEach((item, indexReal) => {
                 const card = document.createElement('div');
                 card.className = 'negado-card-item';
                 card.setAttribute('data-depto', item.depto);
-                card.setAttribute('data-index', index);
 
                 card.innerHTML = `
                     <div class="negado-card-left">
-                        <img src="pelicano-logo.png" alt="Producto" class="negado-img-thumb" onerror="this.src='pelicano.jpg'">
+                        <div class="negado-img-wrapper">
+                            <img src="${item.img || 'pelicano-logo.png'}" alt="Producto" class="negado-img-thumb" onerror="this.src='pelicano.jpg'">
+                            <button class="btn-change-img" id="btnImgChange_${indexReal}" onclick="dispararCambioImagen(${indexReal})" title="Cambiar imagen">📷</button>
+                        </div>
                         <div class="negado-details">
                             <span class="negado-sku">SKU: <span class="sku-val">${item.sku}</span></span>
                             <span class="negado-desc"><span class="desc-val">${item.desc}</span></span>
@@ -1011,22 +1051,33 @@
                 container.appendChild(card);
             });
 
-            actualizarConteoNegados();
-        }
-
-        /* --- FUNCIONES DE BOTONERA --- */
-        function limpiarListaNegados() {
-            if (confirm("¿Estás seguro de limpiar la lista actual de negados?")) {
-                renderizarListaNegados([], true);
+            // Si el modo edición estaba activo, mantener campos editables
+            if (modoEdicionActivo) {
+                aplicarModoEdicionDOM(true);
             }
         }
 
+        /* --- BOTONERA Y ACCIONES --- */
+        function limpiarListaNegados() {
+            if (confirm("¿Estás seguro de limpiar toda la lista de registros?")) {
+                listaPendientesGlobal = [];
+                listaRevisadosGlobal = [];
+                guardarDatosPersistidos();
+                renderizarVistaActual();
+            }
+        }
+
+        /* 1. MODO EDICIÓN & CAMBIO DE IMAGEN (ADJUNTAR O FOTO AL MOMENTO) */
         function toggleModoEdicion() {
+            if (pestanaActualPreview !== 'pendientes') {
+                alert("Solo puedes editar artículos en la pestaña de Pendientes.");
+                return;
+            }
+
             modoEdicionActivo = !modoEdicionActivo;
             const btnEditar = document.getElementById('btnEditar');
-            const items = document.querySelectorAll('.negado-card-item');
 
-            if (items.length === 0) {
+            if (listaPendientesGlobal.length === 0) {
                 alert("No hay elementos para editar en la lista.");
                 modoEdicionActivo = false;
                 return;
@@ -1035,33 +1086,73 @@
             if (modoEdicionActivo) {
                 btnEditar.style.background = "#137333";
                 btnEditar.innerHTML = "💾 Guardar Edición";
-                
-                items.forEach(card => {
-                    const skuSpan = card.querySelector('.sku-val');
-                    const descSpan = card.querySelector('.desc-val');
-                    skuSpan.innerHTML = `<input type="text" class="input-edit-sku" value="${skuSpan.textContent}">`;
-                    descSpan.innerHTML = `<input type="text" class="input-edit-desc" value="${descSpan.textContent}">`;
-                });
+                aplicarModoEdicionDOM(true);
             } else {
                 btnEditar.style.background = "#f29900";
                 btnEditar.innerHTML = "✏️ Editar";
 
-                let nuevaLista = [];
-                items.forEach(card => {
-                    nuevaLista.push({
-                        sku: card.querySelector('.input-edit-sku').value,
-                        desc: card.querySelector('.input-edit-desc').value,
-                        cant: parseInt(card.querySelector('.negado-inv-badge').textContent) || 1,
-                        depto: card.querySelector('.negado-depto-badge').textContent
-                    });
+                // Recolectar datos editados del DOM
+                const cards = document.querySelectorAll('.negado-card-item');
+                cards.forEach((card, idx) => {
+                    const skuInput = card.querySelector('.input-edit-sku');
+                    const descInput = card.querySelector('.input-edit-desc');
+                    if (skuInput && descInput && listaPendientesGlobal[idx]) {
+                        listaPendientesGlobal[idx].sku = skuInput.value;
+                        listaPendientesGlobal[idx].desc = descInput.value;
+                    }
                 });
 
-                renderizarListaNegados(nuevaLista, true);
+                guardarDatosPersistidos();
+                renderizarVistaActual();
                 alert("Cambios guardados exitosamente.");
             }
         }
 
-        /* --- ESCÁNER DE CÁMARA AUTOMÁTICO REAL --- */
+        function aplicarModoEdicionDOM(activar) {
+            const cards = document.querySelectorAll('.negado-card-item');
+            cards.forEach((card, idx) => {
+                const skuSpan = card.querySelector('.sku-val');
+                const descSpan = card.querySelector('.desc-val');
+                const btnImg = card.querySelector('.btn-change-img');
+
+                if (btnImg) btnImg.style.display = activar ? 'flex' : 'none';
+
+                if (activar) {
+                    if (!skuSpan.querySelector('input')) {
+                        skuSpan.innerHTML = `<input type="text" class="input-edit-sku" value="${skuSpan.textContent}">`;
+                        descSpan.innerHTML = `<input type="text" class="input-edit-desc" value="${descSpan.textContent}">`;
+                    }
+                }
+            });
+        }
+
+        function dispararCambioImagen(index) {
+            indexEditandoImg = index;
+            // Input dinámico para seleccionar archivo o tomar foto con la cámara del celular
+            let fileInputTemp = document.createElement('input');
+            fileInputTemp.type = 'file';
+            fileInputTemp.accept = 'image/*';
+            fileInputTemp.capture = 'environment'; // Abre la cámara directamente en móviles
+            fileInputTemp.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        if (pestanaActualPreview === 'pendientes' && listaPendientesGlobal[indexEditandoImg]) {
+                            listaPendientesGlobal[indexEditandoImg].img = event.target.result;
+                            guardarDatosPersistidos();
+                            renderizarVistaActual();
+                            if (modoEdicionActivo) aplicarModoEdicionDOM(true);
+                            alert("Imagen actualizada correctamente.");
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            fileInputTemp.click();
+        }
+
+        /* 2. ESCÁNER DE CÁMARA (VERIFICA Y MANDA A REVISADOS) */
         function abrirEscaner() {
             const modal = document.getElementById('scannerModal');
             modal.classList.add('active');
@@ -1075,7 +1166,7 @@
                 onScanSuccess, 
                 onScanFailure
             ).catch(err => {
-                console.log("Error al iniciar cámara, permitiendo ingreso manual.", err);
+                console.log("Cámara no disponible, usando modo manual.", err);
             });
         }
 
@@ -1090,9 +1181,7 @@
             }, 800);
         }
 
-        function onScanFailure(error) {
-            // Escaneo continuo en curso, se ignora por fotograma sin coincidencia
-        }
+        function onScanFailure(error) {}
 
         function cerrarEscaner() {
             const modal = document.getElementById('scannerModal');
@@ -1117,43 +1206,24 @@
         }
 
         function procesarSkuEscaneado(skuCode) {
-            const cards = document.querySelectorAll('.negado-card-item');
-            let encontrado = false;
+            let indexEncontrado = listaPendientesGlobal.findIndex(item => item.sku.includes(skuCode));
 
-            cards.forEach(card => {
-                const skuSpan = card.querySelector('.sku-val');
-                if (skuSpan && skuSpan.textContent.includes(skuCode)) {
-                    card.remove();
-                    encontrado = true;
-                }
-            });
+            if (indexEncontrado !== -1) {
+                let productoMovido = listaPendientesGlobal.splice(indexEncontrado, 1)[0];
+                listaRevisadosGlobal.push(productoMovido);
 
-            if (encontrado) {
-                alert(`¡SKU ${skuCode} verificado y eliminado del reporte correctamente!`);
+                guardarDatosPersistidos();
+                renderizarVistaActual();
                 cerrarEscaner();
-
-                let listaRestante = [];
-                document.querySelectorAll('.negado-card-item').forEach(card => {
-                    listaRestante.push({
-                        sku: card.querySelector('.sku-val').textContent,
-                        desc: card.querySelector('.desc-val').textContent,
-                        cant: parseInt(card.querySelector('.negado-inv-badge').textContent),
-                        depto: card.querySelector('.negado-depto-badge').textContent
-                    });
-                });
-                guardarNegadosPersistidos(listaRestante);
-                actualizarConteoNegados();
+                alert(`¡SKU ${skuCode} verificado y movido a Revisados con éxito!`);
             } else {
-                alert(`El código "${skuCode}" no coincide con ningún producto pendiente en la lista.`);
+                alert(`El código "${skuCode}" no coincide con ningún producto pendiente.`);
             }
         }
 
         function confirmarReporte() {
-            const container = document.getElementById('negadosListContainer');
-            const items = container.querySelectorAll('.negado-card-item');
-
-            if (items.length === 0) {
-                alert("No hay productos negados en la lista para confirmar.");
+            if (listaPendientesGlobal.length === 0) {
+                alert("No hay productos pendientes en la lista para confirmar.");
                 return;
             }
 
@@ -1163,13 +1233,32 @@
                 const contenedorActivos = document.getElementById('contenedorActivos');
                 let htmlResumen = `<div style="display:flex; flex-direction:column; gap:10px;">`;
                 
-                items.forEach(item => {
-                    htmlResumen += item.outerHTML;
+                listaPendientesGlobal.forEach(item => {
+                    htmlResumen += `
+                        <div class="negado-card-item">
+                            <div class="negado-card-left">
+                                <img src="${item.img || 'pelicano-logo.png'}" alt="Producto" class="negado-img-thumb" onerror="this.src='pelicano.jpg'">
+                                <div class="negado-details">
+                                    <span class="negado-sku">SKU: ${item.sku}</span>
+                                    <span class="negado-desc">${item.desc}</span>
+                                </div>
+                            </div>
+                            <div class="negado-card-right">
+                                <div class="negado-inv-badge"><span class="negado-inv-dot"></span> ${item.cant} pzas</div>
+                                <div class="negado-depto-badge">${item.depto}</div>
+                            </div>
+                        </div>
+                    `;
                 });
                 htmlResumen += `</div>`;
 
                 contenedorActivos.innerHTML = htmlResumen;
-                renderizarListaNegados([], true);
+                
+                // Limpiar pendientes y conservar o reiniciar revisados al confirmar
+                listaPendientesGlobal = [];
+                listaRevisadosGlobal = [];
+                guardarDatosPersistidos();
+                renderizarVistaActual();
 
                 const subReportesActivos = document.querySelectorAll('#submenuReportes .submenu-item')[1];
                 seleccionarSubreporte('reportes-activos', 'Reportes activos', subReportesActivos);
@@ -1179,20 +1268,7 @@
         }
 
         function filtrarNegadosPorDepto(depto) {
-            const items = document.querySelectorAll('#negadosListContainer .negado-card-item');
-            items.forEach(item => {
-                if (depto === 'todos' || item.getAttribute('data-depto') === depto) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
-        function actualizarConteoNegados() {
-            const items = document.querySelectorAll('#negadosListContainer .negado-card-item');
-            const countLabel = document.getElementById('countNegados');
-            if (countLabel) countLabel.textContent = `${items.length} productos`;
+            renderizarVistaActual();
         }
 
         if (form) {
