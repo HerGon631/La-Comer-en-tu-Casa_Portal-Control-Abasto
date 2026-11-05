@@ -303,7 +303,7 @@
             background-color: var(--mexican-pink); color: white; border: none; padding: 9px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(228, 0, 124, 0.25);
         }
 
-        /* --- PESTAÑAS DE PREVISUALIZACIÓN (PENDIENTES / REVISADOS) --- */
+        /* --- PESTAÑAS DE PREVISUALIZACIÓN --- */
         .preview-tabs {
             display: flex; gap: 10px; margin-bottom: 12px; border-bottom: 2px solid #eee; padding-bottom: 8px;
         }
@@ -346,7 +346,7 @@
         .negado-img-wrapper { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
         .negado-img-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; background-color: #fff; }
         
-        /* BOTÓN DE CAMBIO DE IMAGEN EN MODO EDICIÓN */
+        /* BOTÓN DE CAMBIO DE IMAGEN: OCULTO POR DEFECTO, SOLO ACTIVO EN EDICIÓN */
         .btn-change-img {
             position: absolute; bottom: -4px; right: -4px; background: var(--mexican-pink); color: white; border: none; border-radius: 50%;
             width: 20px; height: 20px; font-size: 10px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -364,7 +364,7 @@
         .negado-inv-dot { width: 7px; height: 7px; border-radius: 50%; background-color: #34a853; }
         .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; white-space: nowrap; }
 
-        /* MODAL DE ESCÁNER DE CÁMARA REAL */
+        /* MODAL DE ESCÁNER DE CÁMARA */
         .scanner-modal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
@@ -376,6 +376,15 @@
         .scan-status-indicator {
             font-size: 13px; font-weight: bold; color: #137333; background: #e6f4ea; padding: 6px 10px; border-radius: 8px; margin-bottom: 12px; display: none;
         }
+
+        /* MODAL SELECTOR DE ORIGEN DE IMAGEN */
+        .img-modal {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
+        }
+        .img-modal.active { opacity: 1; visibility: visible; }
+        .img-modal-box { background: white; padding: 25px; border-radius: 16px; width: 90%; max-width: 320px; text-align: center; }
+        .img-modal-btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; }
 
         @media (max-width: 600px) {
             .upload-bar-compact { flex-direction: column; align-items: stretch; text-align: center; gap: 15px; }
@@ -402,12 +411,23 @@
         <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
     </div>
 
-    <!-- MODAL DE ESCÁNER DE CÁMARA REAL -->
+    <!-- MODAL SELECTOR DE ORIGEN DE IMAGEN -->
+    <div id="imgSourceModal" class="img-modal">
+        <div class="img-modal-box">
+            <h3 style="margin-bottom: 10px; color: #111;">📷 Cambiar Imagen</h3>
+            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 15px;">Selecciona cómo deseas obtener la nueva imagen del producto:</p>
+            <button class="img-modal-btn" style="background: var(--mexican-pink); color: white;" onclick="ejecutarOrigenImagen('camara')">📸 Tomar foto con cámara</button>
+            <button class="img-modal-btn" style="background: #f1f3f4; color: var(--text-color);" onclick="ejecutarOrigenImagen('archivo')">📁 Adjuntar archivo del dispositivo</button>
+            <button class="img-modal-btn" style="background: #c5221f; color: white;" onclick="cerrarModalImagen()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE ESCÁNER DE CÁMARA CON ENFRIAMIENTO -->
     <div id="scannerModal" class="scanner-modal">
         <div class="scanner-box">
             <h3 style="margin-bottom: 8px; color: #111;">📷 Escáner de SKU Activo</h3>
-            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Apunta la cámara al código de barras del producto.</p>
-            <div id="scanStatus" class="scan-status-indicator">¡Código detectado con éxito! Verificando...</div>
+            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Apunta la cámara al código de barras.</p>
+            <div id="scanStatus" class="scan-status-indicator">¡Código detectado con éxito! Enfriamiento activo...</div>
             <div id="reader"></div>
             <input type="text" id="manualScanInput" placeholder="O ingresa SKU manualmente..." style="margin-bottom: 12px;">
             <div style="display: flex; gap: 10px;">
@@ -673,11 +693,12 @@
 
         let sesionActualGlobal = null;
         let modoEdicionActivo = false;
-        let pestanaActualPreview = 'pendientes'; // 'pendientes' o 'revisados'
+        let pestanaActualPreview = 'pendientes';
         let listaPendientesGlobal = [];
         let listaRevisadosGlobal = [];
         let html5QrCode = null;
         let indexEditandoImg = null;
+        let escaneoBloqueadoEnfriamiento = false; // Control de 5+ seg de enfriamiento
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
@@ -768,7 +789,7 @@
                     const itemMenu = document.querySelector(`.menu-item[data-section="${seccionActiva}"]`);
                     cambiarSeccion(seccionActiva, tituloActivo, itemMenu, false);
 
-                    cargarNegadosPersistidos(datos.empleado);
+                    cargarDatosPersistidos(datos.empleado);
 
                     iniciarControlInactividad();
                     cargarEvaluacionesNPS();
@@ -899,26 +920,28 @@
             }, 500);
         }
 
-        /* --- PERSISTENCIA Y EXTRACCIÓN INTELIGENTE CON PESTAÑAS --- */
-        function guardarDatosPersistidos() {
+        /* --- PERSISTENCIA COMPLETA (ESTADO, EDICIONES, ARCHIVO) --- */
+        function guardarEstadoCompleto() {
             if (!sesionActualGlobal) return;
-            const data = {
+            const payload = {
+                tituloArchivo: document.getElementById('uploadTitle').textContent,
+                subArchivo: document.getElementById('uploadSub').textContent,
                 pendientes: listaPendientesGlobal,
                 revisados: listaRevisadosGlobal
             };
-            localStorage.setItem(`lcc_negados_v2_${sesionActualGlobal.empleado}`, JSON.stringify(data));
+            localStorage.setItem(`lcc_estado_completo_${sesionActualGlobal.empleado}`, JSON.stringify(payload));
         }
 
-        function cargarNegadosPersistidos(empId) {
-            const key = `lcc_negados_v2_${empId}`;
+        function cargarDatosPersistidos(empId) {
+            const key = `lcc_estado_completo_${empId}`;
             const guardados = localStorage.getItem(key);
             if (guardados) {
                 try {
                     const parsed = JSON.parse(guardados);
+                    document.getElementById('uploadTitle').textContent = parsed.tituloArchivo || "Datos recuperados de sesión";
+                    document.getElementById('uploadSub').textContent = parsed.subArchivo || "Sesión restaurada correctamente.";
                     listaPendientesGlobal = parsed.pendientes || [];
                     listaRevisadosGlobal = parsed.revisados || [];
-                    document.getElementById('uploadTitle').textContent = `Datos recuperados de sesión activa`;
-                    document.getElementById('uploadSub').textContent = `Se mantienen los registros pendientes y revisados.`;
                     renderizarVistaActual();
                 } catch (e) {}
             }
@@ -957,7 +980,7 @@
 
         function extraerDatosConInteligencia(texto, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Análisis inteligente de SKUs completado.`;
+            document.getElementById('uploadSub').textContent = `Análisis inteligente completado.`;
 
             let nuevosProductos = [];
             const regexSku = /\b(\d{5,14})\b/g;
@@ -997,7 +1020,7 @@
             }
 
             listaPendientesGlobal = [...listaPendientesGlobal, ...nuevosProductos];
-            guardarDatosPersistidos();
+            guardarEstadoCompleto();
             renderizarVistaActual();
             ocultarLoader();
         }
@@ -1016,7 +1039,6 @@
 
             const filtroDepto = document.getElementById('filterDepto').value;
             let fuente = pestanaActualPreview === 'pendientes' ? listaPendientesGlobal : listaRevisadosGlobal;
-            
             let listaFiltrada = fuente.filter(item => filtroDepto === 'todos' || item.depto === filtroDepto);
 
             document.getElementById('countPendientes').textContent = listaPendientesGlobal.length;
@@ -1036,7 +1058,8 @@
                     <div class="negado-card-left">
                         <div class="negado-img-wrapper">
                             <img src="${item.img || 'pelicano-logo.png'}" alt="Producto" class="negado-img-thumb" onerror="this.src='pelicano.jpg'">
-                            <button class="btn-change-img" id="btnImgChange_${indexReal}" onclick="dispararCambioImagen(${indexReal})" title="Cambiar imagen">📷</button>
+                            <!-- EL BOTÓN DE CAMBIO DE IMAGEN SOLO SE MUESTRA SI MODO EDICIÓN ESTÁ ACTIVO -->
+                            <button class="btn-change-img" id="btnImgChange_${indexReal}" style="display: ${modoEdicionActivo && pestanaActualPreview === 'pendientes' ? 'flex' : 'none'};" onclick="abrirModalCambiarImagen(${indexReal})" title="Modificar imagen">📷</button>
                         </div>
                         <div class="negado-details">
                             <span class="negado-sku">SKU: <span class="sku-val">${item.sku}</span></span>
@@ -1051,23 +1074,21 @@
                 container.appendChild(card);
             });
 
-            // Si el modo edición estaba activo, mantener campos editables
-            if (modoEdicionActivo) {
+            if (modoEdicionActivo && pestanaActualPreview === 'pendientes') {
                 aplicarModoEdicionDOM(true);
             }
         }
 
-        /* --- BOTONERA Y ACCIONES --- */
+        /* --- ACCIONES DE BOTONERA Y EDICIÓN DE IMAGEN --- */
         function limpiarListaNegados() {
             if (confirm("¿Estás seguro de limpiar toda la lista de registros?")) {
                 listaPendientesGlobal = [];
                 listaRevisadosGlobal = [];
-                guardarDatosPersistidos();
+                guardarEstadoCompleto();
                 renderizarVistaActual();
             }
         }
 
-        /* 1. MODO EDICIÓN & CAMBIO DE IMAGEN (ADJUNTAR O FOTO AL MOMENTO) */
         function toggleModoEdicion() {
             if (pestanaActualPreview !== 'pendientes') {
                 alert("Solo puedes editar artículos en la pestaña de Pendientes.");
@@ -1091,7 +1112,6 @@
                 btnEditar.style.background = "#f29900";
                 btnEditar.innerHTML = "✏️ Editar";
 
-                // Recolectar datos editados del DOM
                 const cards = document.querySelectorAll('.negado-card-item');
                 cards.forEach((card, idx) => {
                     const skuInput = card.querySelector('.input-edit-sku');
@@ -1102,7 +1122,7 @@
                     }
                 });
 
-                guardarDatosPersistidos();
+                guardarEstadoCompleto();
                 renderizarVistaActual();
                 alert("Cambios guardados exitosamente.");
             }
@@ -1126,13 +1146,27 @@
             });
         }
 
-        function dispararCambioImagen(index) {
+        /* Selector de origen de imagen (Cámara o Archivo) */
+        function abrirModalCambiarImagen(index) {
             indexEditandoImg = index;
-            // Input dinámico para seleccionar archivo o tomar foto con la cámara del celular
+            document.getElementById('imgSourceModal').classList.add('active');
+        }
+
+        function cerrarModalImagen() {
+            document.getElementById('imgSourceModal').classList.remove('active');
+            indexEditandoImg = null;
+        }
+
+        function ejecutarOrigenImagen(tipo) {
+            cerrarModalImagen();
             let fileInputTemp = document.createElement('input');
             fileInputTemp.type = 'file';
             fileInputTemp.accept = 'image/*';
-            fileInputTemp.capture = 'environment'; // Abre la cámara directamente en móviles
+
+            if (tipo === 'camara') {
+                fileInputTemp.capture = 'environment'; // Abre la cámara directamente
+            }
+
             fileInputTemp.onchange = function(e) {
                 const file = e.target.files[0];
                 if (file) {
@@ -1140,10 +1174,10 @@
                     reader.onload = function(event) {
                         if (pestanaActualPreview === 'pendientes' && listaPendientesGlobal[indexEditandoImg]) {
                             listaPendientesGlobal[indexEditandoImg].img = event.target.result;
-                            guardarDatosPersistidos();
+                            guardarEstadoCompleto();
                             renderizarVistaActual();
                             if (modoEdicionActivo) aplicarModoEdicionDOM(true);
-                            alert("Imagen actualizada correctamente.");
+                            alert("Imagen del producto actualizada correctamente.");
                         }
                     };
                     reader.readAsDataURL(file);
@@ -1152,10 +1186,11 @@
             fileInputTemp.click();
         }
 
-        /* 2. ESCÁNER DE CÁMARA (VERIFICA Y MANDA A REVISADOS) */
+        /* --- ESCÁNER CON ENFRIAMIENTO DE 5 SEGUNDOS --- */
         function abrirEscaner() {
             const modal = document.getElementById('scannerModal');
             modal.classList.add('active');
+            escaneoBloqueadoEnfriamiento = false;
 
             html5QrCode = new Html5Qrcode("reader");
             const config = { fps: 10, qrbox: { width: 250, height: 150 } };
@@ -1171,14 +1206,20 @@
         }
 
         function onScanSuccess(decodedText, decodedResult) {
+            if (escaneoBloqueadoEnfriamiento) return; // Enfriamiento activo
+
+            escaneoBloqueadoEnfriamiento = true; // Activa bloqueo
             const statusIndicator = document.getElementById('scanStatus');
             statusIndicator.style.display = "block";
-            statusIndicator.textContent = `¡Código detectado: ${decodedText}! Verificando...`;
+            statusIndicator.textContent = `¡Código ${decodedText} detectado! Enfriamiento (5s)...`;
 
+            procesarSkuEscaneado(decodedText);
+
+            // Temporizador de enfriamiento de 5 segundos
             setTimeout(() => {
+                escaneoBloqueadoEnfriamiento = false;
                 statusIndicator.style.display = "none";
-                procesarSkuEscaneado(decodedText);
-            }, 800);
+            }, 5000);
         }
 
         function onScanFailure(error) {}
@@ -1212,12 +1253,12 @@
                 let productoMovido = listaPendientesGlobal.splice(indexEncontrado, 1)[0];
                 listaRevisadosGlobal.push(productoMovido);
 
-                guardarDatosPersistidos();
+                guardarEstadoCompleto();
                 renderizarVistaActual();
-                cerrarEscaner();
                 alert(`¡SKU ${skuCode} verificado y movido a Revisados con éxito!`);
             } else {
-                alert(`El código "${skuCode}" no coincide con ningún producto pendiente.`);
+                // Si no está en pendientes, avisar sin interrumpir el escáner
+                console.log(`El código "${skuCode}" no coincide con ningún producto pendiente.`);
             }
         }
 
@@ -1254,10 +1295,10 @@
 
                 contenedorActivos.innerHTML = htmlResumen;
                 
-                // Limpiar pendientes y conservar o reiniciar revisados al confirmar
+                // Limpiar pendientes y revisados al confirmar y actualizar almacenamiento
                 listaPendientesGlobal = [];
                 listaRevisadosGlobal = [];
-                guardarDatosPersistidos();
+                guardarEstadoCompleto();
                 renderizarVistaActual();
 
                 const subReportesActivos = document.querySelectorAll('#submenuReportes .submenu-item')[1];
