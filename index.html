@@ -946,22 +946,26 @@
 
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
-            mostrarLoader(`Analizando "${file.name}" y extrayendo datos del PDF`);
+            mostrarLoader(`Analizando "${file.name}" de forma estructurada`);
 
             if (file.name.toLowerCase().endsWith('.pdf')) {
                 try {
                     const arrayBuffer = await file.arrayBuffer();
                     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    let textoCompleto = "";
+                    let palabrasTexto = [];
 
                     for (let i = 1; i <= pdf.numPages; i++) {
                         const page = await pdf.getPage(i);
                         const content = await page.getTextContent();
-                        const pageText = content.items.map(item => item.str).join(" ");
-                        textoCompleto += pageText + "\n";
+                        content.items.forEach(item => {
+                            const str = item.str.trim();
+                            if (str.length > 0) {
+                                palabrasTexto.push(str);
+                            }
+                        });
                     }
 
-                    extraerDatosConInteligencia(textoCompleto, file.name);
+                    extraerDatosDesdeTokens(palabrasTexto, file.name);
                 } catch (e) {
                     alert("Error al leer el archivo PDF.");
                     ocultarLoader();
@@ -975,87 +979,77 @@
             }
         }
 
-        /* --- EXTRACCIÓN FLEXIBLE Y ROBUSTA --- */
-        function extraerDatosConInteligencia(texto, nombreArchivo) {
+        /* --- EXTRACCIÓN BASADA EN TOKENS / PALABRAS --- */
+        function extraerDatosDesdeTokens(tokens, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Análisis de reporte completado con éxito.`;
+            document.getElementById('uploadSub').textContent = `Extracción completa por bloques completada.`;
 
             let nuevosProductos = [];
-            const lineas = texto.split('\n');
             let deptoActual = "Abarrotes";
+            let i = 0;
 
-            lineas.forEach((linea, index) => {
-                let lineaTrim = linea.trim();
-                const upperLine = lineaTrim.toUpperCase();
+            const palabrasOmitir = [
+                "GRUPO", "LACOMER", "REPORTE", "DE", "AUDITORÍA", "ARTÍCULOS", "NEGADOS", "LCC",
+                "COMERCIAL", "CITY", "FRESKO", "SUCURSAL", "FOLIO", "DIVISIÓN", "FECHA", "CREACIÓN",
+                "ESTATUS", "FINALIZADO", "CANTIDAD", "DETALLE", "INCIDENCIA", "CÓDIGO", "BARRAS",
+                "DESCRIPCIÓN", "ARTÍCULO", "PEDIDA", "ENTREGADA", "NEGADA", "%", "EXHIBIDO", "BODEGA",
+                "PROCESO", "MERMA", "DEVOLUCIÓN", "ACTULIZACIÓN", "STOCK", "MALA", "CALIDAD",
+                "CADUCADO", "OFERTA", "CAMBIO", "FISICO", "PÁGINA", "1", "2", "3", "S.DE", "R.L.", "C.V."
+            ];
 
-                // Detección de departamentos o divisiones
-                if (upperLine.includes("ALIMENTACION") || upperLine.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
-                else if (upperLine.includes("PANADERIA") || upperLine.includes("PANADERÍA")) deptoActual = "Panadería";
-                else if (upperLine.includes("PERECEDEROS")) deptoActual = "Perecederos";
-                else if (upperLine.includes("HIGIENE")) deptoActual = "Higiene y Belleza";
-                else if (upperLine.includes("ABARROTES")) deptoActual = "Abarrotes";
-                else if (upperLine.includes("HOGAR")) deptoActual = "Hogar";
-                else if (upperLine.includes("MARCA PROPIA")) deptoActual = "Marca Propia";
+            while (i < tokens.length) {
+                let tokenUpper = tokens[i].toUpperCase();
 
-                // Buscamos cualquier secuencia numérica que actúe como código de barras (de 4 a 14 dígitos)
-                const matchSku = lineaTrim.match(/(\d{4,14})/);
-                
-                if (matchSku) {
-                    let skuVal = matchSku[1];
-                    
-                    // Evitamos falsos positivos con fechas (ej. 04/11/26) o folios
-                    if (skuVal.length === 6 && lineaTrim.includes("/")) return; 
+                if (tokenUpper.includes("ALIMENTACION")) deptoActual = "Alimentación";
+                else if (tokenUpper.includes("PANADERIA")) deptoActual = "Panadería";
+                else if (tokenUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
+                else if (tokenUpper.includes("HIGIENE")) deptoActual = "Higiene y Belleza";
+                else if (tokenUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
+                else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
+                else if (tokenUpper.includes("MARCA")) deptoActual = "Marca Propia";
 
-                    let restoTexto = lineaTrim.replace(skuVal, "").trim();
+                if (/^\d{4,14}$/.test(tokens[i])) {
+                    let posibleSku = tokens[i];
 
-                    // Si la línea está muy corta, unimos con la línea siguiente
-                    if (restoTexto.length < 3 && index + 1 < lineas.length) {
-                        restoTexto += " " + lineas[index + 1].trim();
-                    }
+                    if (posibleSku !== "2026" && !posibleSku.startsWith("1454") && !palabrasOmitir.includes(posibleSku)) {
+                        let skuVal = posibleSku;
+                        let descPalabras = [];
+                        let cantidadNegada = 1.0;
 
-                    // Extraemos la cantidad numérica lógica
-                    let cantidadNegada = 1.0;
-                    const matchesNums = restoTexto.match(/(\d+\.\d+|\d+)/g);
-                    if (matchesNums && matchesNums.length > 0) {
-                        let posibleCant = parseFloat(matchesNums[0]);
-                        if (posibleCant < 500) {
-                            cantidadNegada = posibleCant;
+                        let j = i + 1;
+                        while (j < tokens.length) {
+                            let t = tokens[j];
+                            let tUpper = t.toUpperCase();
+
+                            if (/^\d{4,14}$/.test(t) && t !== "2026" && !t.startsWith("1454")) break;
+                            if (tUpper.includes("FOLIO") || tUpper.includes("DIVISIÓN") || tUpper.includes("ESTATUS")) break;
+
+                            if (/^\d+(\.\d+)?%?$/.test(t) || t === "100%") {
+                                let num = parseFloat(t);
+                                if (!isNaN(num) && num > 0 && num < 100 && t !== "100%") {
+                                    cantidadNegada = num;
+                                }
+                            } else if (!palabrasOmitir.includes(tUpper)) {
+                                descPalabras.push(t);
+                            }
+                            j++;
                         }
-                    }
 
-                    // Limpiamos la descripción eliminando porcentajes y cifras aisladas
-                    let descripcion = restoTexto
-                        .replace(/\b(100%|\d+\.\d+|\d+)\b/g, "")
-                        .replace(/\s{2,}/g, " ")
-                        .trim();
+                        let descVal = descPalabras.join(" ").trim();
 
-                    if (!descripcion || descripcion.length < 2) {
-                        descripcion = `ARTÍCULO SKU ${skuVal}`;
-                    }
-
-                    // Evitamos duplicados en el mismo archivo
-                    if (!nuevosProductos.some(p => p.sku === skuVal)) {
-                        nuevosProductos.push({
-                            sku: skuVal,
-                            desc: descripcion.toUpperCase(),
-                            cant: cantidadNegada,
-                            depto: deptoActual,
-                            img: "pelicano-logo.png"
-                        });
+                        if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
+                            nuevosProductos.push({
+                                sku: skuVal,
+                                desc: descVal.toUpperCase(),
+                                cant: cantidadNegada,
+                                depto: deptoActual,
+                                img: "pelicano-logo.png"
+                            });
+                        }
+                        i = j - 1;
                     }
                 }
-            });
-
-            // Respaldo dinámico si el texto viniera estructurado de manera distinta
-            if (nuevosProductos.length === 0) {
-                nuevosProductos = [
-                    { sku: "2657910000002", desc: "MOLE POBLANO CON POLLO FERIA 1 KG.", cant: 1.0, depto: "Alimentación", img: "pelicano-logo.png" },
-                    { sku: "2650041000002", desc: "COCHINITA PIBIL ARTESANAL 1 KG.", cant: 0.5, depto: "Alimentación", img: "pelicano-logo.png" },
-                    { sku: "7503030127394", desc: "PANQUE DE QUESO SIN GLUTEN 1 PZA", cant: 4.0, depto: "Panadería", img: "pelicano-logo.png" },
-                    { sku: "7501008005019", desc: "BARRAS RELLENAS DE MANZANA KELLOGGS 222 GRS", cant: 2.0, depto: "Abarrotes", img: "pelicano-logo.png" },
-                    { sku: "75012533", desc: "FLAN VAINILLA 2 PACK DANONE 100 GRS", cant: 6.0, depto: "Perecederos", img: "pelicano-logo.png" },
-                    { sku: "42994", desc: "GUAYABA 1 KG.", cant: 0.5, depto: "Perecederos", img: "pelicano-logo.png" }
-                ];
+                i++;
             }
 
             listaPendientesGlobal = [...listaPendientesGlobal, ...nuevosProductos];
