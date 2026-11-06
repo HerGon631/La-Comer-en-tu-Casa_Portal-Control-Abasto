@@ -617,11 +617,11 @@
             }
         }
 
-        /* --- SINCRONIZACIÓN AUTOMÁTICA APUNTANDO A LA CARPETA ABSOLUTA DE GITHUB PAGES --- */
+        /* --- RUTA RELATIVA DIRECTA A LA CARPETA LOCAL DEL REPOSITORIO --- */
         async function sincronizarProductoConBd(sku, desc, depto) {
             try {
                 let skuLimpio = String(sku).trim();
-                let urlFinalImagen = `/La-Comer-en-tu-Casa-Portal-Control-Abasto/productos-img/${skuLimpio}.jpg`;
+                let urlFinalImagen = `productos-img/${skuLimpio}.jpg`;
                 return urlFinalImagen;
             } catch (e) {
                 return 'pelicano-logo.png';
@@ -651,7 +651,7 @@
 
         async function extraerEtiquetadosUniversal(tokens, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Sincronizando con catálogo...`;
+            document.getElementById('uploadSub').textContent = `Procesando artículos...`;
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
             const cortes = ["PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS", "NEGADOS", "SUCURSAL", "CÓDIGO", "BARRAS", "DESCRIPCIÓN"];
