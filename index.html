@@ -365,6 +365,20 @@
         .negado-inv-dot { width: 7px; height: 7px; border-radius: 50%; background-color: #34a853; }
         .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; white-space: nowrap; }
 
+        .btn-regresar-pendiente {
+            background-color: #1a73e8; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(26,115,232,0.25); white-space: nowrap;
+        }
+
+        /* --- MODAL DE MOTIVO DE RETORNO --- */
+        .reason-modal {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 10500;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
+        }
+        .reason-modal.active { opacity: 1; visibility: visible; }
+        .reason-modal-box { background: white; padding: 25px; border-radius: 16px; width: 90%; max-width: 360px; text-align: center; }
+        .reason-btn { width: 100%; padding: 11px; margin-top: 10px; border-radius: 8px; border: 1px solid #dadce0; font-weight: bold; cursor: pointer; font-size: 12px; background: #f8f9fa; color: var(--text-color); transition: 0.2s; text-align: left; display: flex; align-items: center; gap: 8px; }
+        .reason-btn:hover { background: var(--pink-transparent-30); border-color: var(--mexican-pink); color: var(--mexican-pink); }
+
         /* --- MODAL DE ESCÁNER Y BÚSQUEDA INTELIGENTE --- */
         .scanner-modal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999;
@@ -416,6 +430,26 @@
             <img id="loaderImg" class="loader-logo-img" src="pelicano-logo.png" alt="Cargando..." onerror="this.onerror=null; this.src='pelicano.jpg';">
         </div>
         <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
+    </div>
+
+    <!-- MODAL DE MOTIVO DE RETORNO (3 OPCIONES DE ERROR COMÚN) -->
+    <div id="reasonModal" class="reason-modal">
+        <div class="reason-modal-box">
+            <h3 style="margin-bottom: 8px; color: #111;">↩️ Devolver a Pendientes</h3>
+            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 15px;">Selecciona el motivo por el cual se marcó este producto por error:</p>
+            
+            <button class="reason-btn" onclick="confirmarRetornoPendiente('1. Confusión con otro SKU similar')">
+                <span>1️⃣</span> Confusión con otro SKU similar
+            </button>
+            <button class="reason-btn" onclick="confirmarRetornoPendiente('2. Escaneo o registro por equivocación')">
+                <span>2️⃣</span> Escaneo o registro por equivocación
+            </button>
+            <button class="reason-btn" onclick="confirmarRetornoPendiente('3. El producto sí cuenta con existencia en piso')">
+                <span>3️⃣</span> El producto sí cuenta con existencia en piso
+            </button>
+
+            <button class="img-modal-btn" style="background: #c5221f; color: white; margin-top: 15px;" onclick="cerrarModalRazon()">Cancelar</button>
+        </div>
     </div>
 
     <!-- MODAL SELECTOR DE ORIGEN DE IMAGEN -->
@@ -711,6 +745,7 @@
         let listaRevisadosGlobal = [];
         let html5QrCode = null;
         let indexEditandoImg = null;
+        let indexRetornandoRevisado = null;
         let escaneoBloqueadoEnfriamiento = false;
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
@@ -1025,7 +1060,6 @@
                 else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
                 else if (tokenUpper.includes("MARCA")) deptoActual = "Marca Propia";
 
-                // Reconocimiento automático para cualquier SKU que comience con "26" o códigos estándar
                 if (/^\d{4,14}$/.test(tokens[i])) {
                     let skuVal = tokens[i];
 
@@ -1066,13 +1100,12 @@
                         if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
                             let deptoAsignado = deptoActual;
                             
-                            // Mapeo automático universal para etiquetas que inician con el bloque "26"
                             if (skuVal.startsWith("26")) {
                                 const tercerDigito = skuVal.charAt(2);
                                 if (tercerDigito === '1') deptoAsignado = "Perecederos";
                                 else if (tercerDigito === '5') deptoAsignado = "Alimentación";
                                 else if (tercerDigito === '6') deptoAsignado = "Panadería";
-                                else deptoAsignado = "Perecederos"; // Asignación general para áreas de fresco o servicio
+                                else deptoAsignado = "Perecederos";
                             }
 
                             nuevosProductos.push({
@@ -1126,6 +1159,19 @@
 
                 const textoCantidadDisplay = item.cant !== "" && item.cant !== null ? `${item.cant} pzas` : `— pzas`;
 
+                let htmlAccionDerecha = `
+                    <div class="negado-inv-badge"><span class="negado-inv-dot"></span> <span class="cant-val">${textoCantidadDisplay}</span></div>
+                    <div class="negado-depto-badge">${item.depto}</div>
+                `;
+
+                if (pestanaActualPreview === 'revisados') {
+                    htmlAccionDerecha = `
+                        <div class="negado-inv-badge"><span class="negado-inv-dot" style="background:#ea4335;"></span> Revisado</div>
+                        <button class="btn-regresar-pendiente" onclick="abrirModalRazon(${indexReal})">↩️ Regresar</button>
+                        <div class="negado-depto-badge">${item.depto}</div>
+                    `;
+                }
+
                 card.innerHTML = `
                     <div class="negado-card-left">
                         <div class="negado-img-wrapper">
@@ -1138,8 +1184,7 @@
                         </div>
                     </div>
                     <div class="negado-card-right">
-                        <div class="negado-inv-badge"><span class="negado-inv-dot"></span> <span class="cant-val">${textoCantidadDisplay}</span></div>
-                        <div class="negado-depto-badge">${item.depto}</div>
+                        ${htmlAccionDerecha}
                     </div>
                 `;
                 container.appendChild(card);
@@ -1147,6 +1192,32 @@
 
             if (modoEdicionActivo && pestanaActualPreview === 'pendientes') {
                 aplicarModoEdicionDOM(true);
+            }
+        }
+
+        /* --- CONTROL DE RETORNO A PENDIENTES CON MOTIVO --- */
+        function abrirModalRazon(index) {
+            indexRetornandoRevisado = index;
+            document.getElementById('reasonModal').classList.add('active');
+        }
+
+        function cerrarModalRazon() {
+            document.getElementById('reasonModal').classList.remove('active');
+            indexRetornandoRevisado = null;
+        }
+
+        function confirmarRetornoPendiente(motivoSeleccionado) {
+            if (indexRetornandoRevisado !== null && listaRevisadosGlobal[indexRetornandoRevisado]) {
+                let productoDevuelto = listaRevisadosGlobal.splice(indexRetornandoRevisado, 1)[0];
+                
+                // Agregamos opcionalmente el motivo para trazabilidad si se requiere
+                productoDevuelto.motivoRetorno = motivoSeleccionado;
+
+                listaPendientesGlobal.push(productoDevuelto);
+                guardarEstadoCompleto();
+                renderizarVistaActual();
+                cerrarModalRazon();
+                alert(`Artículo devuelto a pendientes.\nMotivo registrado: "${motivoSeleccionado}"`);
             }
         }
 
