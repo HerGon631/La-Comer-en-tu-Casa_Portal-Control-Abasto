@@ -137,7 +137,7 @@
         .negados-table-container { max-height: 580px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 12px; background: #fafafa; padding: 8px; width: 100%; }
         .negados-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 
-        /* TARJETAS Y CONTENEDORES CON TAMAÑOS RÍGIDOS ANTI-COLAPSO */
+        /* TARJETAS CON CONTENEDOR RÍGIDO Y RESPALDO LIMPIO */
         .negado-card-item { background: white; border-radius: 12px; padding: 12px; border: 1px solid #e5e5e5; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); width: 100%; }
         .negado-card-top { display: flex; align-items: flex-start; gap: 12px; width: 100%; }
         
@@ -214,7 +214,7 @@
     <div id="globalLoader" class="global-loader">
         <div class="loader-logo-wrapper">
             <div class="loader-spin-ring"></div>
-            <img id="loaderImg" class="loader-logo-img" src="pelicano-logo.png" alt="Cargando..." onerror="this.onerror=null; this.src='pelicano.jpg';">
+            <img id="loaderImg" class="loader-logo-img" src="pelicano.jpg" alt="Cargando..." onerror="this.onerror=null; this.src='pelicano-logo.png';">
         </div>
         <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
     </div>
@@ -617,20 +617,14 @@
             }
         }
 
-        /* --- RUTA RELATIVA DIRECTA A LA CARPETA LOCAL DEL REPOSITORIO --- */
-        async function sincronizarProductoConBd(sku, desc, depto) {
-            try {
-                let skuLimpio = String(sku).trim();
-                let urlFinalImagen = `productos-img/${skuLimpio}.jpg`;
-                return urlFinalImagen;
-            } catch (e) {
-                return 'pelicano-logo.png';
-            }
+        function obtenerUrlImagenProducto(sku) {
+            let skuLimpio = String(sku).trim();
+            return `productos-img/${skuLimpio}.jpg`;
         }
 
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
-            mostrarLoader(`Analizando reporte oficial: "${file.name}"`);
+            mostrarLoader(`Analizando reporte: "${file.name}"`);
             if (file.name.toLowerCase().endsWith('.pdf')) {
                 try {
                     const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
@@ -639,7 +633,7 @@
                         (await (await pdf.getPage(i)).getTextContent()).items.forEach(item => { if (item.str.trim()) tokens.push(item.str.trim()); });
                     }
                     await extraerEtiquetadosUniversal(tokens, file.name);
-                } catch (e) { alert("Error al leer PDF."); ocultarLoader(); }
+                } catch (e) { alert("Error al leer el archivo PDF."); ocultarLoader(); }
             } else {
                 const reader = new FileReader();
                 reader.onload = async function(e) {
@@ -649,12 +643,18 @@
             }
         }
 
+        /* --- PARSER CON FILTRO RIGUROSO DE SKUS Y LIMPIEZA DE ENCABEZADOS --- */
         async function extraerEtiquetadosUniversal(tokens, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Procesando artículos...`;
+            document.getElementById('uploadSub').textContent = `Filtro de productos activo`;
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
-            const cortes = ["PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS", "NEGADOS", "SUCURSAL", "CÓDIGO", "BARRAS", "DESCRIPCIÓN"];
+            
+            const listaNegraPalabras = [
+                "PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS", 
+                "NEGADOS", "SUCURSAL", "CÓDIGO", "BARRAS", "DESCRIPCIÓN", "DIVISIÓN", "ESTATUS", 
+                "FOLIO", "CREACIÓN", "FINALIZADO", "CANTIDAD", "PEDIDA", "ENTREGADA", "NEGADA", "HOGAR", "%"
+            ];
 
             let i = 0;
             while (i < tokens.length) {
@@ -665,18 +665,31 @@
                 else if (tokenUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
                 else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
 
-                if (/^\d{4,14}$/.test(tokens[i]) && tokens[i] !== "2026") {
+                // Únicamente reconoce SKUs válidos de 7 a 14 dígitos (ignora folios cortos de 4 o 5 dígitos y años)
+                if (/^\d{7,14}$/.test(tokens[i]) && !tokens[i].startsWith("2026")) {
                     let skuVal = tokens[i];
                     let descTokens = [];
                     let j = i + 1;
+                    
                     while (j < tokens.length) {
-                        let sigToken = tokens[j], sigUpper = sigToken.toUpperCase();
-                        if (/^\d{4,14}$/.test(sigToken) && sigToken !== "2026") break;
-                        if (cortes.includes(sigUpper) || sigToken === "%") break;
-                        descTokens.push(sigToken);
+                        let sigToken = tokens[j];
+                        let sigUpper = sigToken.toUpperCase();
+                        
+                        // Si encuentra otro SKU válido, detiene la captura de la descripción
+                        if (/^\d{7,14}$/.test(sigToken)) break;
+                        
+                        // Si encuentra una palabra clave de encabezados o tabla, detiene la captura
+                        if (listaNegraPalabras.some(palabra => sigUpper.includes(palabra))) break;
+                        
+                        // Si entra un bloque numérico tipo métrica (0.3 0.0), lo omite
+                        if (!/^\d+\.\d+$/.test(sigToken)) {
+                            descTokens.push(sigToken);
+                        }
                         j++;
                     }
-                    let descVal = descTokens.join(" ").replace(/PÁGINA.*$/i, "").trim();
+                    
+                    let descVal = descTokens.join(" ").trim();
+                    
                     if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
                         let deptoAsignado = deptoActual;
                         if (skuVal.startsWith("26")) {
@@ -685,13 +698,14 @@
                             else if (c === '5') deptoAsignado = "Alimentación";
                             else if (c === '6') deptoAsignado = "Panadería";
                         }
-                        let imgResuelta = await sincronizarProductoConBd(skuVal, descVal.toUpperCase(), deptoAsignado);
-                        nuevosProductos.push({ sku: skuVal, desc: descVal.toUpperCase(), cant: "", depto: deptoAsignado, img: imgResuelta });
+                        let imgUrl = obtenerUrlImagenProducto(skuVal);
+                        nuevosProductos.push({ sku: skuVal, desc: descVal.toUpperCase(), cant: "", depto: deptoAsignado, img: imgUrl });
                     }
                     i = j - 1;
                 }
                 i++;
             }
+            
             listaPendientesGlobal = [...listaPendientesGlobal, ...nuevosProductos];
             guardarEstadoCompleto();
             renderizarVistaActual();
@@ -732,7 +746,7 @@
                 card.innerHTML = `
                     <div class="negado-card-top">
                         <div class="negado-img-wrapper">
-                            <img src="${item.img || 'pelicano-logo.png'}" alt="" class="negado-img-thumb" onerror="this.onerror=null; this.src='pelicano-logo.png';">
+                            <img src="${item.img}" alt="" class="negado-img-thumb" onerror="this.onerror=null; this.src='pelicano.jpg';">
                         </div>
                         <div class="negado-details">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; width: 100%;">
@@ -762,11 +776,11 @@
             }
         }
         function limpiarListaNegados() {
-            if (confirm("¿Limpiar lista?")) { listaPendientesGlobal = []; listaRevisadosGlobal = []; guardarEstadoCompleto(); renderizarVistaActual(); }
+            if (confirm("¿Limpiar lista completa?")) { listaPendientesGlobal = []; listaRevisadosGlobal = []; guardarEstadoCompleto(); renderizarVistaActual(); }
         }
 
         function toggleModoEdicion() {
-            if (pestanaActualPreview !== 'pendientes') { alert("Solo en Pendientes."); return; }
+            if (pestanaActualPreview !== 'pendientes') { alert("Solo disponible en sección Pendientes."); return; }
             modoEdicionActivo = !modoEdicionActivo;
             const btnEditar = document.getElementById('btnEditar');
             if (listaPendientesGlobal.length === 0) { modoEdicionActivo = false; return; }
@@ -781,10 +795,10 @@
                         listaPendientesGlobal[idx].sku = skuInput.value;
                         listaPendientesGlobal[idx].desc = descInput.value;
                         if (cantInput) listaPendientesGlobal[idx].cant = cantInput.value;
-                        sincronizarProductoConBd(listaPendientesGlobal[idx].sku, listaPendientesGlobal[idx].desc, listaPendientesGlobal[idx].depto);
+                        listaPendientesGlobal[idx].img = obtenerUrlImagenProducto(listaPendientesGlobal[idx].sku);
                     }
                 });
-                guardarEstadoCompleto(); renderizarVistaActual(); alert("Guardado.");
+                guardarEstadoCompleto(); renderizarVistaActual(); alert("Edición guardada.");
             }
         }
 
@@ -859,7 +873,7 @@
                 ocultarLoader();
                 let htmlRes = `<div style="display:flex; flex-direction:column; gap:10px;">`;
                 listaPendientesGlobal.forEach(item => {
-                    htmlRes += `<div class="negado-card-item"><div class="negado-card-top"><div class="negado-img-wrapper"><img src="${item.img || 'pelicano-logo.png'}" class="negado-img-thumb" onerror="this.onerror=null; this.src='pelicano-logo.png';"></div><div class="negado-details"><span class="negado-sku">SKU: ${item.sku}</span><span class="negado-desc">${item.desc}</span></div></div></div>`;
+                    htmlRes += `<div class="negado-card-item"><div class="negado-card-top"><div class="negado-img-wrapper"><img src="${item.img}" class="negado-img-thumb" onerror="this.onerror=null; this.src='pelicano.jpg';"></div><div class="negado-details"><span class="negado-sku">SKU: ${item.sku}</span><span class="negado-desc">${item.desc}</span></div></div></div>`;
                 });
                 document.getElementById('contenedorActivos').innerHTML = htmlRes + `</div>`;
                 listaPendientesGlobal = []; listaRevisadosGlobal = [];
