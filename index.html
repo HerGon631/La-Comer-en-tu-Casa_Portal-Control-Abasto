@@ -617,20 +617,15 @@
             }
         }
 
-        /* --- SINCRONIZACIÓN AUTOMÁTICA APUNTANDO A LA CARPETA LOCAL DEL REPOSITORIO --- */
+        /* --- SINCRONIZACIÓN AUTOMÁTICA APUNTANDO A LA CARPETA ABSOLUTA DE GITHUB PAGES --- */
         async function sincronizarProductoConBd(sku, desc, depto) {
             try {
                 let skuLimpio = String(sku).trim();
-                let urlFinalImagen = `productos-img/${skuLimpio}.jpg`;
-
-                let response = await fetch(WEB_APP_URL, {
-                    method: "POST",
-                    body: JSON.stringify({ sku: skuLimpio, desc: desc, depto: depto, imagen: urlFinalImagen })
-                });
-                let result = await response.json();
-                if (result && result.success) return result.imagen || urlFinalImagen;
-            } catch (e) {}
-            return `productos-img/${String(sku).trim()}.jpg`;
+                let urlFinalImagen = `/La-Comer-en-tu-Casa-Portal-Control-Abasto/productos-img/${skuLimpio}.jpg`;
+                return urlFinalImagen;
+            } catch (e) {
+                return 'pelicano-logo.png';
+            }
         }
 
         async function procesarArchivoAdjunto(file) {
@@ -656,7 +651,7 @@
 
         async function extraerEtiquetadosUniversal(tokens, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Sincronizando con REPORTES_BD...`;
+            document.getElementById('uploadSub').textContent = `Sincronizando con catálogo...`;
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
             const cortes = ["PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS", "NEGADOS", "SUCURSAL", "CÓDIGO", "BARRAS", "DESCRIPCIÓN"];
