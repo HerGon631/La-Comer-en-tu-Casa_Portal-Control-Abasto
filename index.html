@@ -137,13 +137,15 @@
         .negados-table-container { max-height: 580px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 12px; background: #fafafa; padding: 8px; width: 100%; }
         .negados-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 
+        /* DISEÑO DE TARJETA CORREGIDO PARA EVITAR EMPALMES */
         .negado-card-item { background: white; border-radius: 12px; padding: 12px; border: 1px solid #e5e5e5; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); width: 100%; }
-        .negado-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; width: 100%; }
-        .negado-img-wrapper { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
-        .negado-img-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; background-color: #fff; }
-        .btn-change-img { position: absolute; bottom: -4px; right: -4px; background: var(--mexican-pink); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .negado-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; width: 100%; }
+        
+        .negado-img-wrapper { position: relative; width: 50px; height: 50px; flex-shrink: 0; }
+        .negado-img-thumb { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; background-color: #fff; display: block; }
+        .btn-change-img { position: absolute; bottom: -4px; right: -4px; background: var(--mexican-pink); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 10px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-        .negado-details { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex-grow: 1; width: 100%; }
+        .negado-details { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex-grow: 1; width: 100%; }
         .negado-sku { font-size: 11px; font-weight: bold; color: var(--label-color); letter-spacing: 0.5px; }
         .negado-desc { font-size: 13px; font-weight: bold; color: var(--text-color); word-break: break-word; line-height: 1.35; width: 100%; }
 
@@ -611,13 +613,12 @@
             }
         }
 
-        /* --- SINCRONIZACIÓN AUTOMÁTICA USANDO URL DE TIENDA EN LÍNEA BASADA EN SKU --- */
         async function sincronizarProductoConBd(sku, desc, depto, urlImagenPersonalizada = "") {
             try {
-                // Genera automáticamente la URL de la tienda online usando el SKU, a menos que se indique otra
+                // Por defecto asigna el logotipo institucional limpio para evitar enlaces rotos 404
                 let urlFinalImagen = urlImagenPersonalizada;
-                if (!urlFinalImagen || urlFinalImagen === "pelicano-logo.png") {
-                    urlFinalImagen = `https://tu-tienda-en-linea.com/productos/${sku}.jpg`;
+                if (!urlFinalImagen || urlFinalImagen.includes("tu-tienda-en-linea.com")) {
+                    urlFinalImagen = "pelicano-logo.png";
                 }
 
                 let response = await fetch(WEB_APP_URL, {
@@ -627,7 +628,7 @@
                 let result = await response.json();
                 if (result && result.success) return result.imagen || urlFinalImagen;
             } catch (e) {}
-            return urlImagenPersonalizada || `https://tu-tienda-en-linea.com/productos/${sku}.jpg`;
+            return urlImagenPersonalizada || "pelicano-logo.png";
         }
 
         async function procesarArchivoAdjunto(file) {
@@ -733,7 +734,6 @@
                 card.innerHTML = `
                     <div class="negado-card-top">
                         <div class="negado-img-wrapper">
-                            <!-- Si la imagen de la tienda falla, carga automáticamente el logo de respaldo -->
                             <img src="${item.img || 'pelicano-logo.png'}" alt="Producto" class="negado-img-thumb" onerror="this.onerror=null; this.src='pelicano-logo.png';">
                             <button class="btn-change-img" id="btnImgChange_${indexReal}" style="display: ${modoEdicionActivo && pestanaActualPreview === 'pendientes' ? 'flex' : 'none'};" onclick="abrirModalCambiarImagen(${indexReal})">🔗</button>
                         </div>
@@ -880,9 +880,9 @@
                 ocultarLoader();
                 let htmlRes = `<div style="display:flex; flex-direction:column; gap:10px;">`;
                 listaPendientesGlobal.forEach(item => {
-                    htmlRes = `<div class="negado-card-item"><div class="negado-card-top"><div class="negado-img-wrapper"><img src="${item.img || 'pelicano-logo.png'}" class="negado-img-thumb" onerror="this.src='pelicano-logo.png';"></div><div class="negado-details"><span class="negado-sku">SKU: ${item.sku}</span><span class="negado-desc">${item.desc}</span></div></div></div>`;
+                    htmlRes += `<div class="negado-card-item"><div class="negado-card-top"><div class="negado-img-wrapper"><img src="${item.img || 'pelicano-logo.png'}" class="negado-img-thumb" onerror="this.src='pelicano-logo.png';"></div><div class="negado-details"><span class="negado-sku">SKU: ${item.sku}</span><span class="negado-desc">${item.desc}</span></div></div></div>`;
                 });
-                document.getElementById('contenedorActivos').innerHTML = htmlRes = `</div>`;
+                document.getElementById('contenedorActivos').innerHTML = htmlRes + `</div>`;
                 listaPendientesGlobal = []; listaRevisadosGlobal = [];
                 guardarEstadoCompleto(); renderizarVistaActual();
                 seleccionarSubreporte('reportes-activos', 'Reportes activos', document.querySelectorAll('#submenuReportes .submenu-item')[1]);
