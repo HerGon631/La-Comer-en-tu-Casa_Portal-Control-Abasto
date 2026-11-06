@@ -362,7 +362,6 @@
         .negado-details { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex-grow: 1; width: 100%; }
         .negado-sku { font-size: 11px; font-weight: bold; color: var(--label-color); letter-spacing: 0.5px; }
         
-        /* La descripción ahora ocupa todo el ancho libre con flexibilidad total */
         .negado-desc { 
             font-size: 13px; 
             font-weight: bold; 
@@ -391,7 +390,6 @@
         .negado-inv-badge { background-color: #f1f3f4; color: #3c4043; padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
         .negado-inv-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #34a853; }
 
-        /* Botón de retorno compacto con solo símbolo */
         .btn-regresar-pendiente {
             background-color: #1a73e8; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(26,115,232,0.25); flex-shrink: 0; transition: transform 0.2s;
         }
@@ -1020,6 +1018,21 @@
             }
         }
 
+        /* --- SINCRONIZACIÓN AUTOMÁTICA CON REPORTES_BD (GOOGLE SHEETS) --- */
+        async function sincronizarProductoConBd(sku, desc, depto, imagenBase64 = "") {
+            try {
+                let url = `${WEB_APP_URL}?accionBd=consultarOActualizarBd&sku=${encodeURIComponent(sku)}&desc=${encodeURIComponent(desc)}&depto=${encodeURIComponent(depto)}&imagen=${encodeURIComponent(imagenBase64)}`;
+                let response = await fetch(url);
+                let result = await response.json();
+                if (result && result.success) {
+                    return result.imagen || "pelicano-logo.png";
+                }
+            } catch (e) {
+                console.log("Error sincronizando con BD", e);
+            }
+            return imagenBase64 || "pelicano-logo.png";
+        }
+
         /* --- PROCESAMIENTO GENERAL UNIVERSAL BASADO EN PATRÓN "26..." --- */
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
@@ -1042,24 +1055,24 @@
                         });
                     }
 
-                    extraerEtiquetadosUniversal(tokensDocumento, file.name);
+                    await extraerEtiquetadosUniversal(tokensDocumento, file.name);
                 } catch (e) {
                     alert("Error al leer el archivo PDF.");
                     ocultarLoader();
                 }
             } else {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     const tokens = e.target.result.split(/\s+/).filter(t => t.length > 0);
-                    extraerEtiquetadosUniversal(tokens, file.name);
+                    await extraerEtiquetadosUniversal(tokens, file.name);
                 };
                 reader.readAsText(file);
             }
         }
 
-        function extraerEtiquetadosUniversal(tokens, nombreArchivo) {
+        async function extraerEtiquetadosUniversal(tokens, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Extracción universal por patrones de etiquetas completada.`;
+            document.getElementById('uploadSub').textContent = `Extracción universal y sincronización con REPORTES_BD...`;
 
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
@@ -1133,12 +1146,15 @@
                                 else deptoAsignado = "Perecederos";
                             }
 
+                            // Consultamos o registramos el producto en la BD para obtener su imagen guardada
+                            let imagenOptenida = await sincronizarProductoConBd(skuVal, descVal.toUpperCase(), deptoAsignado, "pelicano-logo.png");
+
                             nuevosProductos.push({
                                 sku: skuVal,
                                 desc: descVal.toUpperCase(),
                                 cant: "",
                                 depto: deptoAsignado,
-                                img: "pelicano-logo.png"
+                                img: imagenOptenida
                             });
                         }
                         i = j - 1;
@@ -1288,6 +1304,9 @@
                         listaPendientesGlobal[idx].sku = skuInput.value;
                         listaPendientesGlobal[idx].desc = descInput.value;
                         if (cantInput) listaPendientesGlobal[idx].cant = cantInput.value;
+                        
+                        // Sincronizamos cambios actualizados en la BD
+                        sincronizarProductoConBd(listaPendientesGlobal[idx].sku, listaPendientesGlobal[idx].desc, listaPendientesGlobal[idx].depto, listaPendientesGlobal[idx].img);
                     }
                 });
 
@@ -1343,13 +1362,18 @@
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function(event) {
+                    reader.onload = async function(event) {
                         if (pestanaActualPreview === 'pendientes' && listaPendientesGlobal[indexEditandoImg]) {
-                            listaPendientesGlobal[indexEditandoImg].img = event.target.result;
+                            let prod = listaPendientesGlobal[indexEditandoImg];
+                            prod.img = event.target.result;
+
+                            // Actualizamos inmediatamente en la base de datos de Google Sheets
+                            await sincronizarProductoConBd(prod.sku, prod.desc, prod.depto, prod.img);
+
                             guardarEstadoCompleto();
                             renderizarVistaActual();
                             if (modoEdicionActivo) aplicarModoEdicionDOM(true);
-                            alert("Imagen del producto actualizada correctamente.");
+                            alert("Imagen actualizada y guardada en REPORTES_BD exitosamente.");
                         }
                     };
                     reader.readAsDataURL(file);
