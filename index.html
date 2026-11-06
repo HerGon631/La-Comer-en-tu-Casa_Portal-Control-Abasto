@@ -365,7 +365,7 @@
         .negado-inv-dot { width: 7px; height: 7px; border-radius: 50%; background-color: #34a853; }
         .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; white-space: nowrap; }
 
-        /* --- MODAL DE ESCÁNER Y BÚSQUEDA MANUAL --- */
+        /* --- MODAL DE ESCÁNER Y BÚSQUEDA INTELIGENTE --- */
         .scanner-modal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
@@ -378,7 +378,6 @@
             font-size: 13px; font-weight: bold; color: #137333; background: #e6f4ea; padding: 6px 10px; border-radius: 8px; margin-bottom: 12px; display: none;
         }
 
-        /* Lista desplegable de sugerencias para búsqueda manual */
         .autocomplete-container { position: relative; width: 100%; margin-bottom: 12px; text-align: left; }
         .autocomplete-list {
             position: absolute; top: 100%; left: 0; right: 0; max-height: 150px; overflow-y: auto; background: white; border: 1px solid #dadce0; border-radius: 8px; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none;
@@ -430,18 +429,17 @@
         </div>
     </div>
 
-    <!-- MODAL DE ESCÁNER Y BÚSQUEDA MANUAL DE PRODUCTOS ETIQUETADOS -->
+    <!-- MODAL DE ESCÁNER Y BÚSQUEDA MANUAL -->
     <div id="scannerModal" class="scanner-modal">
         <div class="scanner-box">
             <h3 style="margin-bottom: 8px; color: #111;">🔍 Buscar Artículo o Escanear</h3>
-            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Escanea el código o escribe el nombre del producto etiquetado (sin código físico).</p>
+            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Escanea el código o escribe parte del nombre/prefijo (ej. 265, 266, Panadería)...</p>
             <div id="scanStatus" class="scan-status-indicator">¡Código detectado con éxito! Enfriamiento activo...</div>
             
             <div id="reader"></div>
 
-            <!-- BUSCADOR INTELIGENTE PARA PRODUCTOS ETIQUETADOS -->
             <div class="autocomplete-container">
-                <input type="text" id="manualScanInput" placeholder="🔍 Escribe nombre de artículo (ej. Guayaba, Pechuga)..." oninput="filtrarSugerenciasManuales(this.value)">
+                <input type="text" id="manualScanInput" placeholder="🔍 Escribe SKU (ej. 265...) o nombre..." oninput="filtrarSugerenciasManuales(this.value)">
                 <div id="autocompleteList" class="autocomplete-list"></div>
             </div>
 
@@ -962,7 +960,7 @@
             }
         }
 
-        /* --- PROCESAMIENTO GENERAL UNIVERSAL (SKU Y DESCRIPCIÓN LIMPIA) --- */
+        /* --- PROCESAMIENTO GENERAL CON DETECCIÓN DE PREFIJOS (261, 265, 266) --- */
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
             mostrarLoader(`Analizando reporte oficial: "${file.name}"`);
@@ -984,7 +982,7 @@
                         });
                     }
 
-                    extraerSoloCodigoYDescripcionUniversal(tokensDocumento, file.name);
+                    extraerConPrefijosEtiquetados(tokensDocumento, file.name);
                 } catch (e) {
                     alert("Error al leer el archivo PDF.");
                     ocultarLoader();
@@ -993,15 +991,15 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const tokens = e.target.result.split(/\s+/).filter(t => t.length > 0);
-                    extraerSoloCodigoYDescripcionUniversal(tokens, file.name);
+                    extraerConPrefijosEtiquetados(tokens, file.name);
                 };
                 reader.readAsText(file);
             }
         }
 
-        function extraerSoloCodigoYDescripcionUniversal(tokens, nombreArchivo) {
+        function extraerConPrefijosEtiquetados(tokens, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Extracción universal estricta completada.`;
+            document.getElementById('uploadSub').textContent = `Extracción y detección por prefijos de etiquetas completada.`;
 
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
@@ -1065,11 +1063,21 @@
                             .trim();
 
                         if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
+                            // Detectar departamento automáticamente según tus prefijos de etiquetas
+                            let deptoAsignado = deptoActual;
+                            if (skuVal.startsWith("261")) {
+                                deptoAsignado = "Perecederos"; // Carnes
+                            } else if (skuVal.startsWith("265")) {
+                                deptoAsignado = "Alimentación"; // Cocina / Alimentos preparados
+                            } else if (skuVal.startsWith("266")) {
+                                deptoAsignado = "Panadería"; // Panadería
+                            }
+
                             nuevosProductos.push({
                                 sku: skuVal,
                                 desc: descVal.toUpperCase(),
                                 cant: "",
-                                depto: deptoActual,
+                                depto: deptoAsignado,
                                 img: "pelicano-logo.png"
                             });
                         }
@@ -1251,7 +1259,7 @@
             fileInputTemp.click();
         }
 
-        /* --- ESCÁNER Y BÚSQUEDA INTELIGENTE DE PRODUCTOS ETIQUETADOS --- */
+        /* --- ESCÁNER Y BÚSQUEDA INTELIGENTE POR PREFIJOS DE ETIQUETAS --- */
         function abrirEscaner() {
             const modal = document.getElementById('scannerModal');
             modal.classList.add('active');
@@ -1268,7 +1276,7 @@
                 onScanSuccess, 
                 onScanFailure
             ).catch(err => {
-                console.log("Cámara no disponible, usando búsqueda manual.", err);
+                console.log("Cámara no disponible, usando búsqueda por prefijo.", err);
             });
         }
 
@@ -1303,7 +1311,6 @@
             }
         }
 
-        /* --- FILTRO Y AUTOCOMPLETADO PARA ARTÍCULOS SIN CÓDIGO --- */
         function filtrarSugerenciasManuales(textoBusqueda) {
             const listaDiv = document.getElementById('autocompleteList');
             listaDiv.innerHTML = "";
@@ -1319,7 +1326,7 @@
             );
 
             if (matches.length === 0) {
-                listaDiv.innerHTML = `<div class="autocomplete-item" style="color: #c5221f;">No se encontró ningún artículo pendiente con ese nombre.</div>`;
+                listaDiv.innerHTML = `<div class="autocomplete-item" style="color: #c5221f;">No se encontró ningún artículo con ese prefijo (ej. 265, 266, 261).</div>`;
                 listaDiv.style.display = "block";
                 return;
             }
@@ -1327,7 +1334,7 @@
             matches.forEach(match => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'autocomplete-item';
-                itemDiv.innerHTML = `<strong>SKU: ${match.sku}</strong> — ${match.desc}`;
+                itemDiv.innerHTML = `<strong>SKU: ${match.sku}</strong> — ${match.desc} <span style="color:var(--mexican-pink);">(${match.depto})</span>`;
                 itemDiv.onclick = function() {
                     document.getElementById('manualScanInput').value = match.sku;
                     listaDiv.style.display = "none";
@@ -1342,7 +1349,7 @@
         function procesarSkuEscaneadoManualInput() {
             const skuInput = document.getElementById('manualScanInput').value.trim();
             if (!skuInput) {
-                alert("Selecciona o ingresa un SKU válido.");
+                alert("Ingresa un prefijo (ej. 265) o nombre válido.");
                 return;
             }
             procesarSkuEscaneado(skuInput);
@@ -1360,9 +1367,9 @@
                 guardarEstadoCompleto();
                 renderizarVistaActual();
                 cerrarEscaner();
-                alert(`¡Artículo "${productoMovido.desc}" verificado y marcado como revisado!`);
+                alert(`¡Artículo "${productoMovido.desc}" (SKU: ${productoMovido.sku}) confirmado y marcado como revisado!`);
             } else {
-                alert(`No se encontró ningún producto pendiente con el código o texto "${skuCode}".`);
+                alert(`No se encontró ningún producto pendiente con el código o prefijo "${skuCode}".`);
             }
         }
 
