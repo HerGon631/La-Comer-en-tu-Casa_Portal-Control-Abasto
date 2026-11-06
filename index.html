@@ -432,14 +432,14 @@
     <!-- MODAL DE ESCÁNER Y BÚSQUEDA MANUAL -->
     <div id="scannerModal" class="scanner-modal">
         <div class="scanner-box">
-            <h3 style="margin-bottom: 8px; color: #111;">🔍 Buscar Artículo o Escanear</h3>
-            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Escanea el código o escribe parte del nombre/prefijo (ej. 265, 266, Panadería)...</p>
+            <h3 style="margin-bottom: 8px; color: #111;">🔍 Buscar Artículo o SKU</h3>
+            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Escribe el código (ej. 26...) o nombre del producto:</p>
             <div id="scanStatus" class="scan-status-indicator">¡Código detectado con éxito! Enfriamiento activo...</div>
             
             <div id="reader"></div>
 
             <div class="autocomplete-container">
-                <input type="text" id="manualScanInput" placeholder="🔍 Escribe SKU (ej. 265...) o nombre..." oninput="filtrarSugerenciasManuales(this.value)">
+                <input type="text" id="manualScanInput" placeholder="🔍 Escribe SKU (ej. 26...) o nombre..." oninput="filtrarSugerenciasManuales(this.value)">
                 <div id="autocompleteList" class="autocomplete-list"></div>
             </div>
 
@@ -960,7 +960,7 @@
             }
         }
 
-        /* --- PROCESAMIENTO GENERAL CON DETECCIÓN DE PREFIJOS (261, 265, 266) --- */
+        /* --- PROCESAMIENTO GENERAL UNIVERSAL BASADO EN PATRÓN "26..." --- */
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
             mostrarLoader(`Analizando reporte oficial: "${file.name}"`);
@@ -982,7 +982,7 @@
                         });
                     }
 
-                    extraerConPrefijosEtiquetados(tokensDocumento, file.name);
+                    extraerEtiquetadosUniversal(tokensDocumento, file.name);
                 } catch (e) {
                     alert("Error al leer el archivo PDF.");
                     ocultarLoader();
@@ -991,15 +991,15 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const tokens = e.target.result.split(/\s+/).filter(t => t.length > 0);
-                    extraerConPrefijosEtiquetados(tokens, file.name);
+                    extraerEtiquetadosUniversal(tokens, file.name);
                 };
                 reader.readAsText(file);
             }
         }
 
-        function extraerConPrefijosEtiquetados(tokens, nombreArchivo) {
+        function extraerEtiquetadosUniversal(tokens, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Extracción y detección por prefijos de etiquetas completada.`;
+            document.getElementById('uploadSub').textContent = `Extracción universal por patrones de etiquetas completada.`;
 
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
@@ -1025,6 +1025,7 @@
                 else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
                 else if (tokenUpper.includes("MARCA")) deptoActual = "Marca Propia";
 
+                // Reconocimiento automático para cualquier SKU que comience con "26" o códigos estándar
                 if (/^\d{4,14}$/.test(tokens[i])) {
                     let skuVal = tokens[i];
 
@@ -1063,14 +1064,15 @@
                             .trim();
 
                         if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
-                            // Detectar departamento automáticamente según tus prefijos de etiquetas
                             let deptoAsignado = deptoActual;
-                            if (skuVal.startsWith("261")) {
-                                deptoAsignado = "Perecederos"; // Carnes
-                            } else if (skuVal.startsWith("265")) {
-                                deptoAsignado = "Alimentación"; // Cocina / Alimentos preparados
-                            } else if (skuVal.startsWith("266")) {
-                                deptoAsignado = "Panadería"; // Panadería
+                            
+                            // Mapeo automático universal para etiquetas que inician con el bloque "26"
+                            if (skuVal.startsWith("26")) {
+                                const tercerDigito = skuVal.charAt(2);
+                                if (tercerDigito === '1') deptoAsignado = "Perecederos";
+                                else if (tercerDigito === '5') deptoAsignado = "Alimentación";
+                                else if (tercerDigito === '6') deptoAsignado = "Panadería";
+                                else deptoAsignado = "Perecederos"; // Asignación general para áreas de fresco o servicio
                             }
 
                             nuevosProductos.push({
@@ -1259,7 +1261,7 @@
             fileInputTemp.click();
         }
 
-        /* --- ESCÁNER Y BÚSQUEDA INTELIGENTE POR PREFIJOS DE ETIQUETAS --- */
+        /* --- ESCÁNER Y BÚSQUEDA INTELIGENTE POR SKU / PREFIJO --- */
         function abrirEscaner() {
             const modal = document.getElementById('scannerModal');
             modal.classList.add('active');
@@ -1276,7 +1278,7 @@
                 onScanSuccess, 
                 onScanFailure
             ).catch(err => {
-                console.log("Cámara no disponible, usando búsqueda por prefijo.", err);
+                console.log("Cámara no disponible, usando búsqueda manual.", err);
             });
         }
 
@@ -1326,7 +1328,7 @@
             );
 
             if (matches.length === 0) {
-                listaDiv.innerHTML = `<div class="autocomplete-item" style="color: #c5221f;">No se encontró ningún artículo con ese prefijo (ej. 265, 266, 261).</div>`;
+                listaDiv.innerHTML = `<div class="autocomplete-item" style="color: #c5221f;">No se encontró ningún artículo con ese SKU o nombre.</div>`;
                 listaDiv.style.display = "block";
                 return;
             }
@@ -1349,7 +1351,7 @@
         function procesarSkuEscaneadoManualInput() {
             const skuInput = document.getElementById('manualScanInput').value.trim();
             if (!skuInput) {
-                alert("Ingresa un prefijo (ej. 265) o nombre válido.");
+                alert("Ingresa un SKU o nombre válido.");
                 return;
             }
             procesarSkuEscaneado(skuInput);
@@ -1367,9 +1369,9 @@
                 guardarEstadoCompleto();
                 renderizarVistaActual();
                 cerrarEscaner();
-                alert(`¡Artículo "${productoMovido.desc}" (SKU: ${productoMovido.sku}) confirmado y marcado como revisado!`);
+                alert(`¡Artículo "${productoMovido.desc}" (SKU: ${productoMovido.sku}) verificado con éxito!`);
             } else {
-                alert(`No se encontró ningún producto pendiente con el código o prefijo "${skuCode}".`);
+                alert(`No se encontró ningún producto pendiente con el código o SKU "${skuCode}".`);
             }
         }
 
