@@ -365,6 +365,7 @@
         .negado-inv-dot { width: 7px; height: 7px; border-radius: 50%; background-color: #34a853; }
         .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; white-space: nowrap; }
 
+        /* --- MODAL DE ESCÁNER Y BÚSQUEDA MANUAL --- */
         .scanner-modal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
@@ -376,6 +377,14 @@
         .scan-status-indicator {
             font-size: 13px; font-weight: bold; color: #137333; background: #e6f4ea; padding: 6px 10px; border-radius: 8px; margin-bottom: 12px; display: none;
         }
+
+        /* Lista desplegable de sugerencias para búsqueda manual */
+        .autocomplete-container { position: relative; width: 100%; margin-bottom: 12px; text-align: left; }
+        .autocomplete-list {
+            position: absolute; top: 100%; left: 0; right: 0; max-height: 150px; overflow-y: auto; background: white; border: 1px solid #dadce0; border-radius: 8px; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none;
+        }
+        .autocomplete-item { padding: 10px; font-size: 12px; border-bottom: 1px solid #eee; cursor: pointer; color: var(--text-color); }
+        .autocomplete-item:hover { background-color: var(--pink-transparent-30); color: var(--mexican-pink); font-weight: bold; }
 
         .img-modal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 10000;
@@ -421,17 +430,24 @@
         </div>
     </div>
 
-    <!-- MODAL DE ESCÁNER DE CÁMARA CON ENFRIAMIENTO -->
+    <!-- MODAL DE ESCÁNER Y BÚSQUEDA MANUAL DE PRODUCTOS ETIQUETADOS -->
     <div id="scannerModal" class="scanner-modal">
         <div class="scanner-box">
-            <h3 style="margin-bottom: 8px; color: #111;">📷 Escáner de SKU Activo</h3>
-            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Apunta la cámara al código de barras.</p>
+            <h3 style="margin-bottom: 8px; color: #111;">🔍 Buscar Artículo o Escanear</h3>
+            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Escanea el código o escribe el nombre del producto etiquetado (sin código físico).</p>
             <div id="scanStatus" class="scan-status-indicator">¡Código detectado con éxito! Enfriamiento activo...</div>
+            
             <div id="reader"></div>
-            <input type="text" id="manualScanInput" placeholder="O ingresa SKU manualmente..." style="margin-bottom: 12px;">
+
+            <!-- BUSCADOR INTELIGENTE PARA PRODUCTOS ETIQUETADOS -->
+            <div class="autocomplete-container">
+                <input type="text" id="manualScanInput" placeholder="🔍 Escribe nombre de artículo (ej. Guayaba, Pechuga)..." oninput="filtrarSugerenciasManuales(this.value)">
+                <div id="autocompleteList" class="autocomplete-list"></div>
+            </div>
+
             <div style="display: flex; gap: 10px;">
-                <button class="btn-primary" style="margin-top:0; background:#5f6368;" onclick="cerrarEscaner()">Cancelar</button>
-                <button class="btn-primary" style="margin-top:0;" onclick="procesarEscaneoManual()">Procesar SKU</button>
+                <button class="btn-primary" style="margin-top:0; background:#5f6368;" onclick="cerrarEscaner()">Cerrar</button>
+                <button class="btn-primary" style="margin-top:0;" onclick="procesarSkuEscaneadoManualInput()">Registrar Selección</button>
             </div>
         </div>
     </div>
@@ -590,7 +606,7 @@
                             <div class="negados-actions">
                                 <button class="btn-action-limpiar" onclick="limpiarListaNegados()">🧹 Limpiar</button>
                                 <button class="btn-action-editar" id="btnEditar" onclick="toggleModoEdicion()">✏️ Editar</button>
-                                <button class="btn-action-escanear" onclick="abrirEscaner()">📷 Escanear</button>
+                                <button class="btn-action-escanear" onclick="abrirEscaner()">📷 Escanear / Buscar</button>
                                 <button class="btn-action-confirmar" onclick="confirmarReporte()">✓ Confirmar</button>
                                 
                                 <select class="filter-select" id="filterDepto" onchange="filtrarNegadosPorDepto(this.value)">
@@ -990,7 +1006,6 @@
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
 
-            // Palabras prohibidas universales para corte inmediato
             const palabrasCorteSistema = [
                 "PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS",
                 "NEGADOS", "SUCURSAL", "QUERETARO", "MILENIO", "CÓDIGO", "BARRAS", "DESCRIPCIÓN",
@@ -1004,7 +1019,6 @@
             while (i < tokens.length) {
                 let tokenUpper = tokens[i].toUpperCase();
 
-                // Detección general de Departamentos
                 if (tokenUpper.includes("ALIMENTACION") || tokenUpper.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
                 else if (tokenUpper.includes("PANADERIA") || tokenUpper.includes("PANADERÍA")) deptoActual = "Panadería";
                 else if (tokenUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
@@ -1013,7 +1027,6 @@
                 else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
                 else if (tokenUpper.includes("MARCA")) deptoActual = "Marca Propia";
 
-                // Detección general de SKU (4 a 14 dígitos numéricos)
                 if (/^\d{4,14}$/.test(tokens[i])) {
                     let skuVal = tokens[i];
 
@@ -1025,15 +1038,12 @@
                             let sigToken = tokens[j];
                             let sigUpper = sigToken.toUpperCase();
 
-                            // Si hallamos otro SKU, cortamos
                             if (/^\d{4,14}$/.test(sigToken) && sigToken !== "2026" && !sigToken.startsWith("1454")) break;
 
-                            // Filtros estrictos universales para eliminar fechas, horas, la palabra PÁGINA, números de página o cantidades corporativas
                             const esPaginacion = sigUpper === "PÁGINA" || sigUpper === "DE" || /^\d+$/.test(sigToken);
                             const esFechaOCoordenada = /\d{2}\/\d{2}\/\d{4}/.test(sigToken) || /\d{2}:\d{2}/.test(sigToken);
                             const esCantidadCorporativa = /^\d+(\.\d+)?%?$/.test(sigToken) || /^\d+\.\d+$/.test(sigToken);
 
-                            // Si el token es parte de la paginación partida (ej. palabra "2" o "3" después de página), evaluamos cortar
                             if (
                                 palabrasCorteSistema.includes(sigUpper) || 
                                 sigToken === "%" || 
@@ -1041,7 +1051,6 @@
                                 esCantidadCorporativa ||
                                 (esPaginacion && (descTokens.includes("PÁGINA") || descTokens.length > 0 && descTokens[descTokens.length-1].toUpperCase() === "PÁGINA"))
                             ) {
-                                // Si detectamos la palabra PÁGINA en los tokens acumulados recientes, cortamos todo lo sobrante
                                 break;
                             }
 
@@ -1051,7 +1060,6 @@
                             j++;
                         }
 
-                        // Limpieza general post-unión por si quedó alguna traza de la palabra PÁGINA o números de página pegados
                         let descVal = descTokens.join(" ")
                             .replace(/PÁGINA.*$/i, "")
                             .trim();
@@ -1060,7 +1068,7 @@
                             nuevosProductos.push({
                                 sku: skuVal,
                                 desc: descVal.toUpperCase(),
-                                cant: "", // Vacío por defecto para llenado manual general en piso
+                                cant: "",
                                 depto: deptoActual,
                                 img: "pelicano-logo.png"
                             });
@@ -1132,7 +1140,6 @@
             }
         }
 
-        /* --- BOTONERA Y EDICIONES --- */
         function limpiarListaNegados() {
             if (confirm("¿Estás seguro de limpiar toda la lista de registros?")) {
                 listaPendientesGlobal = [];
@@ -1244,11 +1251,13 @@
             fileInputTemp.click();
         }
 
-        /* --- ESCÁNER DE CÁMARA (5S ENFRIAMIENTO) --- */
+        /* --- ESCÁNER Y BÚSQUEDA INTELIGENTE DE PRODUCTOS ETIQUETADOS --- */
         function abrirEscaner() {
             const modal = document.getElementById('scannerModal');
             modal.classList.add('active');
             escaneoBloqueadoEnfriamiento = false;
+            document.getElementById('manualScanInput').value = "";
+            document.getElementById('autocompleteList').style.display = "none";
 
             html5QrCode = new Html5Qrcode("reader");
             const config = { fps: 10, qrbox: { width: 250, height: 150 } };
@@ -1259,7 +1268,7 @@
                 onScanSuccess, 
                 onScanFailure
             ).catch(err => {
-                console.log("Cámara no disponible, usando modo manual.", err);
+                console.log("Cámara no disponible, usando búsqueda manual.", err);
             });
         }
 
@@ -1285,6 +1294,7 @@
             const modal = document.getElementById('scannerModal');
             modal.classList.remove('active');
             document.getElementById('scanStatus').style.display = "none";
+            document.getElementById('autocompleteList').style.display = "none";
 
             if (html5QrCode) {
                 html5QrCode.stop().then(() => {
@@ -1293,18 +1303,55 @@
             }
         }
 
-        function procesarEscaneoManual() {
+        /* --- FILTRO Y AUTOCOMPLETADO PARA ARTÍCULOS SIN CÓDIGO --- */
+        function filtrarSugerenciasManuales(textoBusqueda) {
+            const listaDiv = document.getElementById('autocompleteList');
+            listaDiv.innerHTML = "";
+
+            if (!textoBusqueda || textoBusqueda.trim().length === 0) {
+                listaDiv.style.display = "none";
+                return;
+            }
+
+            const queryUpper = textoBusqueda.toUpperCase();
+            let matches = listaPendientesGlobal.filter(item => 
+                item.desc.includes(queryUpper) || item.sku.includes(queryUpper)
+            );
+
+            if (matches.length === 0) {
+                listaDiv.innerHTML = `<div class="autocomplete-item" style="color: #c5221f;">No se encontró ningún artículo pendiente con ese nombre.</div>`;
+                listaDiv.style.display = "block";
+                return;
+            }
+
+            matches.forEach(match => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'autocomplete-item';
+                itemDiv.innerHTML = `<strong>SKU: ${match.sku}</strong> — ${match.desc}`;
+                itemDiv.onclick = function() {
+                    document.getElementById('manualScanInput').value = match.sku;
+                    listaDiv.style.display = "none";
+                    procesarSkuEscaneadoManualInput();
+                };
+                listaDiv.appendChild(itemDiv);
+            });
+
+            listaDiv.style.display = "block";
+        }
+
+        function procesarSkuEscaneadoManualInput() {
             const skuInput = document.getElementById('manualScanInput').value.trim();
             if (!skuInput) {
-                alert("Ingresa o escanea un código SKU válido.");
+                alert("Selecciona o ingresa un SKU válido.");
                 return;
             }
             procesarSkuEscaneado(skuInput);
             document.getElementById('manualScanInput').value = "";
+            document.getElementById('autocompleteList').style.display = "none";
         }
 
         function procesarSkuEscaneado(skuCode) {
-            let indexEncontrado = listaPendientesGlobal.findIndex(item => item.sku.includes(skuCode));
+            let indexEncontrado = listaPendientesGlobal.findIndex(item => item.sku.includes(skuCode) || item.desc.includes(skuCode.toUpperCase()));
 
             if (indexEncontrado !== -1) {
                 let productoMovido = listaPendientesGlobal.splice(indexEncontrado, 1)[0];
@@ -1312,9 +1359,10 @@
 
                 guardarEstadoCompleto();
                 renderizarVistaActual();
-                alert(`¡SKU ${skuCode} verificado y movido a Revisados con éxito!`);
+                cerrarEscaner();
+                alert(`¡Artículo "${productoMovido.desc}" verificado y marcado como revisado!`);
             } else {
-                console.log(`El código "${skuCode}" no coincide con ningún producto pendiente.`);
+                alert(`No se encontró ningún producto pendiente con el código o texto "${skuCode}".`);
             }
         }
 
