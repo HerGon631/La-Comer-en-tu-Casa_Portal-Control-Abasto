@@ -1018,17 +1018,27 @@
             }
         }
 
-        /* --- SINCRONIZACIÓN AUTOMÁTICA CON REPORTES_BD (GOOGLE SHEETS) --- */
+        /* --- SINCRONIZACIÓN AUTOMÁTICA CON REPORTES_BD (MÉTODO POST) --- */
         async function sincronizarProductoConBd(sku, desc, depto, imagenBase64 = "") {
             try {
-                let url = `${WEB_APP_URL}?accionBd=consultarOActualizarBd&sku=${encodeURIComponent(sku)}&desc=${encodeURIComponent(desc)}&depto=${encodeURIComponent(depto)}&imagen=${encodeURIComponent(imagenBase64)}`;
-                let response = await fetch(url);
+                let payload = {
+                    sku: sku,
+                    desc: desc,
+                    depto: depto,
+                    imagen: imagenBase64
+                };
+
+                let response = await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                
                 let result = await response.json();
                 if (result && result.success) {
                     return result.imagen || "pelicano-logo.png";
                 }
             } catch (e) {
-                console.log("Error sincronizando con BD", e);
+                console.log("Error sincronizando con BD por POST", e);
             }
             return imagenBase64 || "pelicano-logo.png";
         }
@@ -1072,7 +1082,7 @@
 
         async function extraerEtiquetadosUniversal(tokens, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Extracción universal y sincronización con REPORTES_BD...`;
+            document.getElementById('uploadSub').textContent = `Extracción y sincronización con REPORTES_BD...`;
 
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
@@ -1146,7 +1156,6 @@
                                 else deptoAsignado = "Perecederos";
                             }
 
-                            // Consultamos o registramos el producto en la BD para obtener su imagen guardada
                             let imagenOptenida = await sincronizarProductoConBd(skuVal, descVal.toUpperCase(), deptoAsignado, "pelicano-logo.png");
 
                             nuevosProductos.push({
@@ -1305,7 +1314,6 @@
                         listaPendientesGlobal[idx].desc = descInput.value;
                         if (cantInput) listaPendientesGlobal[idx].cant = cantInput.value;
                         
-                        // Sincronizamos cambios actualizados en la BD
                         sincronizarProductoConBd(listaPendientesGlobal[idx].sku, listaPendientesGlobal[idx].desc, listaPendientesGlobal[idx].depto, listaPendientesGlobal[idx].img);
                     }
                 });
@@ -1367,7 +1375,6 @@
                             let prod = listaPendientesGlobal[indexEditandoImg];
                             prod.img = event.target.result;
 
-                            // Actualizamos inmediatamente en la base de datos de Google Sheets
                             await sincronizarProductoConBd(prod.sku, prod.desc, prod.depto, prod.img);
 
                             guardarEstadoCompleto();
