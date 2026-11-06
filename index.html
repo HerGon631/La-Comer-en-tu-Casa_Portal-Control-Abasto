@@ -329,7 +329,7 @@
         .negados-table-container { max-height: 580px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 12px; background: #fafafa; padding: 8px; width: 100%; }
         .negados-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 
-        /* --- DISEÑO UNIFICADO DE TARJETAS --- */
+        /* --- DISEÑO DE TARJETAS OPTIMIZADO PARA MÓVIL --- */
         .negado-card-item { 
             background: white; 
             border-radius: 12px; 
@@ -346,7 +346,7 @@
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
         }
 
@@ -359,15 +359,24 @@
             width: 20px; height: 20px; font-size: 10px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        .negado-details { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex-grow: 1; }
+        .negado-details { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex-grow: 1; width: 100%; }
         .negado-sku { font-size: 11px; font-weight: bold; color: var(--label-color); letter-spacing: 0.5px; }
-        .negado-desc { font-size: 13px; font-weight: bold; color: var(--text-color); word-break: break-word; line-height: 1.3; }
+        
+        /* La descripción ahora ocupa todo el ancho libre con flexibilidad total */
+        .negado-desc { 
+            font-size: 13px; 
+            font-weight: bold; 
+            color: var(--text-color); 
+            word-break: break-word; 
+            line-height: 1.35; 
+            width: 100%;
+        }
 
         .input-edit-sku { font-size: 11px; font-weight: bold; padding: 2px 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 130px; }
         .input-edit-desc { font-size: 13px; font-weight: bold; padding: 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 100%; }
         .input-edit-cant { font-size: 12px; font-weight: bold; padding: 4px; border: 1px solid var(--mexican-pink); border-radius: 6px; width: 65px; text-align: center; }
 
-        .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; }
+        .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; white-space: nowrap; flex-shrink: 0; align-self: flex-start; }
 
         /* Barra inferior limpia y simétrica */
         .negado-card-bottom {
@@ -1189,17 +1198,17 @@
 
                 card.innerHTML = `
                     <div class="negado-card-top">
-                        <div class="negado-card-left">
-                            <div class="negado-img-wrapper">
-                                <img src="${item.img || 'pelicano-logo.png'}" alt="Producto" class="negado-img-thumb" onerror="this.src='pelicano.jpg'">
-                                <button class="btn-change-img" id="btnImgChange_${indexReal}" style="display: ${modoEdicionActivo && pestanaActualPreview === 'pendientes' ? 'flex' : 'none'};" onclick="abrirModalCambiarImagen(${indexReal})" title="Modificar imagen">📷</button>
-                            </div>
-                            <div class="negado-details">
-                                <span class="negado-sku">SKU: <span class="sku-val">${item.sku}</span></span>
-                                <span class="negado-desc"><span class="desc-val">${item.desc}</span></span>
-                            </div>
+                        <div class="negado-img-wrapper">
+                            <img src="${item.img || 'pelicano-logo.png'}" alt="Producto" class="negado-img-thumb" onerror="this.src='pelicano.jpg'">
+                            <button class="btn-change-img" id="btnImgChange_${indexReal}" style="display: ${modoEdicionActivo && pestanaActualPreview === 'pendientes' ? 'flex' : 'none'};" onclick="abrirModalCambiarImagen(${indexReal})" title="Modificar imagen">📷</button>
                         </div>
-                        <div class="negado-depto-badge">${item.depto}</div>
+                        <div class="negado-details">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; width: 100%;">
+                                <span class="negado-sku">SKU: <span class="sku-val">${item.sku}</span></span>
+                                <div class="negado-depto-badge">${item.depto}</div>
+                            </div>
+                            <span class="negado-desc"><span class="desc-val">${item.desc}</span></span>
+                        </div>
                     </div>
                     <div class="negado-card-bottom">
                         ${htmlBottom}
@@ -1480,14 +1489,16 @@
                     htmlResumen += `
                         <div class="negado-card-item">
                             <div class="negado-card-top">
-                                <div class="negado-card-left">
+                                <div class="negado-img-wrapper">
                                     <img src="${item.img || 'pelicano-logo.png'}" alt="Producto" class="negado-img-thumb" onerror="this.src='pelicano.jpg'">
-                                    <div class="negado-details">
-                                        <span class="negado-sku">SKU: ${item.sku}</span>
-                                        <span class="negado-desc">${item.desc}</span>
-                                    </div>
                                 </div>
-                                <div class="negado-depto-badge">${item.depto}</div>
+                                <div class="negado-details">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; width: 100%;">
+                                        <span class="negado-sku">SKU: ${item.sku}</span>
+                                        <div class="negado-depto-badge">${item.depto}</div>
+                                    </div>
+                                    <span class="negado-desc">${item.desc}</span>
+                                </div>
                             </div>
                             <div class="negado-card-bottom">
                                 <div class="negado-inv-badge"><span class="negado-inv-dot"></span> ${cantTexto}</div>
