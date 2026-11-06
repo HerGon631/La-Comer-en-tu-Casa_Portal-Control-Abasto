@@ -432,7 +432,7 @@
         <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
     </div>
 
-    <!-- MODAL DE MOTIVO DE RETORNO (3 OPCIONES DE ERROR COMÚN) -->
+    <!-- MODAL DE MOTIVO DE RETORNO (ACTUALIZADO) -->
     <div id="reasonModal" class="reason-modal">
         <div class="reason-modal-box">
             <h3 style="margin-bottom: 8px; color: #111;">↩️ Devolver a Pendientes</h3>
@@ -444,8 +444,8 @@
             <button class="reason-btn" onclick="confirmarRetornoPendiente('2. Escaneo o registro por equivocación')">
                 <span>2️⃣</span> Escaneo o registro por equivocación
             </button>
-            <button class="reason-btn" onclick="confirmarRetornoPendiente('3. El producto sí cuenta con existencia en piso')">
-                <span>3️⃣</span> El producto sí cuenta con existencia en piso
+            <button class="reason-btn" onclick="confirmarRetornoPendiente('3. El producto no cuenta con existencia en piso')">
+                <span>3️⃣</span> El producto no cuenta con existencia en piso
             </button>
 
             <button class="img-modal-btn" style="background: #c5221f; color: white; margin-top: 15px;" onclick="cerrarModalRazon()">Cancelar</button>
@@ -1210,7 +1210,6 @@
             if (indexRetornandoRevisado !== null && listaRevisadosGlobal[indexRetornandoRevisado]) {
                 let productoDevuelto = listaRevisadosGlobal.splice(indexRetornandoRevisado, 1)[0];
                 
-                // Agregamos opcionalmente el motivo para trazabilidad si se requiere
                 productoDevuelto.motivoRetorno = motivoSeleccionado;
 
                 listaPendientesGlobal.push(productoDevuelto);
