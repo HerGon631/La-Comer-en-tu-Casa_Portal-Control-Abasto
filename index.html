@@ -165,25 +165,6 @@
             display: block !important; 
         }
 
-        .btn-change-img { 
-            position: absolute; 
-            bottom: -4px; 
-            right: -4px; 
-            background: var(--mexican-pink); 
-            color: white; 
-            border: none; 
-            border-radius: 50%; 
-            width: 20px; 
-            height: 20px; 
-            font-size: 10px; 
-            display: none; 
-            align-items: center; 
-            justify-content: center; 
-            cursor: pointer; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
-            z-index: 5;
-        }
-
         .negado-details { display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0; }
         .negado-sku { font-size: 11px; font-weight: bold; color: var(--label-color); letter-spacing: 0.5px; }
         .negado-desc { font-size: 13px; font-weight: bold; color: var(--text-color); word-break: break-word; line-height: 1.35; width: 100%; }
@@ -217,11 +198,6 @@
         .autocomplete-item { padding: 10px; font-size: 12px; border-bottom: 1px solid #eee; cursor: pointer; color: var(--text-color); }
         .autocomplete-item:hover { background-color: var(--pink-transparent-30); color: var(--mexican-pink); font-weight: bold; }
 
-        .img-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; }
-        .img-modal.active { opacity: 1; visibility: visible; }
-        .img-modal-box { background: white; padding: 25px; border-radius: 16px; width: 90%; max-width: 320px; text-align: center; }
-        .img-modal-btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; }
-
         @media (max-width: 600px) {
             .upload-bar-compact { flex-direction: column; align-items: stretch; text-align: center; gap: 15px; }
             .upload-info { flex-direction: column; align-items: center; text-align: center; }
@@ -250,17 +226,7 @@
             <button class="reason-btn" onclick="confirmarRetornoPendiente('1. Confusión con otro SKU similar')"><span>1️⃣</span> Confusión con otro SKU similar</button>
             <button class="reason-btn" onclick="confirmarRetornoPendiente('2. Escaneo o registro por equivocación')"><span>2️⃣</span> Escaneo o registro por equivocación</button>
             <button class="reason-btn" onclick="confirmarRetornoPendiente('3. El producto no cuenta con existencia en piso')"><span>3️⃣</span> El producto no cuenta con existencia en piso</button>
-            <button class="img-modal-btn" style="background: #c5221f; color: white; margin-top: 15px;" onclick="cerrarModalRazon()">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="imgSourceModal" class="img-modal">
-        <div class="img-modal-box">
-            <h3 style="margin-bottom: 10px; color: #111;">🔗 Asignar URL de Imagen</h3>
-            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 15px;">Ingresa el enlace web directo de la imagen del producto:</p>
-            <input type="text" id="customImgUrlInput" placeholder="https://tu-tienda.com/img.jpg" style="margin-bottom: 10px;">
-            <button class="img-modal-btn" style="background: var(--mexican-pink); color: white;" onclick="guardarUrlPersonalizada()">Guardar Enlace</button>
-            <button class="img-modal-btn" style="background: #c5221f; color: white;" onclick="cerrarModalImagen()">Cancelar</button>
+            <button class="btn-primary" style="background: #c5221f; color: white; margin-top: 15px;" onclick="cerrarModalRazon()">Cancelar</button>
         </div>
     </div>
 
@@ -478,7 +444,6 @@
         let listaPendientesGlobal = [];
         let listaRevisadosGlobal = [];
         let html5QrCode = null;
-        let indexEditandoImg = null;
         let indexRetornandoRevisado = null;
         let escaneoBloqueadoEnfriamiento = false;
         let temporizadorInactividad;
@@ -652,25 +617,20 @@
             }
         }
 
-        /* --- INTEGRACIÓN DINÁMICA CON LA TIENDA DE LA COMER POR SKU --- */
-        async function sincronizarProductoConBd(sku, desc, depto, urlImagenPersonalizada = "") {
+        /* --- SINCRONIZACIÓN AUTOMÁTICA APUNTANDO A LA CARPETA LOCAL DEL REPOSITORIO --- */
+        async function sincronizarProductoConBd(sku, desc, depto) {
             try {
-                let urlFinalImagen = urlImagenPersonalizada;
-                
-                // Si no tiene imagen personalizada, genera la ruta estándar basada en la tienda de La Comer o CDN de productos
-                if (!urlFinalImagen || urlFinalImagen === "pelicano-logo.png") {
-                    // Usamos un servicio de catálogo o ruta estándar de imágenes de e-commerce basada en el SKU
-                    urlFinalImagen = `https://images.openfoodfacts.org/images/products/${sku.trim()}.jpg`;
-                }
+                let skuLimpio = String(sku).trim();
+                let urlFinalImagen = `productos-img/${skuLimpio}.jpg`;
 
                 let response = await fetch(WEB_APP_URL, {
                     method: "POST",
-                    body: JSON.stringify({ sku: sku, desc: desc, depto: depto, imagen: urlFinalImagen })
+                    body: JSON.stringify({ sku: skuLimpio, desc: desc, depto: depto, imagen: urlFinalImagen })
                 });
                 let result = await response.json();
                 if (result && result.success) return result.imagen || urlFinalImagen;
             } catch (e) {}
-            return urlImagenPersonalizada || `https://images.openfoodfacts.org/images/products/${sku.trim()}.jpg`;
+            return `productos-img/${String(sku).trim()}.jpg`;
         }
 
         async function procesarArchivoAdjunto(file) {
@@ -774,14 +734,10 @@
                     htmlBottom = `<div class="negado-inv-badge"><span class="negado-inv-dot" style="background:#ea4335;"></span> Revisado</div><button class="btn-regresar-pendiente" title="Regresar a pendientes" onclick="abrirModalRazon(${indexReal})">↩️</button>`;
                 }
                 
-                // Respaldo dinámico mediante SVG limpio con el SKU si la foto del CDN no está disponible
-                let fallbackUrl = `https://dummyimage.com/100x100/e4007c/ffffff.png&text=${item.sku.slice(-4)}`;
-
                 card.innerHTML = `
                     <div class="negado-card-top">
                         <div class="negado-img-wrapper">
-                            <img src="${item.img || fallbackUrl}" alt="" class="negado-img-thumb" onerror="this.onerror=null; this.src='${fallbackUrl}';">
-                            <button class="btn-change-img" id="btnImgChange_${indexReal}" style="display: ${modoEdicionActivo && pestanaActualPreview === 'pendientes' ? 'flex' : 'none'};" onclick="abrirModalCambiarImagen(${indexReal})">🔗</button>
+                            <img src="${item.img || 'pelicano-logo.png'}" alt="" class="negado-img-thumb" onerror="this.onerror=null; this.src='pelicano-logo.png';">
                         </div>
                         <div class="negado-details">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; width: 100%;">
@@ -830,7 +786,7 @@
                         listaPendientesGlobal[idx].sku = skuInput.value;
                         listaPendientesGlobal[idx].desc = descInput.value;
                         if (cantInput) listaPendientesGlobal[idx].cant = cantInput.value;
-                        sincronizarProductoConBd(listaPendientesGlobal[idx].sku, listaPendientesGlobal[idx].desc, listaPendientesGlobal[idx].depto, listaPendientesGlobal[idx].img);
+                        sincronizarProductoConBd(listaPendientesGlobal[idx].sku, listaPendientesGlobal[idx].desc, listaPendientesGlobal[idx].depto);
                     }
                 });
                 guardarEstadoCompleto(); renderizarVistaActual(); alert("Guardado.");
@@ -839,31 +795,13 @@
 
         function aplicarModoEdicionDOM(activar) {
             document.querySelectorAll('.negado-card-item').forEach((card, idx) => {
-                const skuSpan = card.querySelector('.sku-val'), descSpan = card.querySelector('.desc-val'), cantSpan = card.querySelector('.cant-val'), btnImg = card.querySelector('.btn-change-img');
-                if (btnImg) btnImg.style.display = activar ? 'flex' : 'none';
+                const skuSpan = card.querySelector('.sku-val'), descSpan = card.querySelector('.desc-val'), cantSpan = card.querySelector('.cant-val');
                 if (activar && !skuSpan.querySelector('input')) {
                     skuSpan.innerHTML = `<input type="text" class="input-edit-sku" value="${skuSpan.textContent}">`;
                     descSpan.innerHTML = `<input type="text" class="input-edit-desc" value="${descSpan.textContent}">`;
                     cantSpan.innerHTML = `<input type="number" class="input-edit-cant" placeholder="0" value="${listaPendientesGlobal[idx] ? listaPendientesGlobal[idx].cant : ''}">`;
                 }
             });
-        }
-
-        function abrirModalCambiarImagen(index) { indexEditandoImg = index; document.getElementById('customImgUrlInput').value = ""; document.getElementById('imgSourceModal').classList.add('active'); }
-        function cerrarModalImagen() { document.getElementById('imgSourceModal').classList.remove('active'); indexEditandoImg = null; }
-
-        async function guardarUrlPersonalizada() {
-            let nuevaUrl = document.getElementById('customImgUrlInput').value.trim();
-            if (!nuevaUrl) { alert("Ingresa una URL válida."); return; }
-            cerrarModalImagen();
-            if (pestanaActualPreview === 'pendientes' && listaPendientesGlobal[indexEditandoImg]) {
-                let prod = listaPendientesGlobal[indexEditandoImg];
-                prod.img = nuevaUrl;
-                await sincronizarProductoConBd(prod.sku, prod.desc, prod.depto, prod.img);
-                guardarEstadoCompleto(); renderizarVistaActual();
-                if (modoEdicionActivo) aplicarModoEdicionDOM(true);
-                alert("URL de imagen actualizada con éxito.");
-            }
         }
 
         function abrirEscaner() {
@@ -880,7 +818,7 @@
             escaneoBloqueadoEnfriamiento = true;
             document.getElementById('scanStatus').style.display = "block";
             procesarSkuEscaneado(decodedText);
-            setTimeout(() => { escaneoBloqueadoEnfriening = false; document.getElementById('scanStatus').style.display = "none"; }, 5000);
+            setTimeout(() => { escaneoBloqueadoEnfriamiento = false; document.getElementById('scanStatus').style.display = "none"; }, 5000);
         }
 
         function cerrarEscaner() {
@@ -926,7 +864,7 @@
                 ocultarLoader();
                 let htmlRes = `<div style="display:flex; flex-direction:column; gap:10px;">`;
                 listaPendientesGlobal.forEach(item => {
-                    htmlRes += `<div class="negado-card-item"><div class="negado-card-top"><div class="negado-img-wrapper"><img src="${item.img}" class="negado-img-thumb"></div><div class="negado-details"><span class="negado-sku">SKU: ${item.sku}</span><span class="negado-desc">${item.desc}</span></div></div></div>`;
+                    htmlRes += `<div class="negado-card-item"><div class="negado-card-top"><div class="negado-img-wrapper"><img src="${item.img || 'pelicano-logo.png'}" class="negado-img-thumb" onerror="this.onerror=null; this.src='pelicano-logo.png';"></div><div class="negado-details"><span class="negado-sku">SKU: ${item.sku}</span><span class="negado-desc">${item.desc}</span></div></div></div>`;
                 });
                 document.getElementById('contenedorActivos').innerHTML = htmlRes + `</div>`;
                 listaPendientesGlobal = []; listaRevisadosGlobal = [];
