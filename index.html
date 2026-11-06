@@ -629,43 +629,63 @@
                         pageText.items.forEach(item => { if (item.str.trim()) tokensPag.push(item.str.trim()); });
                         bloquesTablas.push(tokensPag);
                     }
-                    await extraerSoloCodigosYDescripciones(bloquesTablas, file.name);
+                    await extraerTablasYProductos(bloquesTablas, file.name);
                 } catch (e) { alert("Error al leer PDF."); ocultarLoader(); }
             } else {
                 const reader = new FileReader();
                 reader.onload = async function(e) {
                     let tokens = e.target.result.split(/\s+/).filter(t => t.length > 0);
-                    await extraerSoloCodigosYDescripciones([tokens], file.name);
+                    await extraerTablasYProductos([tokens], file.name);
                 };
                 reader.readAsText(file);
             }
         }
 
-        /* --- EXTRACCIÓN QUIRÚRGICA: SOLO CÓDIGO DE BARRAS Y DESCRIPCIÓN --- */
-        async function extraerSoloCodigosYDescripciones(bloquesTablas, nombreArchivo) {
+        /* --- LECTURA POR BLOQUES / TABLAS (IDENTIFICA CÓDIGO DE BARRAS Y DESCRIPCIÓN) --- */
+        async function extraerTablasYProductos(bloquesTablas, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
             let nuevosProductos = [];
-            document.getElementById('uploadSub').textContent = `Analizando ${bloquesTablas.length} tablas del documento...`;
+            let totalTablas = bloquesTablas.length;
+            document.getElementById('uploadSub').textContent = `Se identificaron ${totalTablas} tablas en el documento. Analizando...`;
 
+            // Palabras prohibidas que jamás deben formar parte de la descripción del producto
             const palabrasExcluidas = [
                 "PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS", 
                 "NEGADOS", "SUCURSAL", "CÓDIGO", "BARRAS", "DESCRIPCIÓN", "DIVISIÓN", "ESTATUS", 
-                "FOLIO", "CREACIÓN", "FINALIZADO", "CANTIDAD", "PEDIDA", "ENTREGADA", "NEGADA", "HOGAR", "%"
+                "FOLIO", "CREACIÓN", "FINALIZADO", "CANTIDAD", "PEDIDA", "ENTREGADA", "NEGADA", "HOGAR", "%",
+                "ALIMENTACION", "ALIMENTACIÓN", "ABARROTES", "PERECEDEROS", "PANADERIA", "PANADERÍA"
             ];
 
             bloquesTablas.forEach((tokens) => {
+                let deptoActual = "Abarrotes";
                 let i = 0;
                 while (i < tokens.length) {
-                    // Detecta únicamente el Código de barras (SKU numérico estricto de 4 a 14 dígitos)
-                    if (/^\d{4,14}$/.test(tokens[i]) && tokens[i] !== "2026") {
+                    let tokenUpper = tokens[i].toUpperCase();
+                    
+                    // Identifica la sección actual del bloque de tabla
+                    if (tokenUpper.includes("ALIMENTACION") || tokenUpper.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
+                    else if (tokenUpper.includes("PANADERIA") || tokenUpper.includes("PANADERÍA")) deptoActual = "Panadería";
+                    else if (tokenUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
+                    else if (tokenUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
+                    else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
+
+                    // Valida estrictamente que sea un Código de barras válido (SKU de 7 a 14 dígitos, o códigos de balanza 26...)
+                    if (/^\d{7,14}$/.test(tokens[i]) && !tokens[i].startsWith("2026")) {
                         let skuVal = tokens[i];
                         let descTokens = [];
                         let j = i + 1;
                         
                         while (j < tokens.length) {
-                            let sigToken = tokens[j], sigUpper = sigToken.toUpperCase();
-                            if (/^\d{4,14}$/.test(sigToken) && sigToken !== "2026") break;
-                            if (palabrasExcluidas.some(p => sigUpper.includes(p)) || sigToken === "%") break;
+                            let sigToken = tokens[j];
+                            let sigUpper = sigToken.toUpperCase();
+                            
+                            // Si encuentra otro código o palabra prohibida/fecha, corta la captura
+                            if (/^\d{7,14}$/.test(sigToken)) break;
+                            if (sigToken.includes("/")) break; // Descarta fechas tipo 04/11/26
+                            if (palabrasExcluidas.some(p => sigUpper.includes(p))) break;
+                            if (sigToken === "%") break;
+                            
+                            // Omite métricas numéricas decimales aisladas
                             if (!/^\d+\.\d+$/.test(sigToken)) {
                                 descTokens.push(sigToken);
                             }
@@ -674,9 +694,9 @@
                         
                         let descVal = descTokens.join(" ").replace(/PÁGINA.*$/i, "").trim();
                         
-                        if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
-                            // Asignación limpia de departamento por prefijo SKU (ej. 26...) o por defecto Abarrotes
-                            let deptoAsignado = "Abarrotes";
+                        // Solo agrega si la descripción es válida y no es un título administrativo
+                        if (descVal.length > 3 && !nuevosProductos.some(p => p.sku === skuVal)) {
+                            let deptoAsignado = deptoActual;
                             if (skuVal.startsWith("26")) {
                                 const c = skuVal.charAt(2);
                                 if (c === '1') deptoAsignado = "Perecederos";
