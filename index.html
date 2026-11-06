@@ -215,10 +215,10 @@
 
     <div id="imgSourceModal" class="img-modal">
         <div class="img-modal-box">
-            <h3 style="margin-bottom: 10px; color: #111;">📷 Cambiar Imagen</h3>
-            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 15px;">Selecciona cómo deseas obtener la nueva imagen del producto:</p>
-            <button class="img-modal-btn" style="background: var(--mexican-pink); color: white;" onclick="ejecutarOrigenImagen('camara')">📸 Tomar foto con cámara</button>
-            <button class="img-modal-btn" style="background: #f1f3f4; color: var(--text-color);" onclick="ejecutarOrigenImagen('archivo')">📁 Adjuntar archivo del dispositivo</button>
+            <h3 style="margin-bottom: 10px; color: #111;">🔗 Asignar URL de Imagen</h3>
+            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 15px;">Ingresa el enlace web directo de la imagen del producto:</p>
+            <input type="text" id="customImgUrlInput" placeholder="https://tu-tienda.com/img.jpg" style="margin-bottom: 10px;">
+            <button class="img-modal-btn" style="background: var(--mexican-pink); color: white;" onclick="guardarUrlPersonalizada()">Guardar Enlace</button>
             <button class="img-modal-btn" style="background: #c5221f; color: white;" onclick="cerrarModalImagen()">Cancelar</button>
         </div>
     </div>
@@ -611,16 +611,23 @@
             }
         }
 
-        async function sincronizarProductoConBd(sku, desc, depto, imagenBase64 = "") {
+        /* --- SINCRONIZACIÓN AUTOMÁTICA USANDO URL DE TIENDA EN LÍNEA BASADA EN SKU --- */
+        async function sincronizarProductoConBd(sku, desc, depto, urlImagenPersonalizada = "") {
             try {
+                // Genera automáticamente la URL de la tienda online usando el SKU, a menos que se indique otra
+                let urlFinalImagen = urlImagenPersonalizada;
+                if (!urlFinalImagen || urlFinalImagen === "pelicano-logo.png") {
+                    urlFinalImagen = `https://tu-tienda-en-linea.com/productos/${sku}.jpg`;
+                }
+
                 let response = await fetch(WEB_APP_URL, {
                     method: "POST",
-                    body: JSON.stringify({ sku: sku, desc: desc, depto: depto, imagen: imagenBase64 })
+                    body: JSON.stringify({ sku: sku, desc: desc, depto: depto, imagen: urlFinalImagen })
                 });
                 let result = await response.json();
-                if (result && result.success) return result.imagen || "pelicano-logo.png";
+                if (result && result.success) return result.imagen || urlFinalImagen;
             } catch (e) {}
-            return imagenBase64 || "pelicano-logo.png";
+            return urlImagenPersonalizada || `https://tu-tienda-en-linea.com/productos/${sku}.jpg`;
         }
 
         async function procesarArchivoAdjunto(file) {
@@ -680,7 +687,7 @@
                             else if (c === '5') deptoAsignado = "Alimentación";
                             else if (c === '6') deptoAsignado = "Panadería";
                         }
-                        let imgResuelta = await sincronizarProductoConBd(skuVal, descVal.toUpperCase(), deptoAsignado, "pelicano-logo.png");
+                        let imgResuelta = await sincronizarProductoConBd(skuVal, descVal.toUpperCase(), deptoAsignado);
                         nuevosProductos.push({ sku: skuVal, desc: descVal.toUpperCase(), cant: "", depto: deptoAsignado, img: imgResuelta });
                     }
                     i = j - 1;
@@ -726,8 +733,9 @@
                 card.innerHTML = `
                     <div class="negado-card-top">
                         <div class="negado-img-wrapper">
-                            <img src="${item.img || 'pelicano-logo.png'}" alt="Producto" class="negado-img-thumb" onerror="this.src='pelicano.jpg'">
-                            <button class="btn-change-img" id="btnImgChange_${indexReal}" style="display: ${modoEdicionActivo && pestanaActualPreview === 'pendientes' ? 'flex' : 'none'};" onclick="abrirModalCambiarImagen(${indexReal})">📷</button>
+                            <!-- Si la imagen de la tienda falla, carga automáticamente el logo de respaldo -->
+                            <img src="${item.img || 'pelicano-logo.png'}" alt="Producto" class="negado-img-thumb" onerror="this.onerror=null; this.src='pelicano-logo.png';">
+                            <button class="btn-change-img" id="btnImgChange_${indexReal}" style="display: ${modoEdicionActivo && pestanaActualPreview === 'pendientes' ? 'flex' : 'none'};" onclick="abrirModalCambiarImagen(${indexReal})">🔗</button>
                         </div>
                         <div class="negado-details">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; width: 100%;">
@@ -795,31 +803,21 @@
             });
         }
 
-        function abrirModalCambiarImagen(index) { indexEditandoImg = index; document.getElementById('imgSourceModal').classList.add('active'); }
+        function abrirModalCambiarImagen(index) { indexEditandoImg = index; document.getElementById('customImgUrlInput').value = ""; document.getElementById('imgSourceModal').classList.add('active'); }
         function cerrarModalImagen() { document.getElementById('imgSourceModal').classList.remove('active'); indexEditandoImg = null; }
 
-        function ejecutarOrigenImagen(tipo) {
+        async function guardarUrlPersonalizada() {
+            let nuevaUrl = document.getElementById('customImgUrlInput').value.trim();
+            if (!nuevaUrl) { alert("Ingresa una URL válida."); return; }
             cerrarModalImagen();
-            let fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*';
-            if (tipo === 'camara') fi.capture = 'environment';
-            fi.onchange = function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = async function(event) {
-                        if (pestanaActualPreview === 'pendientes' && listaPendientesGlobal[indexEditandoImg]) {
-                            let prod = listaPendientesGlobal[indexEditandoImg];
-                            prod.img = event.target.result;
-                            await sincronizarProductoConBd(prod.sku, prod.desc, prod.depto, prod.img);
-                            guardarEstadoCompleto(); renderizarVistaActual();
-                            if (modoEdicionActivo) aplicarModoEdicionDOM(true);
-                            alert("Imagen actualizada.");
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-            fi.click();
+            if (pestanaActualPreview === 'pendientes' && listaPendientesGlobal[indexEditandoImg]) {
+                let prod = listaPendientesGlobal[indexEditandoImg];
+                prod.img = nuevaUrl;
+                await sincronizarProductoConBd(prod.sku, prod.desc, prod.depto, prod.img);
+                guardarEstadoCompleto(); renderizarVistaActual();
+                if (modoEdicionActivo) aplicarModoEdicionDOM(true);
+                alert("URL de imagen actualizada con éxito.");
+            }
         }
 
         function abrirEscaner() {
@@ -882,7 +880,7 @@
                 ocultarLoader();
                 let htmlRes = `<div style="display:flex; flex-direction:column; gap:10px;">`;
                 listaPendientesGlobal.forEach(item => {
-                    htmlRes = `<div class="negado-card-item"><div class="negado-card-top"><div class="negado-img-wrapper"><img src="${item.img || 'pelicano-logo.png'}" class="negado-img-thumb"></div><div class="negado-details"><span class="negado-sku">SKU: ${item.sku}</span><span class="negado-desc">${item.desc}</span></div></div></div>`;
+                    htmlRes = `<div class="negado-card-item"><div class="negado-card-top"><div class="negado-img-wrapper"><img src="${item.img || 'pelicano-logo.png'}" class="negado-img-thumb" onerror="this.src='pelicano-logo.png';"></div><div class="negado-details"><span class="negado-sku">SKU: ${item.sku}</span><span class="negado-desc">${item.desc}</span></div></div></div>`;
                 });
                 document.getElementById('contenedorActivos').innerHTML = htmlRes = `</div>`;
                 listaPendientesGlobal = []; listaRevisadosGlobal = [];
