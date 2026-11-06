@@ -137,15 +137,54 @@
         .negados-table-container { max-height: 580px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 12px; background: #fafafa; padding: 8px; width: 100%; }
         .negados-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 
-        /* DISEÑO DE TARJETA CORREGIDO PARA EVITAR EMPALMES */
+        /* TARJETAS Y CONTENEDORES CON TAMAÑOS RÍGIDOS ANTI-COLAPSO */
         .negado-card-item { background: white; border-radius: 12px; padding: 12px; border: 1px solid #e5e5e5; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); width: 100%; }
-        .negado-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; width: 100%; }
+        .negado-card-top { display: flex; align-items: flex-start; gap: 12px; width: 100%; }
         
-        .negado-img-wrapper { position: relative; width: 50px; height: 50px; flex-shrink: 0; }
-        .negado-img-thumb { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; background-color: #fff; display: block; }
-        .btn-change-img { position: absolute; bottom: -4px; right: -4px; background: var(--mexican-pink); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 10px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .negado-img-wrapper { 
+            position: relative; 
+            width: 55px !important; 
+            height: 55px !important; 
+            min-width: 55px !important;
+            min-height: 55px !important;
+            flex-shrink: 0 !important; 
+            background-color: #f1f3f4;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+        }
+        
+        .negado-img-thumb { 
+            width: 100% !important; 
+            height: 100% !important; 
+            object-fit: cover !important; 
+            background-color: #ffffff; 
+            display: block !important; 
+        }
 
-        .negado-details { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex-grow: 1; width: 100%; }
+        .btn-change-img { 
+            position: absolute; 
+            bottom: -4px; 
+            right: -4px; 
+            background: var(--mexican-pink); 
+            color: white; 
+            border: none; 
+            border-radius: 50%; 
+            width: 20px; 
+            height: 20px; 
+            font-size: 10px; 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
+            z-index: 5;
+        }
+
+        .negado-details { display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0; }
         .negado-sku { font-size: 11px; font-weight: bold; color: var(--label-color); letter-spacing: 0.5px; }
         .negado-desc { font-size: 13px; font-weight: bold; color: var(--text-color); word-break: break-word; line-height: 1.35; width: 100%; }
 
@@ -615,9 +654,8 @@
 
         async function sincronizarProductoConBd(sku, desc, depto, urlImagenPersonalizada = "") {
             try {
-                // Por defecto asigna el logotipo institucional limpio para evitar enlaces rotos 404
                 let urlFinalImagen = urlImagenPersonalizada;
-                if (!urlFinalImagen || urlFinalImagen.includes("tu-tienda-en-linea.com")) {
+                if (!urlFinalImagen) {
                     urlFinalImagen = "pelicano-logo.png";
                 }
 
@@ -688,7 +726,7 @@
                             else if (c === '5') deptoAsignado = "Alimentación";
                             else if (c === '6') deptoAsignado = "Panadería";
                         }
-                        let imgResuelta = await sincronizarProductoConBd(skuVal, descVal.toUpperCase(), deptoAsignado);
+                        let imgResuelta = await sincronizarProductoConBd(skuVal, descVal.toUpperCase(), deptoAsignado, "pelicano-logo.png");
                         nuevosProductos.push({ sku: skuVal, desc: descVal.toUpperCase(), cant: "", depto: deptoAsignado, img: imgResuelta });
                     }
                     i = j - 1;
