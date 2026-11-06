@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Comer en tu Casa - Portal de Control & Abasto</title>
-    <!-- LIBRERÍA PDF.JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <!-- LIBRERÍA PARA ESCANEO DE CÁMARA (QR / CÓDIGOS DE BARRAS) -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         :root {
             --mexican-pink: #E4007C;
-            --mexican-pink-hover: #c4006c;
             --pink-transparent-30: rgba(228, 0, 124, 0.15);
             --pink-transparent-50: rgba(228, 0, 124, 0.3);
             --success-bg: #e6f4ea;
@@ -24,157 +21,33 @@
             --footer-text: #70757a;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { max-width: 100vw; overflow-x: hidden; font-family: 'Arial', sans-serif; background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; display: flex; flex-direction: column; }
 
-        html, body {
-            max-width: 100vw;
-            overflow-x: hidden;
-            font-family: 'Arial', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- OVERLAY DE CARGA GLOBAL --- */
-        .global-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .global-loader.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .loader-logo-wrapper {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .loader-spin-ring {
-            position: absolute;
-            width: 135px;
-            height: 135px;
-            border: 4px solid rgba(228, 0, 124, 0.15);
-            border-top: 4px solid var(--mexican-pink);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .loader-logo-img {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            object-fit: cover;
-            box-shadow: 0 4px 20px rgba(228, 0, 124, 0.25);
-            animation: logoPulse 1.8s ease-in-out infinite;
-        }
-
-        .loader-text {
-            font-size: 15px;
-            font-weight: bold;
-            color: var(--text-color);
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-        }
-
-        .loading-dots::after {
-            content: '';
-            animation: dots 1.5s steps(4, end) infinite;
-        }
+        .global-loader { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .global-loader.active { opacity: 1; visibility: visible; }
+        .loader-logo-wrapper { position: relative; width: 120px; height: 120px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; }
+        .loader-spin-ring { position: absolute; width: 135px; height: 135px; border: 4px solid rgba(228, 0, 124, 0.15); border-top: 4px solid var(--mexican-pink); border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader-logo-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 20px rgba(228, 0, 124, 0.25); animation: logoPulse 1.8s ease-in-out infinite; }
+        .loader-text { font-size: 15px; font-weight: bold; color: var(--text-color); letter-spacing: 0.5px; display: flex; align-items: center; }
+        .loading-dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes logoPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         @keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
 
-        /* --- LOGIN --- */
-        .login-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            background-color: var(--pink-transparent-50);
-        }
-
-        .login-card {
-            background: var(--card-bg);
-            padding: 30px 25px 20px 25px;
-            border-radius: 20px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .logo-container {
-            display: inline-block;
-            background-color: var(--mexican-pink);
-            color: white;
-            font-weight: bold;
-            font-size: 26px;
-            padding: 10px 18px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 12px rgba(228, 0, 124, 0.3);
-            letter-spacing: 1px;
-            align-self: center;
-        }
-
+        .login-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; background-color: var(--pink-transparent-50); }
+        .login-card { background: var(--card-bg); padding: 30px 25px 20px 25px; border-radius: 20px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); width: 100%; max-width: 400px; text-align: center; display: flex; flex-direction: column; }
+        .logo-container { display: inline-block; background-color: var(--mexican-pink); color: white; font-weight: bold; font-size: 26px; padding: 10px 18px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(228, 0, 124, 0.3); letter-spacing: 1px; align-self: center; }
         h1 { font-size: 20px; color: #111; margin-bottom: 5px; font-weight: 700; }
         .subtitle { font-size: 11px; color: var(--mexican-pink); font-weight: bold; letter-spacing: 1px; margin-bottom: 20px; text-transform: uppercase; }
 
-        .status-badge {
-            background-color: var(--success-bg);
-            color: var(--success-color);
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin-bottom: 25px;
-            width: 100%;
-        }
-
+        .status-badge { background-color: var(--success-bg); color: var(--success-color); padding: 8px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 25px; width: 100%; }
         .form-group { margin-bottom: 18px; text-align: left; }
         label { display: block; margin-bottom: 6px; font-size: 11px; font-weight: bold; color: var(--label-color); letter-spacing: 0.5px; }
         input, select { width: 100%; padding: 12px 14px; border: 1px solid #dadce0; border-radius: 10px; font-size: 14px; outline: none; background-color: #fff; color: var(--text-color); }
         input:focus, select:focus { border-color: var(--mexican-pink); box-shadow: 0 0 0 2px rgba(228, 0, 124, 0.2); }
-
-        button.btn-primary {
-            width: 100%; padding: 14px; background-color: var(--mexican-pink); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(228, 0, 124, 0.25);
-        }
+        button.btn-primary { width: 100%; padding: 14px; background-color: var(--mexican-pink); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(228, 0, 124, 0.25); }
 
         .mensaje { margin-top: 15px; text-align: center; font-size: 13px; font-weight: bold; }
         .error { color: var(--error-color); }
@@ -183,22 +56,8 @@
         .login-footer { margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; font-size: 11px; color: var(--footer-text); line-height: 1.5; }
         .login-footer .author-highlight { color: var(--mexican-pink); font-weight: bold; }
 
-        /* --- DASHBOARD --- */
         #dashboard { display: none; width: 100%; min-height: 100vh; flex-direction: column; flex-grow: 1; }
-
-        .header-bar {
-            background-color: var(--mexican-pink);
-            height: 65px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
+        .header-bar { background-color: var(--mexican-pink); height: 65px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15); position: sticky; top: 0; z-index: 100; }
         .header-left { display: flex; align-items: center; gap: 15px; z-index: 105; }
         .menu-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; padding: 5px; }
         .header-title { color: white; font-size: 18px; font-weight: bold; }
@@ -206,10 +65,7 @@
         .profile-container { position: relative; z-index: 1100; }
         .profile-btn { width: 44px; height: 44px; border-radius: 50%; background-color: white; border: 2px solid rgba(255, 255, 255, 0.9); cursor: pointer; overflow: hidden; padding: 0; }
         .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
-
-        .profile-dropdown {
-            position: absolute; top: 55px; right: 0; width: 280px; background: white; border-radius: 14px; box-shadow: 0 8px 25px rgba(0,0,0,0.25); padding: 20px; display: none; z-index: 1200; border: 1px solid #eee;
-        }
+        .profile-dropdown { position: absolute; top: 55px; right: 0; width: 280px; background: white; border-radius: 14px; box-shadow: 0 8px 25px rgba(0,0,0,0.25); padding: 20px; display: none; z-index: 1200; border: 1px solid #eee; }
         .profile-dropdown.active { display: block; }
         .profile-dropdown h3 { font-size: 15px; color: #111; margin-bottom: 4px; border-bottom: 2px solid var(--mexican-pink); padding-bottom: 8px; }
         .profile-info-item { font-size: 13px; margin: 10px 0; color: var(--label-color); }
@@ -219,10 +75,7 @@
         .badge-admin { background-color: #e6f4ea; color: #137333; }
         .badge-user { background-color: #f1f3f4; color: #5f6368; }
 
-        /* --- MENÚ LATERAL Y DESPLEGABLES --- */
-        .sidebar {
-            position: fixed; top: 0; left: -300px; width: 280px; height: 100vh; background-color: #ffffff; box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2); transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1100; display: flex; flex-direction: column;
-        }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 280px; height: 100vh; background-color: #ffffff; box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2); transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1100; display: flex; flex-direction: column; }
         .sidebar.active { left: 0; }
         .sidebar-header { background-color: var(--mexican-pink); padding: 20px 15px; display: flex; align-items: center; gap: 12px; color: white; }
         .sidebar-header .logo-container { margin-bottom: 0; font-size: 18px; padding: 8px 12px; background-color: white; color: var(--mexican-pink); box-shadow: none; }
@@ -241,80 +94,35 @@
         .submenu-item:hover { color: var(--mexican-pink); background-color: rgba(228, 0, 124, 0.08); }
         .submenu-item.active { color: var(--mexican-pink); font-weight: bold; background-color: rgba(228, 0, 124, 0.12); }
 
-        /* --- CARRUSEL MARQUESINA --- */
-        .ticker-container {
-            background: linear-gradient(90deg, #fff0f5 0%, #ffe4ee 100%);
-            border-bottom: 2px solid rgba(228, 0, 124, 0.15);
-            height: 38px;
-            line-height: 38px;
-            overflow: hidden;
-            white-space: nowrap;
-            position: relative;
-            z-index: 80;
-            margin-bottom: 15px;
-            box-shadow: inset 0 -1px 3px rgba(0,0,0,0.04);
-            width: 100%;
-        }
-
-        .ticker-container.hidden { display: none; }
+        .ticker-container { background: linear-gradient(90deg, #fff0f5 0%, #ffe4ee 100%); border-bottom: 2px solid rgba(228, 0, 124, 0.15); height: 38px; line-height: 38px; overflow: hidden; white-space: nowrap; position: relative; z-index: 80; margin-bottom: 15px; width: 100%; }
         .ticker-track { display: inline-block; white-space: nowrap; will-change: transform; }
         .ticker-item { display: inline-flex; align-items: center; gap: 10px; margin-right: 60px; font-size: 13px; }
         .ticker-stars { font-size: 12px; }
         .ticker-comment { font-style: italic; }
         .ticker-client { font-weight: bold; color: var(--mexican-pink); }
-
-        @keyframes tickerScroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
+        @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
         .main-content { padding: 15px 15px 25px 15px; max-width: 1000px; margin: 0 auto; flex-grow: 1; width: 100%; display: flex; flex-direction: column; overflow-x: hidden; }
         .content-card { background: #ffffff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); margin-bottom: 20px; width: 100%; }
         .section-pane { display: none; flex-grow: 1; width: 100%; }
         .section-pane.active { display: block; }
-
         .btn-logout { background-color: #c5221f; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
 
         .report-subpane { display: none; width: 100%; }
         .report-subpane.active { display: block; }
 
-        /* --- BARRA DE CARGA COMPACTA --- */
-        .upload-bar-compact {
-            background: linear-gradient(135deg, #ffffff 0%, #fff0f5 100%);
-            border: 2px dashed rgba(228, 0, 124, 0.4);
-            border-radius: 12px;
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 15px;
-            width: 100%;
-        }
-
+        .upload-bar-compact { background: linear-gradient(135deg, #ffffff 0%, #fff0f5 100%); border: 2px dashed rgba(228, 0, 124, 0.4); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; width: 100%; }
         .upload-info { display: flex; align-items: center; gap: 12px; min-width: 0; flex-grow: 1; }
         .upload-icon { font-size: 26px; flex-shrink: 0; }
-        
         .upload-text-container { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
         .upload-text-title { font-size: 13px; font-weight: bold; color: var(--text-color); white-space: normal; word-break: break-word; }
         .upload-text-sub { font-size: 11px; color: var(--label-color); white-space: normal; word-break: break-word; line-height: 1.3; }
+        .btn-upload-trigger { background-color: var(--mexican-pink); color: white; border: none; padding: 9px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(228, 0, 124, 0.25); }
 
-        .btn-upload-trigger {
-            background-color: var(--mexican-pink); color: white; border: none; padding: 9px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(228, 0, 124, 0.25);
-        }
+        .preview-tabs { display: flex; gap: 10px; margin-bottom: 12px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        .tab-btn { background: #f1f3f4; color: var(--label-color); border: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: var(--mexican-pink); color: white; box-shadow: 0 2px 8px rgba(228,0,124,0.25); }
 
-        /* --- PESTAÑAS DE PREVISUALIZACIÓN --- */
-        .preview-tabs {
-            display: flex; gap: 10px; margin-bottom: 12px; border-bottom: 2px solid #eee; padding-bottom: 8px;
-        }
-        .tab-btn {
-            background: #f1f3f4; color: var(--label-color); border: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s;
-        }
-        .tab-btn.active {
-            background: var(--mexican-pink); color: white; box-shadow: 0 2px 8px rgba(228,0,124,0.25);
-        }
-
-        /* --- TABLA Y BOTONERA --- */
         .negados-header-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; width: 100%; }
         .negados-title { font-size: 15px; font-weight: bold; color: #111; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
         .negados-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -329,106 +137,46 @@
         .negados-table-container { max-height: 580px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 12px; background: #fafafa; padding: 8px; width: 100%; }
         .negados-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 
-        /* --- DISEÑO DE TARJETAS OPTIMIZADO PARA MÓVIL --- */
-        .negado-card-item { 
-            background: white; 
-            border-radius: 12px; 
-            padding: 12px; 
-            border: 1px solid #e5e5e5; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03); 
-            width: 100%;
-        }
-
-        .negado-card-top {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .negado-card-left { display: flex; align-items: flex-start; gap: 10px; flex-grow: 1; min-width: 0; }
+        .negado-card-item { background: white; border-radius: 12px; padding: 12px; border: 1px solid #e5e5e5; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); width: 100%; }
+        .negado-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; width: 100%; }
         .negado-img-wrapper { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
         .negado-img-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; background-color: #fff; }
-        
-        .btn-change-img {
-            position: absolute; bottom: -4px; right: -4px; background: var(--mexican-pink); color: white; border: none; border-radius: 50%;
-            width: 20px; height: 20px; font-size: 10px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
+        .btn-change-img { position: absolute; bottom: -4px; right: -4px; background: var(--mexican-pink); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
         .negado-details { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex-grow: 1; width: 100%; }
         .negado-sku { font-size: 11px; font-weight: bold; color: var(--label-color); letter-spacing: 0.5px; }
-        
-        .negado-desc { 
-            font-size: 13px; 
-            font-weight: bold; 
-            color: var(--text-color); 
-            word-break: break-word; 
-            line-height: 1.35; 
-            width: 100%;
-        }
+        .negado-desc { font-size: 13px; font-weight: bold; color: var(--text-color); word-break: break-word; line-height: 1.35; width: 100%; }
 
         .input-edit-sku { font-size: 11px; font-weight: bold; padding: 2px 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 130px; }
         .input-edit-desc { font-size: 13px; font-weight: bold; padding: 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 100%; }
         .input-edit-cant { font-size: 12px; font-weight: bold; padding: 4px; border: 1px solid var(--mexican-pink); border-radius: 6px; width: 65px; text-align: center; }
 
         .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; white-space: nowrap; flex-shrink: 0; align-self: flex-start; }
-
-        /* Barra inferior limpia y simétrica */
-        .negado-card-bottom {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-top: 1px dashed #eee;
-            padding-top: 8px;
-            width: 100%;
-        }
-
+        .negado-card-bottom { display: flex; align-items: center; justify-content: space-between; border-top: 1px dashed #eee; padding-top: 8px; width: 100%; }
         .negado-inv-badge { background-color: #f1f3f4; color: #3c4043; padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
         .negado-inv-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #34a853; }
 
-        .btn-regresar-pendiente {
-            background-color: #1a73e8; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(26,115,232,0.25); flex-shrink: 0; transition: transform 0.2s;
-        }
+        .btn-regresar-pendiente { background-color: #1a73e8; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(26,115,232,0.25); flex-shrink: 0; transition: transform 0.2s; }
         .btn-regresar-pendiente:hover { transform: scale(1.08); }
 
-        /* --- MODAL DE MOTIVO DE RETORNO --- */
-        .reason-modal {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 10500;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
-        }
+        .reason-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 10500; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; }
         .reason-modal.active { opacity: 1; visibility: visible; }
         .reason-modal-box { background: white; padding: 25px; border-radius: 16px; width: 90%; max-width: 360px; text-align: center; }
         .reason-btn { width: 100%; padding: 11px; margin-top: 10px; border-radius: 8px; border: 1px solid #dadce0; font-weight: bold; cursor: pointer; font-size: 12px; background: #f8f9fa; color: var(--text-color); transition: 0.2s; text-align: left; display: flex; align-items: center; gap: 8px; }
         .reason-btn:hover { background: var(--pink-transparent-30); border-color: var(--mexican-pink); color: var(--mexican-pink); }
 
-        /* --- MODAL DE ESCÁNER Y BÚSQUEDA INTELIGENTE --- */
-        .scanner-modal {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
-        }
+        .scanner-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; }
         .scanner-modal.active { opacity: 1; visibility: visible; }
         .scanner-box { background: white; padding: 20px; border-radius: 16px; width: 92%; max-width: 420px; text-align: center; }
         #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
-
-        .scan-status-indicator {
-            font-size: 13px; font-weight: bold; color: #137333; background: #e6f4ea; padding: 6px 10px; border-radius: 8px; margin-bottom: 12px; display: none;
-        }
+        .scan-status-indicator { font-size: 13px; font-weight: bold; color: #137333; background: #e6f4ea; padding: 6px 10px; border-radius: 8px; margin-bottom: 12px; display: none; }
 
         .autocomplete-container { position: relative; width: 100%; margin-bottom: 12px; text-align: left; }
-        .autocomplete-list {
-            position: absolute; top: 100%; left: 0; right: 0; max-height: 150px; overflow-y: auto; background: white; border: 1px solid #dadce0; border-radius: 8px; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none;
-        }
+        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; max-height: 150px; overflow-y: auto; background: white; border: 1px solid #dadce0; border-radius: 8px; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none; }
         .autocomplete-item { padding: 10px; font-size: 12px; border-bottom: 1px solid #eee; cursor: pointer; color: var(--text-color); }
         .autocomplete-item:hover { background-color: var(--pink-transparent-30); color: var(--mexican-pink); font-weight: bold; }
 
-        .img-modal {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 10000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s;
-        }
+        .img-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; }
         .img-modal.active { opacity: 1; visibility: visible; }
         .img-modal-box { background: white; padding: 25px; border-radius: 16px; width: 90%; max-width: 320px; text-align: center; }
         .img-modal-btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; }
@@ -446,7 +194,6 @@
 </head>
 <body>
 
-    <!-- OVERLAY DE CARGA GLOBAL -->
     <div id="globalLoader" class="global-loader">
         <div class="loader-logo-wrapper">
             <div class="loader-spin-ring"></div>
@@ -455,27 +202,17 @@
         <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
     </div>
 
-    <!-- MODAL DE MOTIVO DE RETORNO -->
     <div id="reasonModal" class="reason-modal">
         <div class="reason-modal-box">
             <h3 style="margin-bottom: 8px; color: #111;">↩️ Devolver a Pendientes</h3>
             <p style="font-size: 12px; color: var(--label-color); margin-bottom: 15px;">Selecciona el motivo por el cual se marcó este producto por error:</p>
-            
-            <button class="reason-btn" onclick="confirmarRetornoPendiente('1. Confusión con otro SKU similar')">
-                <span>1️⃣</span> Confusión con otro SKU similar
-            </button>
-            <button class="reason-btn" onclick="confirmarRetornoPendiente('2. Escaneo o registro por equivocación')">
-                <span>2️⃣</span> Escaneo o registro por equivocación
-            </button>
-            <button class="reason-btn" onclick="confirmarRetornoPendiente('3. El producto no cuenta con existencia en piso')">
-                <span>3️⃣</span> El producto no cuenta con existencia en piso
-            </button>
-
+            <button class="reason-btn" onclick="confirmarRetornoPendiente('1. Confusión con otro SKU similar')"><span>1️⃣</span> Confusión con otro SKU similar</button>
+            <button class="reason-btn" onclick="confirmarRetornoPendiente('2. Escaneo o registro por equivocación')"><span>2️⃣</span> Escaneo o registro por equivocación</button>
+            <button class="reason-btn" onclick="confirmarRetornoPendiente('3. El producto no cuenta con existencia en piso')"><span>3️⃣</span> El producto no cuenta con existencia en piso</button>
             <button class="img-modal-btn" style="background: #c5221f; color: white; margin-top: 15px;" onclick="cerrarModalRazon()">Cancelar</button>
         </div>
     </div>
 
-    <!-- MODAL SELECTOR DE ORIGEN DE IMAGEN -->
     <div id="imgSourceModal" class="img-modal">
         <div class="img-modal-box">
             <h3 style="margin-bottom: 10px; color: #111;">📷 Cambiar Imagen</h3>
@@ -486,20 +223,16 @@
         </div>
     </div>
 
-    <!-- MODAL DE ESCÁNER Y BÚSQUEDA MANUAL -->
     <div id="scannerModal" class="scanner-modal">
         <div class="scanner-box">
             <h3 style="margin-bottom: 8px; color: #111;">🔍 Buscar Artículo o SKU</h3>
             <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Escribe el código (ej. 26...) o nombre del producto:</p>
             <div id="scanStatus" class="scan-status-indicator">¡Código detectado con éxito! Enfriamiento activo...</div>
-            
             <div id="reader"></div>
-
             <div class="autocomplete-container">
                 <input type="text" id="manualScanInput" placeholder="🔍 Escribe SKU (ej. 26...) o nombre..." oninput="filtrarSugerenciasManuales(this.value)">
                 <div id="autocompleteList" class="autocomplete-list"></div>
             </div>
-
             <div style="display: flex; gap: 10px;">
                 <button class="btn-primary" style="margin-top:0; background:#5f6368;" onclick="cerrarEscaner()">Cerrar</button>
                 <button class="btn-primary" style="margin-top:0;" onclick="procesarSkuEscaneadoManualInput()">Registrar Selección</button>
@@ -507,17 +240,12 @@
         </div>
     </div>
 
-    <!-- PANTALLA DE LOGIN -->
     <div id="login-section" class="login-wrapper">
         <div class="login-card">
             <div class="logo-container">LC</div>
             <h1>La Comer en tu Casa</h1>
             <div class="subtitle">Portal de Control & Abasto</div>
-
-            <div class="status-badge">
-                <span>🟢</span> Sistema Autorizado Activo
-            </div>
-
+            <div class="status-badge"><span>🟢</span> Sistema Autorizado Activo</div>
             <form id="accessForm">
                 <div class="form-group">
                     <label for="empleado">N° EMPLEADO (9 DÍGITOS)</label>
@@ -529,14 +257,11 @@
                 </div>
                 <div class="form-group">
                     <label for="departamento">DEPARTAMENTO</label>
-                    <select id="departamento" required>
-                        <option value="" disabled selected>Cargando departamentos...</option>
-                    </select>
+                    <select id="departamento" required><option value="" disabled selected>Cargando departamentos...</option></select>
                 </div>
                 <button type="submit" id="btnIngresar" class="btn-primary">Ingresar al Portal &rarr;</button>
             </form>
             <div id="mensajeAlerta" class="mensaje"></div>
-
             <footer class="login-footer">
                 © 2026 La Comer en tu Casa — Sistema de Control & Abasto.<br>
                 Desarrollado por <span class="author-highlight">Angelo Arturo</span>.
@@ -544,19 +269,16 @@
         </div>
     </div>
 
-    <!-- DASHBOARD PRINCIPAL -->
     <div id="dashboard">
         <header class="header-bar">
             <div class="header-left">
                 <button class="menu-btn" id="menuToggle" aria-label="Abrir Menú">☰</button>
                 <div class="header-title" id="headerTitleDisplay">Inicio</div>
             </div>
-
             <div class="profile-container">
                 <button class="profile-btn" id="profileToggle" aria-label="Menú de Perfil">
                     <img src="pelicano.jpg" alt="Perfil Pelícano" onerror="this.src='pelicano-logo.png'">
                 </button>
-
                 <div class="profile-dropdown" id="profileDropdown">
                     <h3>Mi Perfil</h3>
                     <div class="profile-info-item">Nombre: <span id="profileName">-</span></div>
@@ -568,7 +290,6 @@
             </div>
         </header>
 
-        <!-- CARRUSEL MARQUESINA -->
         <div class="ticker-container" id="tickerContainer">
             <div class="ticker-track" id="tickerTrack"></div>
         </div>
@@ -582,17 +303,14 @@
                 <li class="menu-item selected" data-section="inicio" onclick="cambiarSeccion('inicio', 'Inicio', this)">Inicio</li>
                 <li class="menu-item" data-section="departamento" onclick="cambiarSeccion('departamento', 'Mi departamento', this)">Mi departamento</li>
                 <li class="menu-item" data-section="indicadores" onclick="cambiarSeccion('indicadores', 'Indicadores', this)">Indicadores</li>
-                
                 <li class="menu-item" id="menuReportesToggle" onclick="toggleSubmenuReportes(event)">
-                    <span>Reportes</span>
-                    <span class="arrow-indicator">▶</span>
+                    <span>Reportes</span><span class="arrow-indicator">▶</span>
                 </li>
                 <ul class="submenu-list" id="submenuReportes">
                     <li class="submenu-item active" onclick="seleccionarSubreporte('alta-reportes', 'Alta de reportes', this)">📝 Alta de reportes</li>
                     <li class="submenu-item" onclick="seleccionarSubreporte('reportes-activos', 'Reportes activos', this)">⚡ Reportes activos</li>
                     <li class="submenu-item" onclick="seleccionarSubreporte('historial-reportes', 'Historial', this)">📜 Historial</li>
                 </ul>
-
                 <li class="menu-item" data-section="nps-casos" onclick="cambiarSeccion('nps-casos', 'NPS y Casos', this)">NPS y Casos</li>
                 <li class="menu-item" data-section="saber-mas" onclick="cambiarSeccion('saber-mas', 'Saber más', this)">Saber más</li>
                 <li class="menu-item" data-section="ayuda" onclick="cambiarSeccion('ayuda', 'Ayuda', this)">Ayuda</li>
@@ -600,41 +318,21 @@
         </nav>
 
         <main class="main-content">
-            <!-- SECCIÓN: INICIO -->
             <div id="pane-inicio" class="section-pane active">
                 <div class="content-card">
                     <h2>¡Bienvenido, <span id="userNameDisplay"></span>!</h2>
                     <p style="margin-top: 8px; color: #5f6368;">N° Empleado: <span id="userEmpDisplay"></span></p>
                     <p style="color: #5f6368;">Departamento: <span id="userDeptoDisplay"></span></p>
-
-                    <div id="adminBadge" style="display:none; background: #e6f4ea; color: #137333; padding: 10px; border-radius: 8px; margin: 15px 0; font-weight: bold; font-size: 14px;">
-                        🛡️ Modo Administrador Activado
-                    </div>
-
+                    <div id="adminBadge" style="display:none; background: #e6f4ea; color: #137333; padding: 10px; border-radius: 8px; margin: 15px 0; font-weight: bold; font-size: 14px;">🛡️ Modo Administrador Activado</div>
                     <p class="success" style="margin-top: 15px;">Acceso autorizado correctamente por la base de datos.</p>
                 </div>
             </div>
 
-            <!-- SECCIÓN: MI DEPARTAMENTO -->
-            <div id="pane-departamento" class="section-pane">
-                <div class="content-card">
-                    <h2>Mi departamento</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Gestión, tareas y control operativo del departamento asignado.</p>
-                </div>
-            </div>
-
-            <!-- SECCIÓN: INDICADORES -->
-            <div id="pane-indicadores" class="section-pane">
-                <div class="content-card">
-                    <h2>Indicadores</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Panel de métricas, rendimiento y cumplimiento.</p>
-                </div>
-            </div>
-
-            <!-- SECCIÓN: REPORTES -->
+            <div id="pane-departamento" class="section-pane"><div class="content-card"><h2>Mi departamento</h2><p style="margin-top: 10px; color: #5f6368;">Gestión, tareas y control operativo del departamento asignado.</p></div></div>
+            <div id="pane-indicadores" class="section-pane"><div class="content-card"><h2>Indicadores</h2><p style="margin-top: 10px; color: #5f6368;">Panel de métricas, rendimiento y cumplimiento.</p></div></div>
+            
             <div id="pane-reportes" class="section-pane">
                 <div class="content-card">
-                    <!-- SUB-PESTAÑA 1: ALTA DE REPORTES -->
                     <div id="subpane-alta-reportes" class="report-subpane active">
                         <div class="upload-bar-compact" id="dropArea">
                             <div class="upload-info">
@@ -648,22 +346,18 @@
                             <button class="btn-upload-trigger" onclick="document.getElementById('fileInput').click()">📁 Subir archivo</button>
                         </div>
 
-                        <!-- PESTAÑAS DE PREVISUALIZACIÓN -->
                         <div class="preview-tabs">
                             <button class="tab-btn active" id="tabPendientes" onclick="cambiarPestanaPreview('pendientes')">📦 Pendientes (<span id="countPendientes">0</span>)</button>
                             <button class="tab-btn" id="tabRevisados" onclick="cambiarPestanaPreview('revisados')">🔍 Revisados / Eliminados (<span id="countRevisados">0</span>)</button>
                         </div>
 
                         <div class="negados-header-bar">
-                            <div class="negados-title">
-                                <span id="tituloSeccionPreview">📋 ARTÍCULOS PENDIENTES</span>
-                            </div>
+                            <div class="negados-title"><span id="tituloSeccionPreview">📋 ARTÍCULOS PENDIENTES</span></div>
                             <div class="negados-actions">
                                 <button class="btn-action-limpiar" onclick="limpiarListaNegados()">🧹 Limpiar</button>
                                 <button class="btn-action-editar" id="btnEditar" onclick="toggleModoEdicion()">✏️ Editar</button>
                                 <button class="btn-action-escanear" onclick="abrirEscaner()">📷 Escanear / Buscar</button>
                                 <button class="btn-action-confirmar" onclick="confirmarReporte()">✓ Confirmar</button>
-                                
                                 <select class="filter-select" id="filterDepto" onchange="filtrarNegadosPorDepto(this.value)">
                                     <option value="todos">Filtrar por depto.</option>
                                     <option value="Alimentación">Alimentación</option>
@@ -682,16 +376,12 @@
                         </div>
                     </div>
 
-                    <!-- SUB-PESTAÑA 2: REPORTES ACTIVOS -->
                     <div id="subpane-reportes-activos" class="report-subpane">
                         <h3>⚡ Reportes Activos por Departamento</h3>
                         <p style="margin-top: 8px; color: var(--label-color); font-size: 13px;">Listado de incidencias enviadas y pendientes de atención en piso.</p>
-                        <div id="contenedorActivos" style="margin-top: 20px;">
-                            <div class="empty-negados">No hay reportes activos en este momento.</div>
-                        </div>
+                        <div id="contenedorActivos" style="margin-top: 20px;"><div class="empty-negados">No hay reportes activos en este momento.</div></div>
                     </div>
 
-                    <!-- SUB-PESTAÑA 3: HISTORIAL -->
                     <div id="subpane-historial-reportes" class="report-subpane">
                         <h3>📜 Historial General de Negados</h3>
                         <p style="margin-top: 8px; color: var(--label-color); font-size: 13px;">Consulta de reportes pasados registrados en Google Sheets.</p>
@@ -699,29 +389,9 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN: NPS Y CASOS -->
-            <div id="pane-nps-casos" class="section-pane">
-                <div class="content-card">
-                    <h2>NPS y Casos</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Gestión de evaluaciones de clientes.</p>
-                </div>
-            </div>
-
-            <!-- SECCIÓN: SABER MÁS -->
-            <div id="pane-saber-mas" class="section-pane">
-                <div class="content-card">
-                    <h2>Saber más</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Documentación de procesos y manuales.</p>
-                </div>
-            </div>
-
-            <!-- SECCIÓN: AYUDA -->
-            <div id="pane-ayuda" class="section-pane">
-                <div class="content-card">
-                    <h2>Ayuda</h2>
-                    <p style="margin-top: 10px; color: #5f6368;">Soporte técnico y asistencia.</p>
-                </div>
-            </div>
+            <div id="pane-nps-casos" class="section-pane"><div class="content-card"><h2>NPS y Casos</h2><p style="margin-top: 10px; color: #5f6368;">Gestión de evaluaciones de clientes.</p></div></div>
+            <div id="pane-saber-mas" class="section-pane"><div class="content-card"><h2>Saber más</h2><p style="margin-top: 10px; color: #5f6368;">Documentación de procesos y manuales.</p></div></div>
+            <div id="pane-ayuda" class="section-pane"><div class="content-card"><h2>Ayuda</h2><p style="margin-top: 10px; color: #5f6368;">Soporte técnico y asistencia.</p></div></div>
 
             <footer class="dashboard-footer">
                 © 2026 La Comer en tu Casa — Sistema de Control & Abasto.<br>
@@ -778,15 +448,11 @@
             if (globalLoader) globalLoader.classList.add('active');
         }
 
-        function ocultarLoader() {
-            if (globalLoader) globalLoader.classList.remove('active');
-        }
+        function ocultarLoader() { if (globalLoader) globalLoader.classList.remove('active'); }
 
         function generarEstrellas(puntuacion) {
             let num = parseInt(puntuacion) || 5;
-            if (num < 1) num = 1;
-            if (num > 5) num = 5;
-            return "⭐".repeat(num);
+            return "⭐".repeat(Math.max(1, Math.min(num, 5)));
         }
 
         async function cargarEvaluacionesNPS() {
@@ -795,55 +461,35 @@
                 const result = await response.json();
                 const tickerTrack = document.getElementById('tickerTrack');
                 if (!tickerTrack) return;
-
-                let itemsHtml = "";
                 let lista = (result && result.nps && result.nps.length > 0) ? result.nps : [];
                 if (lista.length === 0) return;
-
-                let renderList = [...lista, ...lista];
-                renderList.forEach(item => {
-                    const estrellas = generarEstrellas(item.puntuacion);
-                    itemsHtml += `
-                        <span class="ticker-item">
-                            <span class="ticker-stars">${estrellas}</span>
-                            <span class="ticker-comment">"${item.comentario}"</span>
-                            <span class="ticker-client">— ${item.cliente}</span>
-                        </span>
-                    `;
+                let itemsHtml = "";
+                [...lista, ...lista].forEach(item => {
+                    itemsHtml += `<span class="ticker-item"><span class="ticker-stars">${generarEstrellas(item.puntuacion)}</span><span class="ticker-comment">"${item.comentario}"</span><span class="ticker-client">— ${item.cliente}</span></span>`;
                 });
-
                 tickerTrack.innerHTML = itemsHtml;
-                const totalElementos = lista.length;
-                const duracionTotal = Math.max(totalElementos * 14, 40);
-                tickerTrack.style.animation = `tickerScroll ${duracionTotal}s linear infinite`;
+                tickerTrack.style.animation = `tickerScroll ${Math.max(lista.length * 14, 40)}s linear infinite`;
             } catch (error) {}
         }
 
         let tabId = sessionStorage.getItem('lcc_tab_id');
-        if (!tabId) {
-            tabId = 'tab_' + Math.random().toString(36).substring(2);
-            sessionStorage.setItem('lcc_tab_id', tabId);
-        }
+        if (!tabId) { tabId = 'tab_' + Math.random().toString(36).substring(2); sessionStorage.setItem('lcc_tab_id', tabId); }
 
         function verificarSesionGuardada() {
             const sesionGuardada = localStorage.getItem('lcc_sesion');
             const activeOwner = localStorage.getItem('lcc_active_tab_owner');
-
             if (sesionGuardada && activeOwner === tabId) {
                 try {
                     const datos = JSON.parse(sesionGuardada);
                     sesionActualGlobal = datos;
                     loginSection.style.display = "none";
                     dashboard.style.display = "flex";
-
                     userNameDisplay.textContent = datos.nombre;
                     userEmpDisplay.textContent = datos.empleado;
                     userDeptoDisplay.textContent = datos.departamento;
-
                     profileName.textContent = datos.nombre;
                     profileEmp.textContent = datos.empleado;
                     profileDept.textContent = datos.departamento;
-
                     if (datos.isAdmin) {
                         adminBadge.style.display = "block";
                         profileRango.textContent = "🛡️ Administrador";
@@ -853,33 +499,18 @@
                         profileRango.textContent = "👤 Usuario Estándar";
                         profileRango.className = "badge-rango badge-user";
                     }
-
-                    const seccionActiva = localStorage.getItem('lcc_seccion_activa') || 'inicio';
-                    const tituloActivo = localStorage.getItem('lcc_titulo_activo') || 'Inicio';
-                    
-                    const itemMenu = document.querySelector(`.menu-item[data-section="${seccionActiva}"]`);
-                    cambiarSeccion(seccionActiva, tituloActivo, itemMenu, false);
-
+                    cambiarSeccion(localStorage.getItem('lcc_seccion_activa') || 'inicio', localStorage.getItem('lcc_titulo_activo') || 'Inicio', document.querySelector(`.menu-item[data-section="${localStorage.getItem('lcc_seccion_activa') || 'inicio'}"]`), false);
                     cargarDatosPersistidos(datos.empleado);
-
                     iniciarControlInactividad();
                     cargarEvaluacionesNPS();
-                } catch (e) {
-                    localStorage.removeItem('lcc_sesion');
-                }
-            } else {
-                loginSection.style.display = "flex";
-                dashboard.style.display = "none";
-            }
+                } catch (e) { localStorage.removeItem('lcc_sesion'); }
+            } else { loginSection.style.display = "flex"; dashboard.style.display = "none"; }
         }
 
         function reiniciarTemporizadorInactividad() {
             if (!localStorage.getItem('lcc_sesion')) return;
             clearTimeout(temporizadorInactividad);
-            temporizadorInactividad = setTimeout(() => {
-                alert("Su sesión ha expirado por inactividad (20 minutos).");
-                cerrarSesion();
-            }, TIEMPO_INACTIVIDAD);
+            temporizadorInactividad = setTimeout(() => { alert("Su sesión ha expirado por inactividad (20 minutos)."); cerrarSesion(); }, TIEMPO_INACTIVIDAD);
         }
 
         function iniciarControlInactividad() {
@@ -893,31 +524,22 @@
             try {
                 const response = await fetch(`${WEB_APP_URL}?action=getDepartamentos`);
                 const result = await response.json();
-                
                 if (result && result.departments && result.departments.length > 0) {
                     selectDepartamento.innerHTML = '<option value="" disabled selected>Seleccione su departamento</option>';
                     result.departments.forEach(depto => {
                         const option = document.createElement('option');
-                        option.value = depto;
-                        option.textContent = depto;
+                        option.value = depto; option.textContent = depto;
                         selectDepartamento.appendChild(option);
                     });
                 }
-            } catch (error) {
-                selectDepartamento.innerHTML = '<option value="" disabled selected>Error al cargar lista</option>';
-            }
+            } catch (error) { selectDepartamento.innerHTML = '<option value="" disabled selected>Error al cargar lista</option>'; }
         }
 
         cargarDepartamentos();
         verificarSesionGuardada();
 
-        function toggleMenu() {
-            if (profileDropdown) profileDropdown.classList.remove('active');
-            sidebar.classList.toggle('active');
-        }
-
+        function toggleMenu() { if (profileDropdown) profileDropdown.classList.remove('active'); sidebar.classList.toggle('active'); }
         if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
-
         if (profileToggle) {
             profileToggle.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -925,56 +547,34 @@
                 profileDropdown.classList.toggle('active');
             });
         }
-
-        function cerrarTodo() {
-            if (sidebar) sidebar.classList.remove('active');
-            if (profileDropdown) profileDropdown.classList.remove('active');
-        }
-
+        function cerrarTodo() { if (sidebar) sidebar.classList.remove('active'); if (profileDropdown) profileDropdown.classList.remove('active'); }
         window.addEventListener('click', function(e) {
-            if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && !profileDropdown.contains(e.target) && !profileToggle.contains(e.target)) {
-                cerrarTodo();
-            }
+            if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && !profileDropdown.contains(e.target) && !profileToggle.contains(e.target)) cerrarTodo();
         });
 
         function toggleSubmenuReportes(e) {
             e.stopPropagation();
-            const btn = document.getElementById('menuReportesToggle');
-            const list = document.getElementById('submenuReportes');
-            btn.classList.toggle('open');
-            list.classList.toggle('open');
+            document.getElementById('menuReportesToggle').classList.toggle('open');
+            document.getElementById('submenuReportes').classList.toggle('open');
         }
 
         function seleccionarSubreporte(subId, tituloSub, elementoSub) {
-            const subItems = document.querySelectorAll('.submenu-item');
-            subItems.forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.submenu-item').forEach(item => item.classList.remove('active'));
             if (elementoSub) elementoSub.classList.add('active');
-
             cambiarSeccion('reportes', `Reportes — ${tituloSub}`, document.getElementById('menuReportesToggle'), true);
-
-            const subpanes = document.querySelectorAll('.report-subpane');
-            subpanes.forEach(sp => sp.classList.remove('active'));
-
+            document.querySelectorAll('.report-subpane').forEach(sp => sp.classList.remove('active'));
             const targetPane = document.getElementById(`subpane-${subId}`);
             if (targetPane) targetPane.classList.add('active');
-
             cerrarTodo();
         }
 
         function cambiarSeccion(nombreSeccion, tituloFranja, elementoMenu, guardar = true) {
-            const items = document.querySelectorAll('.menu-item');
-            items.forEach(item => item.classList.remove('selected'));
-
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('selected'));
             if (elementoMenu) elementoMenu.classList.add('selected');
-
             if (headerTitleDisplay) headerTitleDisplay.textContent = tituloFranja;
-
-            const panes = document.querySelectorAll('.section-pane');
-            panes.forEach(pane => pane.classList.remove('active'));
-
+            document.querySelectorAll('.section-pane').forEach(pane => pane.classList.remove('active'));
             const paneActivo = document.getElementById(`pane-${nombreSeccion}`);
             if (paneActivo) paneActivo.classList.add('active');
-
             if (guardar) {
                 localStorage.setItem('lcc_seccion_activa', nombreSeccion);
                 localStorage.setItem('lcc_titulo_activo', tituloFranja);
@@ -984,33 +584,26 @@
 
         function cerrarSesion() {
             mostrarLoader("Cerrando sesión");
-            setTimeout(() => {
-                localStorage.removeItem('lcc_sesion');
-                localStorage.removeItem('lcc_active_tab_owner');
-                location.reload();
-            }, 500);
+            setTimeout(() => { localStorage.removeItem('lcc_sesion'); localStorage.removeItem('lcc_active_tab_owner'); location.reload(); }, 500);
         }
 
-        /* --- PERSISTENCIA COMPLETA --- */
         function guardarEstadoCompleto() {
             if (!sesionActualGlobal) return;
-            const payload = {
+            localStorage.setItem(`lcc_estado_completo_${sesionActualGlobal.empleado}`, JSON.stringify({
                 tituloArchivo: document.getElementById('uploadTitle').textContent,
                 subArchivo: document.getElementById('uploadSub').textContent,
                 pendientes: listaPendientesGlobal,
                 revisados: listaRevisadosGlobal
-            };
-            localStorage.setItem(`lcc_estado_completo_${sesionActualGlobal.empleado}`, JSON.stringify(payload));
+            }));
         }
 
         function cargarDatosPersistidos(empId) {
-            const key = `lcc_estado_completo_${empId}`;
-            const guardados = localStorage.getItem(key);
+            const guardados = localStorage.getItem(`lcc_estado_completo_${empId}`);
             if (guardados) {
                 try {
                     const parsed = JSON.parse(guardados);
-                    document.getElementById('uploadTitle').textContent = parsed.tituloArchivo || "Datos recuperados de sesión";
-                    document.getElementById('uploadSub').textContent = parsed.subArchivo || "Sesión restaurada correctamente.";
+                    document.getElementById('uploadTitle').textContent = parsed.tituloArchivo || "Datos recuperados";
+                    document.getElementById('uploadSub').textContent = parsed.subArchivo || "Sesión restaurada.";
                     listaPendientesGlobal = parsed.pendientes || [];
                     listaRevisadosGlobal = parsed.revisados || [];
                     renderizarVistaActual();
@@ -1018,63 +611,34 @@
             }
         }
 
-        /* --- SINCRONIZACIÓN AUTOMÁTICA CON REPORTES_BD (MÉTODO POST) --- */
         async function sincronizarProductoConBd(sku, desc, depto, imagenBase64 = "") {
             try {
-                let payload = {
-                    sku: sku,
-                    desc: desc,
-                    depto: depto,
-                    imagen: imagenBase64
-                };
-
                 let response = await fetch(WEB_APP_URL, {
                     method: "POST",
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ sku: sku, desc: desc, depto: depto, imagen: imagenBase64 })
                 });
-                
                 let result = await response.json();
-                if (result && result.success) {
-                    return result.imagen || "pelicano-logo.png";
-                }
-            } catch (e) {
-                console.log("Error sincronizando con BD por POST", e);
-            }
+                if (result && result.success) return result.imagen || "pelicano-logo.png";
+            } catch (e) {}
             return imagenBase64 || "pelicano-logo.png";
         }
 
-        /* --- PROCESAMIENTO GENERAL UNIVERSAL BASADO EN PATRÓN "26..." --- */
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
             mostrarLoader(`Analizando reporte oficial: "${file.name}"`);
-
             if (file.name.toLowerCase().endsWith('.pdf')) {
                 try {
-                    const arrayBuffer = await file.arrayBuffer();
-                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    let tokensDocumento = [];
-
+                    const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+                    let tokens = [];
                     for (let i = 1; i <= pdf.numPages; i++) {
-                        const page = await pdf.getPage(i);
-                        const content = await page.getTextContent();
-                        content.items.forEach(item => {
-                            const str = item.str.trim();
-                            if (str.length > 0) {
-                                tokensDocumento.push(str);
-                            }
-                        });
+                        (await (await pdf.getPage(i)).getTextContent()).items.forEach(item => { if (item.str.trim()) tokens.push(item.str.trim()); });
                     }
-
-                    await extraerEtiquetadosUniversal(tokensDocumento, file.name);
-                } catch (e) {
-                    alert("Error al leer el archivo PDF.");
-                    ocultarLoader();
-                }
+                    await extraerEtiquetadosUniversal(tokens, file.name);
+                } catch (e) { alert("Error al leer PDF."); ocultarLoader(); }
             } else {
                 const reader = new FileReader();
                 reader.onload = async function(e) {
-                    const tokens = e.target.result.split(/\s+/).filter(t => t.length > 0);
-                    await extraerEtiquetadosUniversal(tokens, file.name);
+                    await extraerEtiquetadosUniversal(e.target.result.split(/\s+/).filter(t => t.length > 0), file.name);
                 };
                 reader.readAsText(file);
             }
@@ -1082,96 +646,47 @@
 
         async function extraerEtiquetadosUniversal(tokens, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Extracción y sincronización con REPORTES_BD...`;
-
+            document.getElementById('uploadSub').textContent = `Sincronizando con REPORTES_BD...`;
             let nuevosProductos = [];
             let deptoActual = "Abarrotes";
-
-            const palabrasCorteSistema = [
-                "PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS",
-                "NEGADOS", "SUCURSAL", "QUERETARO", "MILENIO", "CÓDIGO", "BARRAS", "DESCRIPCIÓN",
-                "ARTÍCULO", "DETALLE", "INCIDENCIA", "EXHIBIDO", "BODEGA", "PROCESO", "MERMA",
-                "DEVOLUCIÓN", "ACTULIZACIÓN", "STOCK", "MALA", "CALIDAD", "CADUCADO", "CAMBIO",
-                "FISICO", "PEDIDA", "ENTREGADA", "NEGADA", "DIVISIÓN", "ESTATUS", "FECHA", "CREACIÓN",
-                "FOLIO", "FINALIZADO", "CANTIDAD", "%", "S.DE", "R.L.", "C.V."
-            ];
+            const cortes = ["PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS", "NEGADOS", "SUCURSAL", "CÓDIGO", "BARRAS", "DESCRIPCIÓN"];
 
             let i = 0;
             while (i < tokens.length) {
                 let tokenUpper = tokens[i].toUpperCase();
-
                 if (tokenUpper.includes("ALIMENTACION") || tokenUpper.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
                 else if (tokenUpper.includes("PANADERIA") || tokenUpper.includes("PANADERÍA")) deptoActual = "Panadería";
                 else if (tokenUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
-                else if (tokenUpper.includes("HIGIENE")) deptoActual = "Higiene y Belleza";
                 else if (tokenUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
                 else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
-                else if (tokenUpper.includes("MARCA")) deptoActual = "Marca Propia";
 
-                if (/^\d{4,14}$/.test(tokens[i])) {
+                if (/^\d{4,14}$/.test(tokens[i]) && tokens[i] !== "2026") {
                     let skuVal = tokens[i];
-
-                    if (skuVal !== "2026" && !skuVal.startsWith("1454")) {
-                        let descTokens = [];
-                        let j = i + 1;
-
-                        while (j < tokens.length) {
-                            let sigToken = tokens[j];
-                            let sigUpper = sigToken.toUpperCase();
-
-                            if (/^\d{4,14}$/.test(sigToken) && sigToken !== "2026" && !sigToken.startsWith("1454")) break;
-
-                            const esPaginacion = sigUpper === "PÁGINA" || sigUpper === "DE" || /^\d+$/.test(sigToken);
-                            const esFechaOCoordenada = /\d{2}\/\d{2}\/\d{4}/.test(sigToken) || /\d{2}:\d{2}/.test(sigToken);
-                            const esCantidadCorporativa = /^\d+(\.\d+)?%?$/.test(sigToken) || /^\d+\.\d+$/.test(sigToken);
-
-                            if (
-                                palabrasCorteSistema.includes(sigUpper) || 
-                                sigToken === "%" || 
-                                esFechaOCoordenada ||
-                                esCantidadCorporativa ||
-                                (esPaginacion && (descTokens.includes("PÁGINA") || descTokens.length > 0 && descTokens[descTokens.length-1].toUpperCase() === "PÁGINA"))
-                            ) {
-                                break;
-                            }
-
-                            if (sigUpper === "PÁGINA") break;
-
-                            descTokens.push(sigToken);
-                            j++;
-                        }
-
-                        let descVal = descTokens.join(" ")
-                            .replace(/PÁGINA.*$/i, "")
-                            .trim();
-
-                        if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
-                            let deptoAsignado = deptoActual;
-                            
-                            if (skuVal.startsWith("26")) {
-                                const tercerDigito = skuVal.charAt(2);
-                                if (tercerDigito === '1') deptoAsignado = "Perecederos";
-                                else if (tercerDigito === '5') deptoAsignado = "Alimentación";
-                                else if (tercerDigito === '6') deptoAsignado = "Panadería";
-                                else deptoAsignado = "Perecederos";
-                            }
-
-                            let imagenOptenida = await sincronizarProductoConBd(skuVal, descVal.toUpperCase(), deptoAsignado, "pelicano-logo.png");
-
-                            nuevosProductos.push({
-                                sku: skuVal,
-                                desc: descVal.toUpperCase(),
-                                cant: "",
-                                depto: deptoAsignado,
-                                img: imagenOptenida
-                            });
-                        }
-                        i = j - 1;
+                    let descTokens = [];
+                    let j = i + 1;
+                    while (j < tokens.length) {
+                        let sigToken = tokens[j], sigUpper = sigToken.toUpperCase();
+                        if (/^\d{4,14}$/.test(sigToken) && sigToken !== "2026") break;
+                        if (cortes.includes(sigUpper) || sigToken === "%") break;
+                        descTokens.push(sigToken);
+                        j++;
                     }
+                    let descVal = descTokens.join(" ").replace(/PÁGINA.*$/i, "").trim();
+                    if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
+                        let deptoAsignado = deptoActual;
+                        if (skuVal.startsWith("26")) {
+                            const c = skuVal.charAt(2);
+                            if (c === '1') deptoAsignado = "Perecederos";
+                            else if (c === '5') deptoAsignado = "Alimentación";
+                            else if (c === '6') deptoAsignado = "Panadería";
+                        }
+                        let imgResuelta = await sincronizarProductoConBd(skuVal, descVal.toUpperCase(), deptoAsignado, "pelicano-logo.png");
+                        nuevosProductos.push({ sku: skuVal, desc: descVal.toUpperCase(), cant: "", depto: deptoAsignado, img: imgResuelta });
+                    }
+                    i = j - 1;
                 }
                 i++;
             }
-
             listaPendientesGlobal = [...listaPendientesGlobal, ...nuevosProductos];
             guardarEstadoCompleto();
             renderizarVistaActual();
@@ -1189,7 +704,6 @@
         function renderizarVistaActual() {
             const container = document.getElementById('negadosListContainer');
             container.innerHTML = "";
-
             const filtroDepto = document.getElementById('filterDepto').value;
             let fuente = pestanaActualPreview === 'pendientes' ? listaPendientesGlobal : listaRevisadosGlobal;
             let listaFiltrada = fuente.filter(item => filtroDepto === 'todos' || item.depto === filtroDepto);
@@ -1205,27 +719,15 @@
             listaFiltrada.forEach((item, indexReal) => {
                 const card = document.createElement('div');
                 card.className = 'negado-card-item';
-                card.setAttribute('data-depto', item.depto);
-
-                const textoCantidadDisplay = item.cant !== "" && item.cant !== null ? `${item.cant} pzas` : `— pzas`;
-
-                let htmlBottom = `
-                    <div class="negado-inv-badge"><span class="negado-inv-dot"></span> <span class="cant-val">${textoCantidadDisplay}</span></div>
-                    <div style="font-size: 11px; color: var(--label-color);">Pendiente de verificación</div>
-                `;
-
+                let htmlBottom = `<div class="negado-inv-badge"><span class="negado-inv-dot"></span> <span class="cant-val">${item.cant !== "" ? item.cant + ' pzas' : '— pzas'}</span></div><div style="font-size: 11px; color: var(--label-color);">Pendiente de verificación</div>`;
                 if (pestanaActualPreview === 'revisados') {
-                    htmlBottom = `
-                        <div class="negado-inv-badge"><span class="negado-inv-dot" style="background:#ea4335;"></span> Revisado</div>
-                        <button class="btn-regresar-pendiente" title="Regresar a pendientes" onclick="abrirModalRazon(${indexReal})">↩️</button>
-                    `;
+                    htmlBottom = `<div class="negado-inv-badge"><span class="negado-inv-dot" style="background:#ea4335;"></span> Revisado</div><button class="btn-regresar-pendiente" title="Regresar a pendientes" onclick="abrirModalRazon(${indexReal})">↩️</button>`;
                 }
-
                 card.innerHTML = `
                     <div class="negado-card-top">
                         <div class="negado-img-wrapper">
                             <img src="${item.img || 'pelicano-logo.png'}" alt="Producto" class="negado-img-thumb" onerror="this.src='pelicano.jpg'">
-                            <button class="btn-change-img" id="btnImgChange_${indexReal}" style="display: ${modoEdicionActivo && pestanaActualPreview === 'pendientes' ? 'flex' : 'none'};" onclick="abrirModalCambiarImagen(${indexReal})" title="Modificar imagen">📷</button>
+                            <button class="btn-change-img" id="btnImgChange_${indexReal}" style="display: ${modoEdicionActivo && pestanaActualPreview === 'pendientes' ? 'flex' : 'none'};" onclick="abrirModalCambiarImagen(${indexReal})">📷</button>
                         </div>
                         <div class="negado-details">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; width: 100%;">
@@ -1235,138 +737,72 @@
                             <span class="negado-desc"><span class="desc-val">${item.desc}</span></span>
                         </div>
                     </div>
-                    <div class="negado-card-bottom">
-                        ${htmlBottom}
-                    </div>
+                    <div class="negado-card-bottom">${htmlBottom}</div>
                 `;
                 container.appendChild(card);
             });
-
-            if (modoEdicionActivo && pestanaActualPreview === 'pendientes') {
-                aplicarModoEdicionDOM(true);
-            }
+            if (modoEdicionActivo && pestanaActualPreview === 'pendientes') aplicarModoEdicionDOM(true);
         }
 
-        /* --- CONTROL DE RETORNO A PENDIENTES CON MOTIVO --- */
-        function abrirModalRazon(index) {
-            indexRetornandoRevisado = index;
-            document.getElementById('reasonModal').classList.add('active');
-        }
-
-        function cerrarModalRazon() {
-            document.getElementById('reasonModal').classList.remove('active');
-            indexRetornandoRevisado = null;
-        }
-
-        function confirmarRetornoPendiente(motivoSeleccionado) {
+        function abrirModalRazon(index) { indexRetornandoRevisado = index; document.getElementById('reasonModal').classList.add('active'); }
+        function cerrarModalRazon() { document.getElementById('reasonModal').classList.remove('active'); indexRetornandoRevisado = null; }
+        function confirmarRetornoPendiente(motivo) {
             if (indexRetornandoRevisado !== null && listaRevisadosGlobal[indexRetornandoRevisado]) {
-                let productoDevuelto = listaRevisadosGlobal.splice(indexRetornandoRevisado, 1)[0];
-                
-                productoDevuelto.motivoRetorno = motivoSeleccionado;
-
-                listaPendientesGlobal.push(productoDevuelto);
+                let devuelto = listaRevisadosGlobal.splice(indexRetornandoRevisado, 1)[0];
+                devuelto.motivoRetorno = motivo;
+                listaPendientesGlobal.push(devuelto);
                 guardarEstadoCompleto();
                 renderizarVistaActual();
                 cerrarModalRazon();
-                alert(`Artículo devuelto a pendientes.\nMotivo registrado: "${motivoSeleccionado}"`);
             }
         }
-
         function limpiarListaNegados() {
-            if (confirm("¿Estás seguro de limpiar toda la lista de registros?")) {
-                listaPendientesGlobal = [];
-                listaRevisadosGlobal = [];
-                guardarEstadoCompleto();
-                renderizarVistaActual();
-            }
+            if (confirm("¿Limpiar lista?")) { listaPendientesGlobal = []; listaRevisadosGlobal = []; guardarEstadoCompleto(); renderizarVistaActual(); }
         }
 
         function toggleModoEdicion() {
-            if (pestanaActualPreview !== 'pendientes') {
-                alert("Solo puedes editar artículos en la pestaña de Pendientes.");
-                return;
-            }
-
+            if (pestanaActualPreview !== 'pendientes') { alert("Solo en Pendientes."); return; }
             modoEdicionActivo = !modoEdicionActivo;
             const btnEditar = document.getElementById('btnEditar');
-
-            if (listaPendientesGlobal.length === 0) {
-                alert("No hay elementos para editar en la lista.");
-                modoEdicionActivo = false;
-                return;
-            }
-
+            if (listaPendientesGlobal.length === 0) { modoEdicionActivo = false; return; }
             if (modoEdicionActivo) {
-                btnEditar.style.background = "#137333";
-                btnEditar.innerHTML = "💾 Guardar Edición";
+                btnEditar.style.background = "#137333"; btnEditar.innerHTML = "💾 Guardar Edición";
                 aplicarModoEdicionDOM(true);
             } else {
-                btnEditar.style.background = "#f29900";
-                btnEditar.innerHTML = "✏️ Editar";
-
-                const cards = document.querySelectorAll('.negado-card-item');
-                cards.forEach((card, idx) => {
-                    const skuInput = card.querySelector('.input-edit-sku');
-                    const descInput = card.querySelector('.input-edit-desc');
-                    const cantInput = card.querySelector('.input-edit-cant');
+                btnEditar.style.background = "#f29900"; btnEditar.innerHTML = "✏️ Editar";
+                document.querySelectorAll('.negado-card-item').forEach((card, idx) => {
+                    const skuInput = card.querySelector('.input-edit-sku'), descInput = card.querySelector('.input-edit-desc'), cantInput = card.querySelector('.input-edit-cant');
                     if (skuInput && descInput && listaPendientesGlobal[idx]) {
                         listaPendientesGlobal[idx].sku = skuInput.value;
                         listaPendientesGlobal[idx].desc = descInput.value;
                         if (cantInput) listaPendientesGlobal[idx].cant = cantInput.value;
-                        
                         sincronizarProductoConBd(listaPendientesGlobal[idx].sku, listaPendientesGlobal[idx].desc, listaPendientesGlobal[idx].depto, listaPendientesGlobal[idx].img);
                     }
                 });
-
-                guardarEstadoCompleto();
-                renderizarVistaActual();
-                alert("Cambios guardados exitosamente.");
+                guardarEstadoCompleto(); renderizarVistaActual(); alert("Guardado.");
             }
         }
 
         function aplicarModoEdicionDOM(activar) {
-            const cards = document.querySelectorAll('.negado-card-item');
-            cards.forEach((card, idx) => {
-                const skuSpan = card.querySelector('.sku-val');
-                const descSpan = card.querySelector('.desc-val');
-                const cantSpan = card.querySelector('.cant-val');
-                const btnImg = card.querySelector('.btn-change-img');
-
+            document.querySelectorAll('.negado-card-item').forEach((card, idx) => {
+                const skuSpan = card.querySelector('.sku-val'), descSpan = card.querySelector('.desc-val'), cantSpan = card.querySelector('.cant-val'), btnImg = card.querySelector('.btn-change-img');
                 if (btnImg) btnImg.style.display = activar ? 'flex' : 'none';
-
-                if (activar) {
-                    if (!skuSpan.querySelector('input')) {
-                        skuSpan.innerHTML = `<input type="text" class="input-edit-sku" value="${skuSpan.textContent}">`;
-                        descSpan.innerHTML = `<input type="text" class="input-edit-desc" value="${descSpan.textContent}">`;
-                        
-                        let valActualCant = listaPendientesGlobal[idx] ? listaPendientesGlobal[idx].cant : "";
-                        cantSpan.innerHTML = `<input type="number" class="input-edit-cant" placeholder="0" value="${valActualCant}">`;
-                    }
+                if (activar && !skuSpan.querySelector('input')) {
+                    skuSpan.innerHTML = `<input type="text" class="input-edit-sku" value="${skuSpan.textContent}">`;
+                    descSpan.innerHTML = `<input type="text" class="input-edit-desc" value="${descSpan.textContent}">`;
+                    cantSpan.innerHTML = `<input type="number" class="input-edit-cant" placeholder="0" value="${listaPendientesGlobal[idx] ? listaPendientesGlobal[idx].cant : ''}">`;
                 }
             });
         }
 
-        function abrirModalCambiarImagen(index) {
-            indexEditandoImg = index;
-            document.getElementById('imgSourceModal').classList.add('active');
-        }
-
-        function cerrarModalImagen() {
-            document.getElementById('imgSourceModal').classList.remove('active');
-            indexEditandoImg = null;
-        }
+        function abrirModalCambiarImagen(index) { indexEditandoImg = index; document.getElementById('imgSourceModal').classList.add('active'); }
+        function cerrarModalImagen() { document.getElementById('imgSourceModal').classList.remove('active'); indexEditandoImg = null; }
 
         function ejecutarOrigenImagen(tipo) {
             cerrarModalImagen();
-            let fileInputTemp = document.createElement('input');
-            fileInputTemp.type = 'file';
-            fileInputTemp.accept = 'image/*';
-
-            if (tipo === 'camara') {
-                fileInputTemp.capture = 'environment';
-            }
-
-            fileInputTemp.onchange = function(e) {
+            let fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*';
+            if (tipo === 'camara') fi.capture = 'environment';
+            fi.onchange = function(e) {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
@@ -1374,227 +810,105 @@
                         if (pestanaActualPreview === 'pendientes' && listaPendientesGlobal[indexEditandoImg]) {
                             let prod = listaPendientesGlobal[indexEditandoImg];
                             prod.img = event.target.result;
-
                             await sincronizarProductoConBd(prod.sku, prod.desc, prod.depto, prod.img);
-
-                            guardarEstadoCompleto();
-                            renderizarVistaActual();
+                            guardarEstadoCompleto(); renderizarVistaActual();
                             if (modoEdicionActivo) aplicarModoEdicionDOM(true);
-                            alert("Imagen actualizada y guardada en REPORTES_BD exitosamente.");
+                            alert("Imagen actualizada.");
                         }
                     };
                     reader.readAsDataURL(file);
                 }
             };
-            fileInputTemp.click();
+            fi.click();
         }
 
-        /* --- ESCÁNER Y BÚSQUEDA INTELIGENTE POR SKU / PREFIJO --- */
         function abrirEscaner() {
-            const modal = document.getElementById('scannerModal');
-            modal.classList.add('active');
+            document.getElementById('scannerModal').classList.add('active');
             escaneoBloqueadoEnfriamiento = false;
             document.getElementById('manualScanInput').value = "";
             document.getElementById('autocompleteList').style.display = "none";
-
             html5QrCode = new Html5Qrcode("reader");
-            const config = { fps: 10, qrbox: { width: 250, height: 150 } };
-
-            html5QrCode.start(
-                { facingMode: "environment" }, 
-                config, 
-                onScanSuccess, 
-                onScanFailure
-            ).catch(err => {
-                console.log("Cámara no disponible, usando búsqueda manual.", err);
-            });
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 150 } }, onScanSuccess, () => {}).catch(() => {});
         }
 
-        function onScanSuccess(decodedText, decodedResult) {
+        function onScanSuccess(decodedText) {
             if (escaneoBloqueadoEnfriamiento) return;
-
             escaneoBloqueadoEnfriamiento = true;
-            const statusIndicator = document.getElementById('scanStatus');
-            statusIndicator.style.display = "block";
-            statusIndicator.textContent = `¡Código ${decodedText} detectado! Enfriamiento (5s)...`;
-
+            document.getElementById('scanStatus').style.display = "block";
             procesarSkuEscaneado(decodedText);
-
-            setTimeout(() => {
-                escaneoBloqueadoEnfriamiento = false;
-                statusIndicator.style.display = "none";
-            }, 5000);
+            setTimeout(() => { escaneoBloqueadoEnfriamiento = false; document.getElementById('scanStatus').style.display = "none"; }, 5000);
         }
-
-        function onScanFailure(error) {}
 
         function cerrarEscaner() {
-            const modal = document.getElementById('scannerModal');
-            modal.classList.remove('active');
-            document.getElementById('scanStatus').style.display = "none";
-            document.getElementById('autocompleteList').style.display = "none";
-
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => {
-                    html5QrCode.clear();
-                }).catch(err => {});
-            }
+            document.getElementById('scannerModal').classList.remove('active');
+            if (html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
         }
 
-        function filtrarSugerenciasManuales(textoBusqueda) {
-            const listaDiv = document.getElementById('autocompleteList');
-            listaDiv.innerHTML = "";
-
-            if (!textoBusqueda || textoBusqueda.trim().length === 0) {
-                listaDiv.style.display = "none";
-                return;
-            }
-
-            const queryUpper = textoBusqueda.toUpperCase();
-            let matches = listaPendientesGlobal.filter(item => 
-                item.desc.includes(queryUpper) || item.sku.includes(queryUpper)
-            );
-
-            if (matches.length === 0) {
-                listaDiv.innerHTML = `<div class="autocomplete-item" style="color: #c5221f;">No se encontró ningún artículo con ese SKU o nombre.</div>`;
-                listaDiv.style.display = "block";
-                return;
-            }
-
-            matches.forEach(match => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'autocomplete-item';
-                itemDiv.innerHTML = `<strong>SKU: ${match.sku}</strong> — ${match.desc} <span style="color:var(--mexican-pink);">(${match.depto})</span>`;
-                itemDiv.onclick = function() {
-                    document.getElementById('manualScanInput').value = match.sku;
-                    listaDiv.style.display = "none";
-                    procesarSkuEscaneadoManualInput();
-                };
-                listaDiv.appendChild(itemDiv);
+        function filtrarSugerenciasManuales(texto) {
+            const list = document.getElementById('autocompleteList');
+            list.innerHTML = "";
+            if (!texto || !texto.trim()) { list.style.display = "none"; return; }
+            const q = texto.toUpperCase();
+            let matches = listaPendientesGlobal.filter(item => item.desc.includes(q) || item.sku.includes(q));
+            if (matches.length === 0) { list.innerHTML = `<div class="autocomplete-item" style="color:red;">No encontrado.</div>`; list.style.display = "block"; return; }
+            matches.forEach(m => {
+                let div = document.createElement('div'); div.className = 'autocomplete-item';
+                div.innerHTML = `<strong>SKU: ${m.sku}</strong> — ${m.desc}`;
+                div.onclick = () => { document.getElementById('manualScanInput').value = m.sku; list.style.display = "none"; procesarSkuEscaneadoManualInput(); };
+                list.appendChild(div);
             });
-
-            listaDiv.style.display = "block";
+            list.style.display = "block";
         }
 
         function procesarSkuEscaneadoManualInput() {
-            const skuInput = document.getElementById('manualScanInput').value.trim();
-            if (!skuInput) {
-                alert("Ingresa un SKU o nombre válido.");
-                return;
-            }
-            procesarSkuEscaneado(skuInput);
+            let val = document.getElementById('manualScanInput').value.trim();
+            if (val) procesarSkuEscaneado(val);
             document.getElementById('manualScanInput').value = "";
             document.getElementById('autocompleteList').style.display = "none";
         }
 
-        function procesarSkuEscaneado(skuCode) {
-            let indexEncontrado = listaPendientesGlobal.findIndex(item => item.sku.includes(skuCode) || item.desc.includes(skuCode.toUpperCase()));
-
-            if (indexEncontrado !== -1) {
-                let productoMovido = listaPendientesGlobal.splice(indexEncontrado, 1)[0];
-                listaRevisadosGlobal.push(productoMovido);
-
-                guardarEstadoCompleto();
-                renderizarVistaActual();
-                cerrarEscaner();
-                alert(`¡Artículo "${productoMovido.desc}" (SKU: ${productoMovido.sku}) verificado con éxito!`);
-            } else {
-                alert(`No se encontró ningún producto pendiente con el código o SKU "${skuCode}".`);
-            }
+        function procesarSkuEscaneado(code) {
+            let idx = listaPendientesGlobal.findIndex(item => item.sku.includes(code) || item.desc.includes(code.toUpperCase()));
+            if (idx !== -1) {
+                listaRevisadosGlobal.push(listaPendientesGlobal.splice(idx, 1)[0]);
+                guardarEstadoCompleto(); renderizarVistaActual(); cerrarEscaner();
+            } else { alert("Artículo no encontrado en pendientes."); }
         }
 
         function confirmarReporte() {
-            if (listaPendientesGlobal.length === 0) {
-                alert("No hay productos pendientes en la lista para confirmar.");
-                return;
-            }
-
-            mostrarLoader("Confirmando y generando reportes por departamento");
+            if (listaPendientesGlobal.length === 0) { alert("Lista vacía."); return; }
+            mostrarLoader("Generando reportes...");
             setTimeout(() => {
                 ocultarLoader();
-                const contenedorActivos = document.getElementById('contenedorActivos');
-                let htmlResumen = `<div style="display:flex; flex-direction:column; gap:10px;">`;
-                
+                let htmlRes = `<div style="display:flex; flex-direction:column; gap:10px;">`;
                 listaPendientesGlobal.forEach(item => {
-                    const cantTexto = item.cant !== "" && item.cant !== null ? `${item.cant} pzas` : "— pzas";
-                    htmlResumen += `
-                        <div class="negado-card-item">
-                            <div class="negado-card-top">
-                                <div class="negado-img-wrapper">
-                                    <img src="${item.img || 'pelicano-logo.png'}" alt="Producto" class="negado-img-thumb" onerror="this.src='pelicano.jpg'">
-                                </div>
-                                <div class="negado-details">
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; width: 100%;">
-                                        <span class="negado-sku">SKU: ${item.sku}</span>
-                                        <div class="negado-depto-badge">${item.depto}</div>
-                                    </div>
-                                    <span class="negado-desc">${item.desc}</span>
-                                </div>
-                            </div>
-                            <div class="negado-card-bottom">
-                                <div class="negado-inv-badge"><span class="negado-inv-dot"></span> ${cantTexto}</div>
-                                <div style="font-size: 11px; color: var(--label-color);">Activo en piso</div>
-                            </div>
-                        </div>
-                    `;
+                    htmlRes = `<div class="negado-card-item"><div class="negado-card-top"><div class="negado-img-wrapper"><img src="${item.img || 'pelicano-logo.png'}" class="negado-img-thumb"></div><div class="negado-details"><span class="negado-sku">SKU: ${item.sku}</span><span class="negado-desc">${item.desc}</span></div></div></div>`;
                 });
-                htmlResumen += `</div>`;
-
-                contenedorActivos.innerHTML = htmlResumen;
-                
-                listaPendientesGlobal = [];
-                listaRevisadosGlobal = [];
-                guardarEstadoCompleto();
-                renderizarVistaActual();
-
-                const subReportesActivos = document.querySelectorAll('#submenuReportes .submenu-item')[1];
-                seleccionarSubreporte('reportes-activos', 'Reportes activos', subReportesActivos);
-
-                alert("Reportes confirmados y enviados a Reportes Activos exitosamente.");
-            }, 1200);
+                document.getElementById('contenedorActivos').innerHTML = htmlRes = `</div>`;
+                listaPendientesGlobal = []; listaRevisadosGlobal = [];
+                guardarEstadoCompleto(); renderizarVistaActual();
+                seleccionarSubreporte('reportes-activos', 'Reportes activos', document.querySelectorAll('#submenuReportes .submenu-item')[1]);
+                alert("Reportes confirmados.");
+            }, 1000);
         }
 
-        function filtrarNegadosPorDepto(depto) {
-            renderizarVistaActual();
-        }
+        function filtrarNegadosPorDepto() { renderizarVistaActual(); }
 
         if (form) {
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                const numEmpleado = document.getElementById('empleado').value.trim();
-                const nombre = document.getElementById('nombre').value.trim();
-                const departamento = selectDepartamento.value;
-
-                mostrarLoader("Verificando credenciales");
-                const sessionToken = 'token_' + Math.random().toString(36).substring(2);
-                const urlFinal = `${WEB_APP_URL}?nombre=${encodeURIComponent(nombre)}&departamento=${encodeURIComponent(departamento)}&sessionToken=${encodeURIComponent(sessionToken)}`;
-
+                const emp = document.getElementById('empleado').value.trim(), nom = document.getElementById('nombre').value.trim(), depto = selectDepartamento.value;
+                mostrarLoader("Verificando acceso");
+                let token = 'token_' + Math.random().toString(36).substring(2);
                 try {
-                    const response = await fetch(urlFinal);
-                    const result = await response.json();
-
-                    if (result && result.access) {
-                        const datosSesion = {
-                            empleado: numEmpleado,
-                            nombre: nombre,
-                            departamento: departamento,
-                            isAdmin: result.isAdmin || false,
-                            sessionToken: sessionToken
-                        };
-                        localStorage.setItem('lcc_sesion', JSON.stringify(datosSesion));
+                    let res = await fetch(`${WEB_APP_URL}?nombre=${encodeURIComponent(nom)}&departamento=${encodeURIComponent(depto)}&sessionToken=${encodeURIComponent(token)}`);
+                    let json = await res.json();
+                    if (json && json.access) {
+                        localStorage.setItem('lcc_sesion', JSON.stringify({ empleado: emp, nombre: nom, departamento: depto, isAdmin: json.isAdmin || false, sessionToken: token }));
                         localStorage.setItem('lcc_active_tab_owner', tabId);
-                        verificarSesionGuardada();
-                        ocultarLoader();
-                    } else {
-                        ocultarLoader();
-                        mensajeAlerta.textContent = result.message || "Acceso denegado.";
-                        mensajeAlerta.className = "mensaje error";
-                    }
-                } catch (error) {
-                    ocultarLoader();
-                    mensajeAlerta.textContent = "Error de conexión.";
-                    mensajeAlerta.className = "mensaje error";
-                }
+                        verificarSesionGuardada(); ocultarLoader();
+                    } else { ocultarLoader(); mensajeAlerta.textContent = json.message || "Acceso denegado."; mensajeAlerta.className = "mensaje error"; }
+                } catch (err) { ocultarLoader(); mensajeAlerta.textContent = "Error de conexión."; mensajeAlerta.className = "mensaje error"; }
             });
         }
     </script>
