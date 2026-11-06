@@ -616,41 +616,36 @@
             }
         }
 
-        async function sincronizarProductoConBd(sku, desc, depto) {
-            return 'pelicano.jpg';
-        }
-
         async function procesarArchivoAdjunto(file) {
             if (!file) return;
             mostrarLoader(`Analizando reporte oficial: "${file.name}"`);
             if (file.name.toLowerCase().endsWith('.pdf')) {
                 try {
                     const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
-                    let tokensPorPagina = [];
+                    let bloquesTablas = [];
                     for (let i = 1; i <= pdf.numPages; i++) {
                         let pageText = await (await pdf.getPage(i)).getTextContent();
                         let tokensPag = [];
                         pageText.items.forEach(item => { if (item.str.trim()) tokensPag.push(item.str.trim()); });
-                        tokensPorPagina.push(tokensPag);
+                        bloquesTablas.push(tokensPag);
                     }
-                    await extraerEtiquetadosPorTablas(tokensPorPagina, file.name);
+                    await extraerSoloCodigosYDescripciones(bloquesTablas, file.name);
                 } catch (e) { alert("Error al leer PDF."); ocultarLoader(); }
             } else {
                 const reader = new FileReader();
                 reader.onload = async function(e) {
                     let tokens = e.target.result.split(/\s+/).filter(t => t.length > 0);
-                    await extraerEtiquetadosPorTablas([tokens], file.name);
+                    await extraerSoloCodigosYDescripciones([tokens], file.name);
                 };
                 reader.readAsText(file);
             }
         }
 
-        /* --- LECTURA POR BLOQUES/TABLAS: EXTRAE EXACTAMENTE CÓDIGO, DESCRIPCIÓN Y SECCIÓN --- */
-        async function extraerEtiquetadosPorTablas(bloquesTablas, nombreArchivo) {
+        /* --- EXTRACCIÓN QUIRÚRGICA: SOLO CÓDIGO DE BARRAS Y DESCRIPCIÓN --- */
+        async function extraerSoloCodigosYDescripciones(bloquesTablas, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
             let nuevosProductos = [];
-            let totalTablasDetectadas = bloquesTablas.length;
-            document.getElementById('uploadSub').textContent = `Se identificaron ${totalTablasDetectadas} tablas en el documento. Procesando...`;
+            document.getElementById('uploadSub').textContent = `Analizando ${bloquesTablas.length} tablas del documento...`;
 
             const palabrasExcluidas = [
                 "PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS", 
@@ -659,20 +654,14 @@
             ];
 
             bloquesTablas.forEach((tokens) => {
-                let deptoActual = "Abarrotes";
                 let i = 0;
                 while (i < tokens.length) {
-                    let tokenUpper = tokens[i].toUpperCase();
-                    if (tokenUpper.includes("ALIMENTACION") || tokenUpper.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
-                    else if (tokenUpper.includes("PANADERIA") || tokenUpper.includes("PANADERÍA")) deptoActual = "Panadería";
-                    else if (tokenUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
-                    else if (tokenUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
-                    else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
-
+                    // Detecta únicamente el Código de barras (SKU numérico estricto de 4 a 14 dígitos)
                     if (/^\d{4,14}$/.test(tokens[i]) && tokens[i] !== "2026") {
                         let skuVal = tokens[i];
                         let descTokens = [];
                         let j = i + 1;
+                        
                         while (j < tokens.length) {
                             let sigToken = tokens[j], sigUpper = sigToken.toUpperCase();
                             if (/^\d{4,14}$/.test(sigToken) && sigToken !== "2026") break;
@@ -682,16 +671,26 @@
                             }
                             j++;
                         }
+                        
                         let descVal = descTokens.join(" ").replace(/PÁGINA.*$/i, "").trim();
+                        
                         if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
-                            let deptoAsignado = deptoActual;
+                            // Asignación limpia de departamento por prefijo SKU (ej. 26...) o por defecto Abarrotes
+                            let deptoAsignado = "Abarrotes";
                             if (skuVal.startsWith("26")) {
                                 const c = skuVal.charAt(2);
                                 if (c === '1') deptoAsignado = "Perecederos";
                                 else if (c === '5') deptoAsignado = "Alimentación";
                                 else if (c === '6') deptoAsignado = "Panadería";
                             }
-                            nuevosProductos.push({ sku: skuVal, desc: descVal.toUpperCase(), cant: "", depto: deptoAsignado, img: 'pelicano.jpg' });
+                            
+                            nuevosProductos.push({ 
+                                sku: skuVal, 
+                                desc: descVal.toUpperCase(), 
+                                cant: "", 
+                                depto: deptoAsignado, 
+                                img: 'pelicano.jpg' 
+                            });
                         }
                         i = j - 1;
                     }
