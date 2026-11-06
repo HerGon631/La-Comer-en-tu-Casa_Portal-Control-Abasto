@@ -626,64 +626,79 @@
             if (file.name.toLowerCase().endsWith('.pdf')) {
                 try {
                     const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
-                    let tokens = [];
+                    let tokensPorPagina = [];
                     for (let i = 1; i <= pdf.numPages; i++) {
-                        (await (await pdf.getPage(i)).getTextContent()).items.forEach(item => { if (item.str.trim()) tokens.push(item.str.trim()); });
+                        let pageText = await (await pdf.getPage(i)).getTextContent();
+                        let tokensPag = [];
+                        pageText.items.forEach(item => { if (item.str.trim()) tokensPag.push(item.str.trim()); });
+                        tokensPorPagina.push(tokensPag);
                     }
-                    await extraerEtiquetadosUniversal(tokens, file.name);
+                    await extraerEtiquetadosPorTablas(tokensPorPagina, file.name);
                 } catch (e) { alert("Error al leer PDF."); ocultarLoader(); }
             } else {
                 const reader = new FileReader();
                 reader.onload = async function(e) {
-                    await extraerEtiquetadosUniversal(e.target.result.split(/\s+/).filter(t => t.length > 0), file.name);
+                    let tokens = e.target.result.split(/\s+/).filter(t => t.length > 0);
+                    await extraerEtiquetadosPorTablas([tokens], file.name);
                 };
                 reader.readAsText(file);
             }
         }
 
-        async function extraerEtiquetadosUniversal(tokens, nombreArchivo) {
+        /* --- LECTURA POR BLOQUES/TABLAS: EXTRAE EXACTAMENTE CÓDIGO, DESCRIPCIÓN Y SECCIÓN --- */
+        async function extraerEtiquetadosPorTablas(bloquesTablas, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
-            document.getElementById('uploadSub').textContent = `Sincronizando con catálogo...`;
             let nuevosProductos = [];
-            let deptoActual = "Abarrotes";
-            const cortes = ["PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS", "NEGADOS", "SUCURSAL", "CÓDIGO", "BARRAS", "DESCRIPCIÓN"];
+            let totalTablasDetectadas = bloquesTablas.length;
+            document.getElementById('uploadSub').textContent = `Se identificaron ${totalTablasDetectadas} tablas en el documento. Procesando...`;
 
-            let i = 0;
-            while (i < tokens.length) {
-                let tokenUpper = tokens[i].toUpperCase();
-                if (tokenUpper.includes("ALIMENTACION") || tokenUpper.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
-                else if (tokenUpper.includes("PANADERIA") || tokenUpper.includes("PANADERÍA")) deptoActual = "Panadería";
-                else if (tokenUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
-                else if (tokenUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
-                else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
+            const palabrasExcluidas = [
+                "PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS", 
+                "NEGADOS", "SUCURSAL", "CÓDIGO", "BARRAS", "DESCRIPCIÓN", "DIVISIÓN", "ESTATUS", 
+                "FOLIO", "CREACIÓN", "FINALIZADO", "CANTIDAD", "PEDIDA", "ENTREGADA", "NEGADA", "HOGAR", "%"
+            ];
 
-                if (/^\d{4,14}$/.test(tokens[i]) && tokens[i] !== "2026") {
-                    let skuVal = tokens[i];
-                    let descTokens = [];
-                    let j = i + 1;
-                    while (j < tokens.length) {
-                        let sigToken = tokens[j], sigUpper = sigToken.toUpperCase();
-                        if (/^\d{4,14}$/.test(sigToken) && sigToken !== "2026") break;
-                        if (cortes.includes(sigUpper) || sigToken === "%") break;
-                        descTokens.push(sigToken);
-                        j++;
-                    }
-                    let descVal = descTokens.join(" ").replace(/PÁGINA.*$/i, "").trim();
-                    if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
-                        let deptoAsignado = deptoActual;
-                        if (skuVal.startsWith("26")) {
-                            const c = skuVal.charAt(2);
-                            if (c === '1') deptoAsignado = "Perecederos";
-                            else if (c === '5') deptoAsignado = "Alimentación";
-                            else if (c === '6') deptoAsignado = "Panadería";
+            bloquesTablas.forEach((tokens) => {
+                let deptoActual = "Abarrotes";
+                let i = 0;
+                while (i < tokens.length) {
+                    let tokenUpper = tokens[i].toUpperCase();
+                    if (tokenUpper.includes("ALIMENTACION") || tokenUpper.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
+                    else if (tokenUpper.includes("PANADERIA") || tokenUpper.includes("PANADERÍA")) deptoActual = "Panadería";
+                    else if (tokenUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
+                    else if (tokenUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
+                    else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
+
+                    if (/^\d{4,14}$/.test(tokens[i]) && tokens[i] !== "2026") {
+                        let skuVal = tokens[i];
+                        let descTokens = [];
+                        let j = i + 1;
+                        while (j < tokens.length) {
+                            let sigToken = tokens[j], sigUpper = sigToken.toUpperCase();
+                            if (/^\d{4,14}$/.test(sigToken) && sigToken !== "2026") break;
+                            if (palabrasExcluidas.some(p => sigUpper.includes(p)) || sigToken === "%") break;
+                            if (!/^\d+\.\d+$/.test(sigToken)) {
+                                descTokens.push(sigToken);
+                            }
+                            j++;
                         }
-                        let imgResuelta = await sincronizarProductoConBd(skuVal, descVal.toUpperCase(), deptoAsignado);
-                        nuevosProductos.push({ sku: skuVal, desc: descVal.toUpperCase(), cant: "", depto: deptoAsignado, img: imgResuelta });
+                        let descVal = descTokens.join(" ").replace(/PÁGINA.*$/i, "").trim();
+                        if (descVal.length > 2 && !nuevosProductos.some(p => p.sku === skuVal)) {
+                            let deptoAsignado = deptoActual;
+                            if (skuVal.startsWith("26")) {
+                                const c = skuVal.charAt(2);
+                                if (c === '1') deptoAsignado = "Perecederos";
+                                else if (c === '5') deptoAsignado = "Alimentación";
+                                else if (c === '6') deptoAsignado = "Panadería";
+                            }
+                            nuevosProductos.push({ sku: skuVal, desc: descVal.toUpperCase(), cant: "", depto: deptoAsignado, img: 'pelicano.jpg' });
+                        }
+                        i = j - 1;
                     }
-                    i = j - 1;
+                    i++;
                 }
-                i++;
-            }
+            });
+
             listaPendientesGlobal = [...listaPendientesGlobal, ...nuevosProductos];
             guardarEstadoCompleto();
             renderizarVistaActual();
@@ -773,7 +788,6 @@
                         listaPendientesGlobal[idx].sku = skuInput.value;
                         listaPendientesGlobal[idx].desc = descInput.value;
                         if (cantInput) listaPendientesGlobal[idx].cant = cantInput.value;
-                        sincronizarProductoConBd(listaPendientesGlobal[idx].sku, listaPendientesGlobal[idx].desc, listaPendientesGlobal[idx].depto);
                     }
                 });
                 guardarEstadoCompleto(); renderizarVistaActual(); alert("Guardado.");
