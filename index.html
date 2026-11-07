@@ -211,7 +211,14 @@
 
         .btn-report-error { background: #ffebee; color: #c5221f; border: 1px solid #ffcdd2; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.2s; flex-shrink: 0; }
         .btn-report-error:hover { transform: scale(1.1); background: #ffcdd2; }
-        .action-select-opcion { width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid #dadce0; font-size: 11px; font-weight: bold; color: var(--text-color); background-color: #f8f9fa; margin-top: 6px; }
+        .action-select-opcion { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #dadce0; font-size: 12px; font-weight: bold; color: var(--text-color); background-color: #f8f9fa; margin-top: 6px; }
+
+        /* Estilos del Panel de Métricas de Abasto */
+        .metrics-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; margin-bottom: 15px; }
+        .metric-card { background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 10px 6px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+        .metric-icon { font-size: 18px; margin-bottom: 2px; display: block; }
+        .metric-title { font-size: 10px; font-weight: bold; color: var(--label-color); text-transform: uppercase; }
+        .metric-value { font-size: 16px; font-weight: bold; color: var(--mexican-pink); margin-top: 2px; }
 
         @media (max-width: 600px) {
             .upload-bar-compact { flex-direction: column; align-items: stretch; text-align: center; gap: 15px; }
@@ -419,14 +426,33 @@
                     </div>
 
                     <div id="subpane-reportes-activos" class="report-subpane">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                            <div>
-                                <h3 style="font-size: 16px; font-weight: bold; color: #111;">⚡ Reportes Activos por Departamento</h3>
-                                <p style="margin-top: 4px; color: var(--label-color); font-size: 13px;">Listado de incidencias enviadas y pendientes de atención en piso.</p>
+                        <h3 style="font-size: 16px; font-weight: bold; color: #111;">⚡ Reportes Activos por Departamento</h3>
+                        <p style="margin-top: 4px; color: var(--label-color); font-size: 13px;">Listado de incidencias enviadas y pendientes de atención en piso.</p>
+
+                        <!-- Tarjetas de Métricas de Abasto -->
+                        <div class="metrics-panel">
+                            <div class="metric-card">
+                                <span class="metric-icon">📦</span>
+                                <div class="metric-title">Artículos Negados</div>
+                                <div class="metric-value" id="metricNegados">0</div>
                             </div>
+                            <div class="metric-card">
+                                <span class="metric-icon">🔍</span>
+                                <div class="metric-title">Artículos Trabajados</div>
+                                <div class="metric-value" id="metricTrabajados" style="color: #137333;">0</div>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-icon">📊</span>
+                                <div class="metric-title">Abasto (%)</div>
+                                <div class="metric-value" id="metricAbasto" style="color: #1a73e8;">0%</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
                             <button class="btn-action-escanear" onclick="abrirEscanerActivo()">📷 Escanear / Buscar</button>
                         </div>
-                        <div id="contenedorActivos" style="margin-top: 15px;">
+
+                        <div id="contenedorActivos">
                             <div class="empty-negados">No hay reportes activos en este momento.</div>
                         </div>
                     </div>
@@ -1049,9 +1075,18 @@
 
         function filtrarNegadosPorDepto() { renderizarVistaActual(); }
 
+        /* Renderizar Métricas y Lista de Reportes Activos */
         function renderizarReportesActivosGUI() {
             const container = document.getElementById('contenedorActivos');
             container.innerHTML = "";
+
+            let totalNegados = reportesActivosList.length;
+            let trabajados = reportesActivosList.filter(item => item.accionAplicada !== null).length;
+            let porcentaje = totalNegados > 0 ? Math.round((trabajados / totalNegados) * 100) : 0;
+
+            document.getElementById('metricNegados').textContent = totalNegados;
+            document.getElementById('metricTrabajados').textContent = trabajados;
+            document.getElementById('metricAbasto').textContent = `${porcentaje}%`;
 
             let pendientesActivos = reportesActivosList.filter(item => !item.accionAplicada);
 
