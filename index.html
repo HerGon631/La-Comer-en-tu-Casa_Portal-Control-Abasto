@@ -23,6 +23,9 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         html, body { max-width: 100vw; overflow-x: hidden; font-family: 'Arial', sans-serif; background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Clase global para congelar el fondo cuando se abre cualquier modal */
+        body.modal-open { overflow: hidden !important; }
 
         .global-loader { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .global-loader.active { opacity: 1; visibility: visible; }
@@ -154,7 +157,7 @@
             align-items: center;
             justify-content: center;
             border: 1px solid #ddd;
-            cursor: pointer; /* Indica que se puede hacer clic para zoom */
+            cursor: pointer;
             transition: transform 0.2s;
         }
         .negado-img-wrapper:hover { transform: scale(1.05); border-color: var(--mexican-pink); }
@@ -167,7 +170,6 @@
             display: block !important; 
         }
 
-        /* Estilos del Modal de Zoom para la imagen */
         .image-zoom-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 20000; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s ease; backdrop-filter: blur(5px); }
         .image-zoom-modal.active { opacity: 1; visibility: visible; }
         .zoom-modal-content { position: relative; max-width: 90%; max-height: 80vh; display: flex; justify-content: center; align-items: center; }
@@ -229,7 +231,6 @@
         <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
     </div>
 
-    <!-- Modal para zoom de imágenes de productos -->
     <div id="imageZoomModal" class="image-zoom-modal" onclick="cerrarZoomImagen()">
         <div class="zoom-modal-content" onclick="event.stopPropagation()">
             <button class="zoom-close-btn" onclick="cerrarZoomImagen()">✕ Cerrar</button>
@@ -471,9 +472,23 @@
         function mostrarLoader(mensaje = "Verificando acceso") {
             if (loaderText) loaderText.innerHTML = `${mensaje}<span class="loading-dots"></span>`;
             if (globalLoader) globalLoader.classList.add('active');
+            document.body.classList.add('modal-open');
         }
 
-        function ocultarLoader() { if (globalLoader) globalLoader.classList.remove('active'); }
+        function ocultarLoader() { 
+            if (globalLoader) globalLoader.classList.remove('active'); 
+            verificarEstadoModalesGlobal();
+        }
+
+        /* Lógica centralizada para controlar el bloqueo de scroll */
+        function verificarEstadoModalesGlobal() {
+            const hayModalActivo = document.querySelector('.image-zoom-modal.active, .scanner-modal.active, .reason-modal.active, .global-loader.active');
+            if (hayModalActivo) {
+                document.body.classList.add('modal-open');
+            } else {
+                document.body.classList.remove('modal-open');
+            }
+        }
 
         function generarEstrellas(puntuacion) {
             let num = parseInt(puntuacion) || 5;
@@ -641,17 +656,19 @@
             return `productos-img/${skuLimpio}.jpg`;
         }
 
-        // Funciones para el Zoom de imágenes
+        /* Funciones de Zoom con bloqueo de scroll integrado */
         function abrirZoomImagen(urlImg) {
             const modal = document.getElementById('imageZoomModal');
             const img = document.getElementById('zoomModalImg');
             img.src = urlImg;
             img.style.transform = "scale(1)";
             modal.classList.add('active');
+            verificarEstadoModalesGlobal();
         }
 
         function cerrarZoomImagen() {
             document.getElementById('imageZoomModal').classList.remove('active');
+            verificarEstadoModalesGlobal();
         }
 
         function toggleZoomEfecto(imgElement) {
@@ -816,8 +833,17 @@
             if (modoEdicionActivo && pestanaActualPreview === 'pendientes') aplicarModoEdicionDOM(true);
         }
 
-        function abrirModalRazon(index) { indexRetornandoRevisado = index; document.getElementById('reasonModal').classList.add('active'); }
-        function cerrarModalRazon() { document.getElementById('reasonModal').classList.remove('active'); indexRetornandoRevisado = null; }
+        /* Modales de Razón y Escáner con control de scroll */
+        function abrirModalRazon(index) { 
+            indexRetornandoRevisado = index; 
+            document.getElementById('reasonModal').classList.add('active'); 
+            verificarEstadoModalesGlobal();
+        }
+        function cerrarModalRazon() { 
+            document.getElementById('reasonModal').classList.remove('active'); 
+            indexRetornandoRevisado = null; 
+            verificarEstadoModalesGlobal();
+        }
         function confirmarRetornoPendiente(motivo) {
             if (indexRetornandoRevisado !== null && listaRevisadosGlobal[indexRetornandoRevisado]) {
                 let devuelto = listaRevisadosGlobal.splice(indexRetornandoRevisado, 1)[0];
@@ -868,6 +894,7 @@
 
         function abrirEscaner() {
             document.getElementById('scannerModal').classList.add('active');
+            verificarEstadoModalesGlobal();
             escaneoBloqueadoEnfriamiento = false;
             document.getElementById('manualScanInput').value = "";
             document.getElementById('autocompleteList').style.display = "none";
@@ -885,6 +912,7 @@
 
         function cerrarEscaner() {
             document.getElementById('scannerModal').classList.remove('active');
+            verificarEstadoModalesGlobal();
             if (html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
         }
 
