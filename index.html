@@ -416,27 +416,12 @@
                                 <button class="btn-action-escanear" onclick="abrirEscanerAlta()">📷 Escanear / Buscar</button>
                                 <button class="btn-action-confirmar" onclick="confirmarReporte()">✓ Confirmar</button>
                                 <select class="filter-select" id="filterDepto" onchange="filtrarNegadosPorDepto(this.value)">
-                                    <option value="todos">Todos los deptos.</option>
-                                    <option value="Abarrotes">Abarrotes</option>
-                                    <option value="Gourmet">Gourmet</option>
-                                    <option value="Vinos y Licores">Vinos y Licores</option>
-                                    <option value="Químicos y Desechables">Químicos y Desechables</option>
-                                    <option value="Ferretería y Jardinería">Ferretería y Jardinería</option>
-                                    <option value="Hogar">Hogar</option>
-                                    <option value="Blancos">Blancos</option>
-                                    <option value="Perfumería">Perfumería</option>
-                                    <option value="Farmacia">Farmacia</option>
-                                    <option value="Juguetería">Juguetería</option>
-                                    <option value="Lácteos">Lácteos</option>
-                                    <option value="Congelados">Congelados</option>
-                                    <option value="Carnicería">Carnicería</option>
-                                    <option value="Salchichonería">Salchichonería</option>
-                                    <option value="Alimentos Preparados">Alimentos Preparados</option>
-                                    <option value="Pescados y Mariscos">Pescados y Mariscos</option>
-                                    <option value="Tortillería">Tortillería</option>
-                                    <option value="Repostería">Repostería</option>
+                                    <option value="todos">Filtrar por depto.</option>
+                                    <option value="Alimentación">Alimentación</option>
                                     <option value="Panadería">Panadería</option>
-                                    <option value="Frutas y Verduras">Frutas y Verduras</option>
+                                    <option value="Perecederos">Perecederos</option>
+                                    <option value="Abarrotes">Abarrotes</option>
+                                    <option value="Hogar">Hogar</option>
                                 </select>
                             </div>
                         </div>
@@ -806,34 +791,6 @@
             }
         }
 
-        /* Función inteligente de Detección de Departamento por Descripción y SKU */
-        function detectarDepartamentoPorDescripcion(sku, desc) {
-            let d = desc.toUpperCase();
-            let s = String(sku);
-
-            if (d.includes("MANZANA") || d.includes("PLATANO") || d.includes("TOMATE") || d.includes("CEBOLLA") || d.includes("LIMON") || d.includes("AGUACATE") || d.includes("FRESA") || d.includes("FRUTA") || d.includes("VERDURA") || d.includes("PAPAYA") || d.includes("LECHUGA")) return "Frutas y Verduras";
-            if (d.includes("PAN ") || d.includes("BOLILLO") || d.includes("BAGUETTE") || d.includes("CONCHA") || d.includes("BISQUET") || d.includes("PANADERIA")) return "Panadería";
-            if (d.includes("PASTEL") || d.includes("GELATINA") || d.includes("PAY ") || d.includes("FLAN") || d.includes("POSTRE") || d.includes("REPOSTERIA")) return "Repostería";
-            if (d.includes("TORTILLA") || d.includes("TOTOPO") || d.includes("TACO")) return "Tortillería";
-            if (d.includes("CAMARON") || d.includes("PESCADO") || d.includes("SALMON") || d.includes("ATUN") || d.includes("FILETE") || d.includes("MARISCO")) return "Pescados y Mariscos";
-            if (d.includes("POLLO") || d.includes("CARNE") || d.includes("BISTEC") || d.includes("CERDO") || d.includes("MILANESA") || d.includes("COSTILLA") || d.includes("CECINA")) return "Carnicería";
-            if (d.includes("JAMON") || d.includes("SALCHICHA") || d.includes("TIZNA") || d.includes("QUESO") || d.includes("TOCINO") || d.includes("CHORIZO") || d.includes("SALCHICHONERIA")) return "Salchichonería";
-            if (d.includes("POLLO") && d.includes("FERIA") || d.includes("COCHINITA") || d.includes("ENSALADA") || d.includes("SPAGHETTI") || d.includes("PIZZA") || d.includes("LASAGNA") || d.includes("PREPARADO")) return "Alimentos Preparados";
-            if (d.includes("LECHE") || d.includes("CREMA") || d.includes("MANTEQUILLA") || d.includes("YOGHURT") || d.includes("YOGUR") || d.includes("LACTEOS")) return "Lácteos";
-            if (d.includes("CONGELADO") || d.includes("HELADO") || d.includes("NUGGET") || d.includes("PIZZA CONGELADA")) return "Congelados";
-            if (d.includes("VINO") || d.includes("TEQUILA") || d.includes("CERVEZA") || d.includes("WHISKY") || d.includes("RON ") || d.includes("BRANDY") || d.includes("LICOR") || d.includes("VODKA")) return "Vinos y Licores";
-            if (d.includes("GOURMET") || d.includes("IMPORTADO") || d.includes("FINO") || d.includes("ACETO") || d.includes("TRUFA")) return "Gourmet";
-            if (d.includes("CLORO") || d.includes("JABON") || d.includes("DESINFECTANTE") || d.includes("PAPEL HIGIENICO") || d.includes("SERVILLETA") || d.includes("BOLSA") || d.includes("ALUMINIO") || d.includes("QUIMICOS") || d.includes("DESECHABLE")) return "Químicos y Desechables";
-            if (d.includes("FOCO") || d.includes("PILAS") || d.includes("MARTILLO") || d.includes("CINTA") || d.includes("JARDIN") || d.includes("FERRETERIA")) return "Ferretería y Jardinería";
-            if (d.includes("SARTEN") || d.includes("OLLA") || d.includes("VAJILLA") || d.includes("VASO") || d.includes("TAZA") || d.includes("HOGAR")) return "Hogar";
-            if (d.includes("TOALLA") || d.includes("SABANA") || d.includes("ALMOHADA") || d.includes("BLANCOS")) return "Blancos";
-            if (d.includes("SHAMPOO") || d.includes("DESODORANTE") || d.includes("CREMA CORPORAL") || d.includes("PERFUME") || d.includes("TINTE") || d.includes("PERFUMERIA")) return "Perfumería";
-            if (d.includes("ASPIRINA") || d.includes("MEDICAMENTO") || d.includes("PASTILLA") || d.includes("VITAMINA") || d.includes("FARMACIA")) return "Farmacia";
-            if (d.includes("JUGUETE") || d.includes("MUÑECA") || d.includes("PELOTA") || d.includes("JUGUETERIA")) return "Juguetería";
-
-            return "Abarrotes"; // Predeterminado
-        }
-
         async function extraerTablasYProductos(bloquesTablas, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
             let nuevosProductos = [];
@@ -848,8 +805,17 @@
             ];
 
             bloquesTablas.forEach((tokens) => {
+                let deptoActual = "Abarrotes";
                 let i = 0;
                 while (i < tokens.length) {
+                    let tokenUpper = tokens[i].toUpperCase();
+                    
+                    if (tokenUpper.includes("ALIMENTACION") || tokenUpper.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
+                    else if (tokenUpper.includes("PANADERIA") || tokenUpper.includes("PANADERÍA")) deptoActual = "Panadería";
+                    else if (tokenUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
+                    else if (tokenUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
+                    else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
+
                     if (/^\d{7,14}$/.test(tokens[i]) && !tokens[i].startsWith("2026")) {
                         let skuVal = tokens[i];
                         let descTokens = [];
@@ -873,7 +839,14 @@
                         let descVal = descTokens.join(" ").replace(/PÁGINA.*$/i, "").trim();
                         
                         if (descVal.length > 3 && !nuevosProductos.some(p => p.sku === skuVal)) {
-                            let deptoAsignado = detectarDepartamentoPorDescripcion(skuVal, descVal);
+                            let deptoAsignado = deptoActual;
+                            if (skuVal.startsWith("26")) {
+                                const c = skuVal.charAt(2);
+                                if (c === '1') deptoAsignado = "Perecederos";
+                                else if (c === '5') deptoAsignado = "Alimentación";
+                                else if (c === '6') deptoAsignado = "Panadería";
+                            }
+                            
                             let imgUrl = obtenerUrlImagenProducto(skuVal);
 
                             nuevosProductos.push({ 
@@ -986,7 +959,6 @@
                         listaPendientesGlobal[idx].sku = skuInput.value;
                         listaPendientesGlobal[idx].desc = descInput.value;
                         if (cantInput) listaPendientesGlobal[idx].cant = cantInput.value;
-                        listaPendientesGlobal[idx].depto = detectarDepartamentoPorDescripcion(listaPendientesGlobal[idx].sku, listaPendientesGlobal[idx].desc);
                         listaPendientesGlobal[idx].img = obtenerUrlImagenProducto(listaPendientesGlobal[idx].sku);
                     }
                 });
@@ -1016,13 +988,13 @@
         function abrirEscanerActivo() {
             contextoEscanerActual = 'activo';
             let itemsDepto = reportesActivosList.filter(p => p.depto === deptoAbiertoActual);
-            const tienePerecederos = deptoAbiertoActual === 'Frutas y Verduras' || deptoAbiertoActual === 'Carnicería' || deptoAbiertoActual === 'Pescados y Mariscos';
+            const tienePerecederos = deptoAbiertoActual === 'Perecederos' || itemsDepto.some(p => p.depto === 'Perecederos');
             const manualInput = document.getElementById('manualScanInput');
             const btnReg = document.getElementById('btnRegistrarManual');
             if (tienePerecederos) {
                 manualInput.style.display = "block";
                 btnReg.style.display = "block";
-                document.getElementById('scanSubtitleInfo').textContent = "Escanea el código o busca manualmente (Habilitado para este depto.):";
+                document.getElementById('scanSubtitleInfo').textContent = "Escanea el código o busca manualmente (Habilitado para Perecederos):";
             } else {
                 manualInput.style.display = "none";
                 btnReg.style.display = "none";
@@ -1143,25 +1115,19 @@
                 return;
             }
 
-            const listaDepartamentosValidos = [
-                "Abarrotes", "Gourmet", "Vinos y Licores", "Químicos y Desechables", 
-                "Ferretería y Jardinería", "Hogar", "Blancos", "Perfumería", "Farmacia", 
-                "Juguetería", "Lácteos", "Congelados", "Carnicería", "Salchichonería", 
-                "Alimentos Preparados", "Pescados y Mariscos", "Tortillería", "Repostería", 
-                "Panadería", "Frutas y Verduras"
-            ];
-
+            const departamentosUnicos = ["Alimentación", "Panadería", "Perecederos", "Abarrotes", "Hogar"];
             let htmlCarpetas = "";
-            listaDepartamentosValidos.forEach(depto => {
+
+            departamentosUnicos.forEach(depto => {
                 let itemsDepto = reportesActivosList.filter(p => p.depto === depto);
                 if (itemsDepto.length > 0) {
                     let pendientesDepto = itemsDepto.filter(p => !p.accionAplicada).length;
                     let iconoDepto = "📁";
-                    if (depto === "Frutas y Verduras") iconoDepto = "🥦";
+                    if (depto === "Perecederos") iconoDepto = "🥩";
+                    else if (depto === "Alimentación") iconoDepto = "🥗";
                     else if (depto === "Panadería") iconoDepto = "🥖";
-                    else if (depto === "Carnicería") iconoDepto = "🥩";
-                    else if (depto === "Vinos y Licores") iconoDepto = "🍷";
-                    else if (depto === "Lácteos") iconoDepto = "🧀";
+                    else if (depto === "Abarrotes") iconoDepto = "🛒";
+                    else if (depto === "Hogar") iconoDepto = "🏠";
 
                     htmlCarpetas += `
                         <div class="folder-card-item" onclick="abrirCarpetaDepartamento('${depto}')">
