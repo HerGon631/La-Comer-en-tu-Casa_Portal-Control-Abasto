@@ -220,6 +220,14 @@
         .metric-title { font-size: 10px; font-weight: bold; color: var(--label-color); text-transform: uppercase; }
         .metric-value { font-size: 16px; font-weight: bold; color: var(--mexican-pink); margin-top: 2px; }
 
+        /* Tarjeta de Folio/Carpeta */
+        .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 5px solid var(--mexican-pink); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .folder-card-item:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(228,0,124,0.15); }
+        .folder-info { display: flex; flex-direction: column; gap: 4px; }
+        .folder-title { font-size: 14px; font-weight: bold; color: var(--text-color); display: flex; align-items: center; gap: 6px; }
+        .folder-sub { font-size: 11px; color: var(--label-color); font-weight: 600; }
+        .folder-badge { background-color: var(--pink-transparent-30); color: var(--mexican-pink); font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 12px; }
+
         @media (max-width: 600px) {
             .upload-bar-compact { flex-direction: column; align-items: stretch; text-align: center; gap: 15px; }
             .upload-info { flex-direction: column; align-items: center; text-align: center; }
@@ -448,12 +456,23 @@
                             </div>
                         </div>
 
-                        <div style="margin-bottom: 15px;">
-                            <button class="btn-action-escanear" onclick="abrirEscanerActivo()">📷 Escanear / Buscar</button>
+                        <!-- VISTA 1: Lista de Carpetas / Folios comprimidos -->
+                        <div id="vistaListaCarpetasReportes">
+                            <h4 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: var(--text-color);">📁 CARPETAS DE REPORTES ACTIVOS</h4>
+                            <div id="contenedorCarpetasReportes">
+                                <div class="empty-negados">No hay reportes activos registrados.</div>
+                            </div>
                         </div>
 
-                        <div id="contenedorActivos">
-                            <div class="empty-negados">No hay reportes activos en este momento.</div>
+                        <!-- VISTA 2: Detalle del Reporte Seleccionado (Se desglosa al tocar la carpeta) -->
+                        <div id="vistaDetalleReporteSeleccionado" style="display: none; margin-top: 15px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; flex-wrap: wrap;">
+                                <button class="tab-btn" onclick="cerrarCarpetaReporte()" style="background:#5f6368; color:white;">← Volver a Carpetas</button>
+                                <span style="font-weight: bold; font-size: 14px; color: var(--mexican-pink);" id="tituloCarpetaAbierta">Reporte: -</span>
+                                <button class="btn-action-escanear" onclick="abrirEscanerActivo()">📷 Escanear / Buscar</button>
+                            </div>
+
+                            <div id="contenedorProductosReporteAbierto"></div>
                         </div>
                     </div>
 
@@ -517,7 +536,8 @@
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
-        let reportesActivosList = [];
+        let carpetasReportesActivosList = [];
+        let idCarpetaAbiertaActual = null;
         let indexProductoReporteError = null;
         let contextoEscanerActual = 'alta'; 
 
@@ -702,7 +722,7 @@
                 subArchivo: document.getElementById('uploadSub').textContent,
                 pendientes: listaPendientesGlobal,
                 revisados: listaRevisadosGlobal,
-                reportesActivos: reportesActivosList
+                carpetasReportes: carpetasReportesActivosList
             }));
         }
 
@@ -715,7 +735,7 @@
                     document.getElementById('uploadSub').textContent = parsed.subArchivo || "Sesión restaurada.";
                     listaPendientesGlobal = parsed.pendientes || [];
                     listaRevisadosGlobal = parsed.revisados || [];
-                    reportesActivosList = parsed.reportesActivos || [];
+                    carpetasReportesActivosList = parsed.carpetasReportes || [];
                     renderizarVistaActual();
                     renderizarReportesActivosGUI();
                 } catch (e) {}
@@ -967,7 +987,9 @@
 
         function abrirEscanerActivo() {
             contextoEscanerActual = 'activo';
-            const tienePerecederos = reportesActivosList.some(p => p.depto === 'Perecederos' || !p.accionAplicada);
+            let carpeta = carpetasReportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+            let listaItems = carpeta ? carpeta.productos : [];
+            const tienePerecederos = listaItems.some(p => p.depto === 'Perecederos');
             const manualInput = document.getElementById('manualScanInput');
             const btnReg = document.getElementById('btnRegistrarManual');
             if (tienePerecederos) {
@@ -1013,7 +1035,8 @@
             list.innerHTML = "";
             if (!texto || !texto.trim()) { list.style.display = "none"; return; }
             const q = texto.toUpperCase();
-            let fuente = (contextoEscanerActual === 'alta') ? listaPendientesGlobal : reportesActivosList.filter(item => !item.accionAplicada);
+            let carpeta = carpetasReportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+            let fuente = (contextoEscanerActual === 'alta') ? listaPendientesGlobal : (carpeta ? carpeta.productos.filter(item => !item.accionAplicada) : []);
             let matches = fuente.filter(item => item.desc.includes(q) || item.sku.includes(q));
             if (matches.length === 0) { list.innerHTML = `<div class="autocomplete-item" style="color:red;">No encontrado.</div>`; list.style.display = "block"; return; }
             matches.forEach(m => {
@@ -1048,56 +1071,126 @@
         }
 
         function procesarSkuEscaneadoReporteActivo(code) {
-            let idx = reportesActivosList.findIndex(item => (item.sku.includes(code) || item.desc.includes(code.toUpperCase())) && !item.accionAplicada);
+            let carpeta = carpetasReportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+            if (!carpeta) return;
+            let idx = carpeta.productos.findIndex(item => (item.sku.includes(code) || item.desc.includes(code.toUpperCase())) && !item.accionAplicada);
             if (idx !== -1) {
-                reportesActivosList[idx].accionAplicada = "Se exhibe en mueble";
+                carpeta.productos[idx].accionAplicada = "Se exhibe en mueble";
                 guardarEstadoCompleto();
+                renderizarDetalleCarpetaAbierta();
                 renderizarReportesActivosGUI();
                 cerrarEscaner();
-            } else { alert("Artículo no encontrado o ya fue atendido en reportes activos."); }
+            } else { alert("Artículo no encontrado o ya atendido en esta carpeta."); }
         }
 
         function confirmarReporte() {
             if (listaPendientesGlobal.length === 0) { alert("Lista vacía."); return; }
-            mostrarLoader("Generando reportes activos...");
+            mostrarLoader("Generando reporte activo...");
             setTimeout(() => {
                 ocultarLoader();
-                let nuevosActivos = listaPendientesGlobal.map(item => ({ ...item, accionAplicada: null }));
-                reportesActivosList = [...reportesActivosList, ...nuevosActivos];
+                let folioId = "REP-" + Math.floor(100000 + Math.random() * 900000);
+                let nuevaCarpeta = {
+                    id: folioId,
+                    titulo: `Reporte Folio #${folioId}`,
+                    fecha: new Date().toLocaleDateString('es-MX'),
+                    productos: listaPendientesGlobal.map(item => ({ ...item, accionAplicada: null }))
+                };
+                carpetasReportesActivosList.push(nuevaCarpeta);
                 listaPendientesGlobal = []; listaRevisadosGlobal = [];
                 guardarEstadoCompleto(); 
                 renderizarVistaActual();
                 renderizarReportesActivosGUI();
                 seleccionarSubreporte('reportes-activos', 'Reportes activos', document.querySelectorAll('#submenuReportes .submenu-item')[1]);
-                alert("Reportes enviados a activos correctamente.");
+                alert(`Reporte ${folioId} empaquetado en carpeta activa.`);
             }, 1000);
         }
 
         function filtrarNegadosPorDepto() { renderizarVistaActual(); }
 
-        /* Renderizar Métricas y Lista de Reportes Activos */
+        /* Lógica de Carpetas en Reportes Activos */
         function renderizarReportesActivosGUI() {
-            const container = document.getElementById('contenedorActivos');
-            container.innerHTML = "";
+            let totalNegados = 0;
+            let totalTrabajados = 0;
 
-            let totalNegados = reportesActivosList.length;
-            let trabajados = reportesActivosList.filter(item => item.accionAplicada !== null).length;
-            let porcentaje = totalNegados > 0 ? Math.round((trabajados / totalNegados) * 100) : 0;
+            carpetasReportesActivosList.forEach(c => {
+                c.productos.forEach(p => {
+                    totalNegados++;
+                    if (p.accionAplicada) totalTrabajados++;
+                });
+            });
 
+            let porcentaje = totalNegados > 0 ? Math.round((totalTrabajados / totalNegados) * 100) : 0;
             document.getElementById('metricNegados').textContent = totalNegados;
-            document.getElementById('metricTrabajados').textContent = trabajados;
+            document.getElementById('metricTrabajados').textContent = totalTrabajados;
             document.getElementById('metricAbasto').textContent = `${porcentaje}%`;
 
-            let pendientesActivos = reportesActivosList.filter(item => !item.accionAplicada);
+            const containerCarpetas = document.getElementById('contenedorCarpetasReportes');
+            containerCarpetas.innerHTML = "";
 
-            if (pendientesActivos.length === 0) {
-                container.innerHTML = `<div class="empty-negados">No hay reportes activos pendientes en este momento.</div>`;
+            if (carpetasReportesActivosList.length === 0) {
+                containerCarpetas.innerHTML = `<div class="empty-negados">No hay carpetas de reportes activos en este momento.</div>`;
+                return;
+            }
+
+            carpetasReportesActivosList.forEach((carpeta) => {
+                let pendientesCount = carpeta.productos.filter(p => !p.accionAplicada).length;
+                let cardFolder = document.createElement('div');
+                cardFolder.className = 'folder-card-item';
+                cardFolder.onclick = () => abrirCarpetaReporte(carpeta.id);
+                cardFolder.innerHTML = `
+                    <div class="folder-info">
+                        <span class="folder-title">📁 ${carpeta.titulo}</span>
+                        <span class="folder-sub">Creado: ${carpeta.fecha} — Total: ${carpeta.productos.length} ítems</span>
+                    </div>
+                    <span class="folder-badge">${pendientesCount} Pendientes</span>
+                `;
+                containerCarpetas.appendChild(cardFolder);
+            });
+        }
+
+        function abrirCarpetaReporte(id) {
+            idCarpetaAbiertaActual = id;
+            document.getElementById('vistaListaCarpetasReportes').style.display = "none";
+            document.getElementById('vistaDetalleReporteSeleccionado').style.display = "block";
+            let carpeta = carpetasReportesActivosList.find(c => c.id === id);
+            document.getElementById('tituloCarpetaAbierta').textContent = carpeta ? carpeta.titulo : 'Reporte Activo';
+            renderizarDetalleCarpetaAbierta();
+        }
+
+        function cerrarCarpetaReporte() {
+            idCarpetaAbiertaActual = null;
+            document.getElementById('vistaDetalleReporteSeleccionado').style.display = "none";
+            document.getElementById('vistaListaCarpetasReportes').style.display = "block";
+            renderizarReportesActivosGUI();
+        }
+
+        function renderizarDetalleCarpetaAbierta() {
+            const container = document.getElementById('contenedorProductosReporteAbierto');
+            container.innerHTML = "";
+            let carpeta = carpetasReportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+
+            if (!carpeta || carpeta.productos.length === 0) {
+                container.innerHTML = `<div class="empty-negados">No hay productos en esta carpeta.</div>`;
                 return;
             }
 
             let htmlRes = `<div style="display:flex; flex-direction:column; gap:10px;">`;
-            pendientesActivos.forEach((item, originalIdx) => {
-                let realIdx = reportesActivosList.findIndex(r => r.sku === item.sku && r.desc === item.desc && !r.accionAplicada);
+            carpeta.productos.forEach((item, realIdx) => {
+                let statusBadge = item.accionAplicada 
+                    ? `<div class="negado-inv-badge"><span class="negado-inv-dot" style="background:#137333;"></span> ${item.accionAplicada}</div>`
+                    : `<div class="negado-inv-badge"><span class="negado-inv-dot"></span> Pendiente de atención en piso</div>`;
+
+                let selectAccion = !item.accionAplicada ? `
+                    <select class="action-select-opcion" onchange="ejecutarAccionOperativaCarpeta(${realIdx}, this.value)">
+                        <option value="" disabled selected>-- Seleccionar Acción Operativa --</option>
+                        <option value="Mal conteo inv.">🔹 Mal conteo inv.</option>
+                        <option value="Proceso de merma.">🔹 Proceso de merma.</option>
+                        <option value="Venta no permitida.">🔹 Venta no permitida.</option>
+                        <option value="Faltante CEDIS.">🔹 Faltante CEDIS.</option>
+                        <option value="Transferencia.">🔹 Transferencia.</option>
+                    </select>
+                ` : '';
+
                 htmlRes += `
                     <div class="negado-card-item">
                         <div class="negado-card-top">
@@ -1116,15 +1209,8 @@
                             </div>
                         </div>
                         <div class="negado-card-bottom" style="flex-direction: column; align-items: stretch; gap: 6px;">
-                            <div class="negado-inv-badge" style="align-self: flex-start;"><span class="negado-inv-dot"></span> Pendiente de atención en piso</div>
-                            <select class="action-select-opcion" onchange="ejecutarAccionOperativa(${realIdx}, this.value)">
-                                <option value="" disabled selected>-- Seleccionar Acción Operativa --</option>
-                                <option value="Mal conteo inv.">🔹 Mal conteo inv.</option>
-                                <option value="Proceso de merma.">🔹 Proceso de merma.</option>
-                                <option value="Venta no permitida.">🔹 Venta no permitida.</option>
-                                <option value="Faltante CEDIS.">🔹 Faltante CEDIS.</option>
-                                <option value="Transferencia.">🔹 Transferencia.</option>
-                            </select>
+                            ${statusBadge}
+                            ${selectAccion}
                         </div>
                     </div>
                 `;
@@ -1132,10 +1218,12 @@
             container.innerHTML = htmlRes + `</div>`;
         }
 
-        function ejecutarAccionOperativa(index, opcion) {
-            if (!opcion || !reportesActivosList[index]) return;
-            reportesActivosList[index].accionAplicada = opcion;
+        function ejecutarAccionOperativaCarpeta(index, opcion) {
+            let carpeta = carpetasReportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+            if (!opcion || !carpeta || !carpeta.productos[index]) return;
+            carpeta.productos[index].accionAplicada = opcion;
             guardarEstadoCompleto();
+            renderizarDetalleCarpetaAbierta();
             renderizarReportesActivosGUI();
         }
 
@@ -1150,8 +1238,9 @@
         }
 
         function confirmarReporteErrorDato(tipoError) {
-            if (indexProductoReporteError !== null && reportesActivosList[indexProductoReporteError]) {
-                let prod = reportesActivosList[indexProductoReporteError];
+            let carpeta = carpetasReportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+            if (indexProductoReporteError !== null && carpeta && carpeta.productos[indexProductoReporteError]) {
+                let prod = carpeta.productos[indexProductoReporteError];
                 alert(`Inconsistencia reportada en SKU ${prod.sku}: "${tipoError}". Se notificó al administrador.`);
                 cerrarModalReporteError();
             }
