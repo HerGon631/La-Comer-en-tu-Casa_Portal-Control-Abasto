@@ -154,7 +154,10 @@
             align-items: center;
             justify-content: center;
             border: 1px solid #ddd;
+            cursor: pointer; /* Indica que se puede hacer clic para zoom */
+            transition: transform 0.2s;
         }
+        .negado-img-wrapper:hover { transform: scale(1.05); border-color: var(--mexican-pink); }
         
         .negado-img-thumb { 
             width: 100% !important; 
@@ -163,6 +166,14 @@
             background-color: #ffffff; 
             display: block !important; 
         }
+
+        /* Estilos del Modal de Zoom para la imagen */
+        .image-zoom-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 20000; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s ease; backdrop-filter: blur(5px); }
+        .image-zoom-modal.active { opacity: 1; visibility: visible; }
+        .zoom-modal-content { position: relative; max-width: 90%; max-height: 80vh; display: flex; justify-content: center; align-items: center; }
+        .zoom-modal-img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); transition: transform 0.3s ease; cursor: zoom-in; }
+        .zoom-close-btn { position: absolute; top: -45px; right: 0; background: #c5221f; color: white; border: none; font-size: 16px; font-weight: bold; padding: 8px 16px; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .zoom-hint { color: #fff; font-size: 12px; margin-top: 15px; letter-spacing: 0.5px; opacity: 0.8; text-align: center; }
 
         .negado-details { display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0; }
         .negado-sku { font-size: 11px; font-weight: bold; color: var(--label-color); letter-spacing: 0.5px; }
@@ -216,6 +227,15 @@
             <img id="loaderImg" class="loader-logo-img" src="pelicano.jpg" alt="Cargando..." onerror="this.onerror=null; this.src='pelicano-logo.png';">
         </div>
         <div class="loader-text" id="loaderText">Verificando acceso<span class="loading-dots"></span></div>
+    </div>
+
+    <!-- Modal para zoom de imágenes de productos -->
+    <div id="imageZoomModal" class="image-zoom-modal" onclick="cerrarZoomImagen()">
+        <div class="zoom-modal-content" onclick="event.stopPropagation()">
+            <button class="zoom-close-btn" onclick="cerrarZoomImagen()">✕ Cerrar</button>
+            <img id="zoomModalImg" class="zoom-modal-img" src="" alt="Vista ampliada" onclick="toggleZoomEfecto(this)">
+        </div>
+        <div class="zoom-hint">💡 Toca la imagen para acercar/alejar o toca fuera para cerrar</div>
     </div>
 
     <div id="reasonModal" class="reason-modal">
@@ -616,10 +636,30 @@
             }
         }
 
-        // Función para apuntar a la carpeta estática de GitHub
         function obtenerUrlImagenProducto(sku) {
             let skuLimpio = String(sku).trim();
             return `productos-img/${skuLimpio}.jpg`;
+        }
+
+        // Funciones para el Zoom de imágenes
+        function abrirZoomImagen(urlImg) {
+            const modal = document.getElementById('imageZoomModal');
+            const img = document.getElementById('zoomModalImg');
+            img.src = urlImg;
+            img.style.transform = "scale(1)";
+            modal.classList.add('active');
+        }
+
+        function cerrarZoomImagen() {
+            document.getElementById('imageZoomModal').classList.remove('active');
+        }
+
+        function toggleZoomEfecto(imgElement) {
+            if (imgElement.style.transform === "scale(1.8)") {
+                imgElement.style.transform = "scale(1)";
+            } else {
+                imgElement.style.transform = "scale(1.8)";
+            }
         }
 
         async function procesarArchivoAdjunto(file) {
@@ -647,7 +687,6 @@
             }
         }
 
-        /* --- LECTURA POR BLOQUES / TABLAS (CÓDIGO DE BARRAS Y DESCRIPCIÓN) --- */
         async function extraerTablasYProductos(bloquesTablas, nombreArchivo) {
             document.getElementById('uploadTitle').textContent = `Archivo cargado: ${nombreArchivo}`;
             let nuevosProductos = [];
@@ -704,7 +743,6 @@
                                 else if (c === '6') deptoAsignado = "Panadería";
                             }
                             
-                            // Asigna la ruta estática de la imagen en GitHub
                             let imgUrl = obtenerUrlImagenProducto(skuVal);
 
                             nuevosProductos.push({ 
@@ -760,7 +798,7 @@
                 
                 card.innerHTML = `
                     <div class="negado-card-top">
-                        <div class="negado-img-wrapper">
+                        <div class="negado-img-wrapper" onclick="abrirZoomImagen('${item.img}')" title="Toca para ampliar imagen">
                             <img src="${item.img}" alt="" class="negado-img-thumb" onerror="this.onerror=null; this.src='pelicano.jpg';">
                         </div>
                         <div class="negado-details">
@@ -888,7 +926,7 @@
                 ocultarLoader();
                 let htmlRes = `<div style="display:flex; flex-direction:column; gap:10px;">`;
                 listaPendientesGlobal.forEach(item => {
-                    htmlRes += `<div class="negado-card-item"><div class="negado-card-top"><div class="negado-img-wrapper"><img src="${item.img}" class="negado-img-thumb" onerror="this.onerror=null; this.src='pelicano.jpg';"></div><div class="negado-details"><span class="negado-sku">SKU: ${item.sku}</span><span class="negado-desc">${item.desc}</span></div></div></div>`;
+                    htmlRes += `<div class="negado-card-item"><div class="negado-card-top"><div class="negado-img-wrapper" onclick="abrirZoomImagen('${item.img}')"><img src="${item.img}" class="negado-img-thumb" onerror="this.onerror=null; this.src='pelicano.jpg';"></div><div class="negado-details"><span class="negado-sku">SKU: ${item.sku}</span><span class="negado-desc">${item.desc}</span></div></div></div>`;
                 });
                 document.getElementById('contenedorActivos').innerHTML = htmlRes + `</div>`;
                 listaPendientesGlobal = []; listaRevisadosGlobal = [];
