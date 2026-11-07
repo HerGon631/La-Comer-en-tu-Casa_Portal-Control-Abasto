@@ -183,6 +183,7 @@
         .input-edit-sku { font-size: 11px; font-weight: bold; padding: 2px 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 130px; }
         .input-edit-desc { font-size: 13px; font-weight: bold; padding: 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 100%; }
         .input-edit-cant { font-size: 12px; font-weight: bold; padding: 4px; border: 1px solid var(--mexican-pink); border-radius: 6px; width: 65px; text-align: center; }
+        .input-edit-depto { font-size: 11px; font-weight: bold; padding: 3px 6px; border: 1px solid var(--mexican-pink); border-radius: 6px; background: #fff; color: var(--mexican-pink); width: 100%; }
 
         .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; white-space: nowrap; flex-shrink: 0; align-self: flex-start; }
         .negado-card-bottom { display: flex; align-items: center; justify-content: space-between; border-top: 1px dashed #eee; padding-top: 8px; width: 100%; }
@@ -909,7 +910,7 @@
                         <div class="negado-details">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; width: 100%;">
                                 <span class="negado-sku">SKU: <span class="sku-val">${item.sku}</span></span>
-                                <div class="negado-depto-badge">${item.depto}</div>
+                                <div class="negado-depto-badge" id="depto-badge-${indexReal}"><span class="depto-val">${item.depto}</span></div>
                             </div>
                             <span class="negado-desc"><span class="desc-val">${item.desc}</span></span>
                         </div>
@@ -954,11 +955,12 @@
             } else {
                 btnEditar.style.background = "#f29900"; btnEditar.innerHTML = "✏️ Editar";
                 document.querySelectorAll('.negado-card-item').forEach((card, idx) => {
-                    const skuInput = card.querySelector('.input-edit-sku'), descInput = card.querySelector('.input-edit-desc'), cantInput = card.querySelector('.input-edit-cant');
+                    const skuInput = card.querySelector('.input-edit-sku'), descInput = card.querySelector('.input-edit-desc'), cantInput = card.querySelector('.input-edit-cant'), deptoSelect = card.querySelector('.input-edit-depto');
                     if (skuInput && descInput && listaPendientesGlobal[idx]) {
                         listaPendientesGlobal[idx].sku = skuInput.value;
                         listaPendientesGlobal[idx].desc = descInput.value;
                         if (cantInput) listaPendientesGlobal[idx].cant = cantInput.value;
+                        if (deptoSelect) listaPendientesGlobal[idx].depto = deptoSelect.value;
                         listaPendientesGlobal[idx].img = obtenerUrlImagenProducto(listaPendientesGlobal[idx].sku);
                     }
                 });
@@ -967,12 +969,35 @@
         }
 
         function aplicarModoEdicionDOM(activar) {
+            const excluidos = ["La Comer en tu Casa", "Gerencia", "Mesa de Control", "Recursos Humanos"];
+            let departamentosDisponibles = [];
+            
+            // Usar la lista de departamentos cargada en el select de inicio de sesión como guía
+            if (selectDepartamento && selectDepartamento.options.length > 1) {
+                for (let i = 0; i < selectDepartamento.options.length; i++) {
+                    let val = selectDepartamento.options[i].value;
+                    if (val && !excluidos.includes(val)) {
+                        departamentosDisponibles.push(val);
+                    }
+                }
+            }
+            if (departamentosDisponibles.length === 0) {
+                departamentosDisponibles = ["Alimentación", "Panadería", "Perecederos", "Abarrotes", "Hogar"];
+            }
+
             document.querySelectorAll('.negado-card-item').forEach((card, idx) => {
-                const skuSpan = card.querySelector('.sku-val'), descSpan = card.querySelector('.desc-val'), cantSpan = card.querySelector('.cant-val');
+                const skuSpan = card.querySelector('.sku-val'), descSpan = card.querySelector('.desc-val'), cantSpan = card.querySelector('.cant-val'), deptoContainer = card.querySelector('.negado-depto-badge');
                 if (activar && !skuSpan.querySelector('input')) {
                     skuSpan.innerHTML = `<input type="text" class="input-edit-sku" value="${skuSpan.textContent}">`;
                     descSpan.innerHTML = `<input type="text" class="input-edit-desc" value="${descSpan.textContent}">`;
                     cantSpan.innerHTML = `<input type="number" class="input-edit-cant" placeholder="0" value="${listaPendientesGlobal[idx] ? listaPendientesGlobal[idx].cant : ''}">`;
+                    
+                    let deptoActual = deptoContainer.querySelector('.depto-val') ? deptoContainer.querySelector('.depto-val').textContent : deptoContainer.textContent.trim();
+                    let optionsHtml = "";
+                    departamentosDisponibles.forEach(d => {
+                        optionsHtml += `<option value="${d}" ${d === deptoActual ? 'selected' : ''}>${d}</option>`;
+                    });
+                    deptoContainer.innerHTML = `<select class="input-edit-depto">${optionsHtml}</select>`;
                 }
             });
         }
