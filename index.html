@@ -220,7 +220,7 @@
         .metric-title { font-size: 10px; font-weight: bold; color: var(--label-color); text-transform: uppercase; }
         .metric-value { font-size: 16px; font-weight: bold; color: var(--mexican-pink); margin-top: 2px; }
 
-        /* Tarjeta de Folio/Carpeta */
+        /* Tarjeta de Carpeta por Departamento */
         .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 5px solid var(--mexican-pink); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
         .folder-card-item:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(228,0,124,0.15); }
         .folder-info { display: flex; flex-direction: column; gap: 4px; }
@@ -456,19 +456,19 @@
                             </div>
                         </div>
 
-                        <!-- VISTA 1: Lista de Carpetas / Folios comprimidos -->
+                        <!-- VISTA 1: Carpetas por Departamento -->
                         <div id="vistaListaCarpetasReportes">
-                            <h4 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: var(--text-color);">📁 CARPETAS DE REPORTES ACTIVOS</h4>
+                            <h4 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: var(--text-color);">📁 CARPETAS POR DEPARTAMENTO</h4>
                             <div id="contenedorCarpetasReportes">
                                 <div class="empty-negados">No hay reportes activos registrados.</div>
                             </div>
                         </div>
 
-                        <!-- VISTA 2: Detalle del Reporte Seleccionado (Se desglosa al tocar la carpeta) -->
+                        <!-- VISTA 2: Detalle del Departamento Seleccionado -->
                         <div id="vistaDetalleReporteSeleccionado" style="display: none; margin-top: 15px;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; flex-wrap: wrap;">
-                                <button class="tab-btn" onclick="cerrarCarpetaReporte()" style="background:#5f6368; color:white;">← Volver a Carpetas</button>
-                                <span style="font-weight: bold; font-size: 14px; color: var(--mexican-pink);" id="tituloCarpetaAbierta">Reporte: -</span>
+                                <button class="tab-btn" onclick="cerrarCarpetaReporte()" style="background:#5f6368; color:white;">← Volver a Departamentos</button>
+                                <span style="font-weight: bold; font-size: 14px; color: var(--mexican-pink);" id="tituloCarpetaAbierta">Departamento: -</span>
                                 <button class="btn-action-escanear" onclick="abrirEscanerActivo()">📷 Escanear / Buscar</button>
                             </div>
 
@@ -536,8 +536,8 @@
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
-        let carpetasReportesActivosList = [];
-        let idCarpetaAbiertaActual = null;
+        let reportesActivosList = [];
+        let deptoAbiertoActual = null;
         let indexProductoReporteError = null;
         let contextoEscanerActual = 'alta'; 
 
@@ -722,7 +722,7 @@
                 subArchivo: document.getElementById('uploadSub').textContent,
                 pendientes: listaPendientesGlobal,
                 revisados: listaRevisadosGlobal,
-                carpetasReportes: carpetasReportesActivosList
+                reportesActivos: reportesActivosList
             }));
         }
 
@@ -735,7 +735,7 @@
                     document.getElementById('uploadSub').textContent = parsed.subArchivo || "Sesión restaurada.";
                     listaPendientesGlobal = parsed.pendientes || [];
                     listaRevisadosGlobal = parsed.revisados || [];
-                    carpetasReportesActivosList = parsed.carpetasReportes || [];
+                    reportesActivosList = parsed.reportesActivos || [];
                     renderizarVistaActual();
                     renderizarReportesActivosGUI();
                 } catch (e) {}
@@ -987,9 +987,8 @@
 
         function abrirEscanerActivo() {
             contextoEscanerActual = 'activo';
-            let carpeta = carpetasReportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
-            let listaItems = carpeta ? carpeta.productos : [];
-            const tienePerecederos = listaItems.some(p => p.depto === 'Perecederos');
+            let itemsDepto = reportesActivosList.filter(p => p.depto === deptoAbiertoActual);
+            const tienePerecederos = deptoAbiertoActual === 'Perecederos' || itemsDepto.some(p => p.depto === 'Perecederos');
             const manualInput = document.getElementById('manualScanInput');
             const btnReg = document.getElementById('btnRegistrarManual');
             if (tienePerecederos) {
@@ -1035,8 +1034,7 @@
             list.innerHTML = "";
             if (!texto || !texto.trim()) { list.style.display = "none"; return; }
             const q = texto.toUpperCase();
-            let carpeta = carpetasReportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
-            let fuente = (contextoEscanerActual === 'alta') ? listaPendientesGlobal : (carpeta ? carpeta.productos.filter(item => !item.accionAplicada) : []);
+            let fuente = (contextoEscanerActual === 'alta') ? listaPendientesGlobal : reportesActivosList.filter(item => item.depto === deptoAbiertoActual && !item.accionAplicada);
             let matches = fuente.filter(item => item.desc.includes(q) || item.sku.includes(q));
             if (matches.length === 0) { list.innerHTML = `<div class="autocomplete-item" style="color:red;">No encontrado.</div>`; list.style.display = "block"; return; }
             matches.forEach(m => {
@@ -1071,55 +1069,40 @@
         }
 
         function procesarSkuEscaneadoReporteActivo(code) {
-            let carpeta = carpetasReportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
-            if (!carpeta) return;
-            let idx = carpeta.productos.findIndex(item => (item.sku.includes(code) || item.desc.includes(code.toUpperCase())) && !item.accionAplicada);
+            let idx = reportesActivosList.findIndex(item => item.depto === deptoAbiertoActual && (item.sku.includes(code) || item.desc.includes(code.toUpperCase())) && !item.accionAplicada);
             if (idx !== -1) {
-                carpeta.productos[idx].accionAplicada = "Se exhibe en mueble";
+                reportesActivosList[idx].accionAplicada = "Se exhibe en mueble";
                 guardarEstadoCompleto();
                 renderizarDetalleCarpetaAbierta();
                 renderizarReportesActivosGUI();
                 cerrarEscaner();
-            } else { alert("Artículo no encontrado o ya atendido en esta carpeta."); }
+            } else { alert("Artículo no encontrado o ya atendido en este departamento."); }
         }
 
         function confirmarReporte() {
             if (listaPendientesGlobal.length === 0) { alert("Lista vacía."); return; }
-            mostrarLoader("Generando reporte activo...");
+            mostrarLoader("Enviando reportes a activos...");
             setTimeout(() => {
                 ocultarLoader();
-                let folioId = "REP-" + Math.floor(100000 + Math.random() * 900000);
-                let nuevaCarpeta = {
-                    id: folioId,
-                    titulo: `Reporte Folio #${folioId}`,
-                    fecha: new Date().toLocaleDateString('es-MX'),
-                    productos: listaPendientesGlobal.map(item => ({ ...item, accionAplicada: null }))
-                };
-                carpetasReportesActivosList.push(nuevaCarpeta);
+                let nuevosActivos = listaPendientesGlobal.map(item => ({ ...item, accionAplicada: null }));
+                reportesActivosList = [...reportesActivosList, ...nuevosActivos];
                 listaPendientesGlobal = []; listaRevisadosGlobal = [];
                 guardarEstadoCompleto(); 
                 renderizarVistaActual();
                 renderizarReportesActivosGUI();
                 seleccionarSubreporte('reportes-activos', 'Reportes activos', document.querySelectorAll('#submenuReportes .submenu-item')[1]);
-                alert(`Reporte ${folioId} empaquetado en carpeta activa.`);
+                alert("Reportes distribuidos por departamento correctamente.");
             }, 1000);
         }
 
         function filtrarNegadosPorDepto() { renderizarVistaActual(); }
 
-        /* Lógica de Carpetas en Reportes Activos */
+        /* Lógica de Carpetas por Departamento */
         function renderizarReportesActivosGUI() {
-            let totalNegados = 0;
-            let totalTrabajados = 0;
-
-            carpetasReportesActivosList.forEach(c => {
-                c.productos.forEach(p => {
-                    totalNegados++;
-                    if (p.accionAplicada) totalTrabajados++;
-                });
-            });
-
+            let totalNegados = reportesActivosList.length;
+            let totalTrabajados = reportesActivosList.filter(item => item.accionAplicada !== null).length;
             let porcentaje = totalNegados > 0 ? Math.round((totalTrabajados / totalNegados) * 100) : 0;
+
             document.getElementById('metricNegados').textContent = totalNegados;
             document.getElementById('metricTrabajados').textContent = totalTrabajados;
             document.getElementById('metricAbasto').textContent = `${porcentaje}%`;
@@ -1127,38 +1110,51 @@
             const containerCarpetas = document.getElementById('contenedorCarpetasReportes');
             containerCarpetas.innerHTML = "";
 
-            if (carpetasReportesActivosList.length === 0) {
-                containerCarpetas.innerHTML = `<div class="empty-negados">No hay carpetas de reportes activos en este momento.</div>`;
+            if (reportesActivosList.length === 0) {
+                containerCarpetas.innerHTML = `<div class="empty-negados">No hay reportes activos registrados.</div>`;
                 return;
             }
 
-            carpetasReportesActivosList.forEach((carpeta) => {
-                let pendientesCount = carpeta.productos.filter(p => !p.accionAplicada).length;
-                let cardFolder = document.createElement('div');
-                cardFolder.className = 'folder-card-item';
-                cardFolder.onclick = () => abrirCarpetaReporte(carpeta.id);
-                cardFolder.innerHTML = `
-                    <div class="folder-info">
-                        <span class="folder-title">📁 ${carpeta.titulo}</span>
-                        <span class="folder-sub">Creado: ${carpeta.fecha} — Total: ${carpeta.productos.length} ítems</span>
-                    </div>
-                    <span class="folder-badge">${pendientesCount} Pendientes</span>
-                `;
-                containerCarpetas.appendChild(cardFolder);
+            // Agrupar por departamento
+            const departamentosUnicos = ["Alimentación", "Panadería", "Perecederos", "Abarrotes", "Hogar"];
+            let htmlCarpetas = "";
+
+            departamentosUnicos.forEach(depto => {
+                let itemsDepto = reportesActivosList.filter(p => p.depto === depto);
+                if (itemsDepto.length > 0) {
+                    let pendientesDepto = itemsDepto.filter(p => !p.accionAplicada).length;
+                    let iconoDepto = "📁";
+                    if (depto === "Perecederos") iconoDepto = "🥩";
+                    else if (depto === "Alimentación") iconoDepto = "🥗";
+                    else if (depto === "Panadería") iconoDepto = "🥖";
+                    else if (depto === "Abarrotes") iconoDepto = "🛒";
+                    else if (depto === "Hogar") iconoDepto = "🏠";
+
+                    htmlCarpetas += `
+                        <div class="folder-card-item" onclick="abrirCarpetaDepartamento('${depto}')">
+                            <div class="folder-info">
+                                <span class="folder-title">${iconoDepto} Departamento de ${depto}</span>
+                                <span class="folder-sub">Total productos: ${itemsDepto.length} ítems</span>
+                            </div>
+                            <span class="folder-badge">${pendientesDepto} Pendientes</span>
+                        </div>
+                    `;
+                }
             });
+
+            containerCarpetas.innerHTML = htmlCarpetas;
         }
 
-        function abrirCarpetaReporte(id) {
-            idCarpetaAbiertaActual = id;
+        function abrirCarpetaDepartamento(depto) {
+            deptoAbiertoActual = depto;
             document.getElementById('vistaListaCarpetasReportes').style.display = "none";
             document.getElementById('vistaDetalleReporteSeleccionado').style.display = "block";
-            let carpeta = carpetasReportesActivosList.find(c => c.id === id);
-            document.getElementById('tituloCarpetaAbierta').textContent = carpeta ? carpeta.titulo : 'Reporte Activo';
+            document.getElementById('tituloCarpetaAbierta').textContent = `Departamento: ${depto}`;
             renderizarDetalleCarpetaAbierta();
         }
 
         function cerrarCarpetaReporte() {
-            idCarpetaAbiertaActual = null;
+            deptoAbiertoActual = null;
             document.getElementById('vistaDetalleReporteSeleccionado').style.display = "none";
             document.getElementById('vistaListaCarpetasReportes').style.display = "block";
             renderizarReportesActivosGUI();
@@ -1167,21 +1163,22 @@
         function renderizarDetalleCarpetaAbierta() {
             const container = document.getElementById('contenedorProductosReporteAbierto');
             container.innerHTML = "";
-            let carpeta = carpetasReportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+            let itemsDepto = reportesActivosList.filter(p => p.depto === deptoAbiertoActual);
 
-            if (!carpeta || carpeta.productos.length === 0) {
-                container.innerHTML = `<div class="empty-negados">No hay productos en esta carpeta.</div>`;
+            if (itemsDepto.length === 0) {
+                container.innerHTML = `<div class="empty-negados">No hay productos en este departamento.</div>`;
                 return;
             }
 
             let htmlRes = `<div style="display:flex; flex-direction:column; gap:10px;">`;
-            carpeta.productos.forEach((item, realIdx) => {
+            itemsDepto.forEach((item) => {
+                let realIdx = reportesActivosList.findIndex(r => r.sku === item.sku && r.depto === item.depto && r.desc === item.desc);
                 let statusBadge = item.accionAplicada 
                     ? `<div class="negado-inv-badge"><span class="negado-inv-dot" style="background:#137333;"></span> ${item.accionAplicada}</div>`
                     : `<div class="negado-inv-badge"><span class="negado-inv-dot"></span> Pendiente de atención en piso</div>`;
 
                 let selectAccion = !item.accionAplicada ? `
-                    <select class="action-select-opcion" onchange="ejecutarAccionOperativaCarpeta(${realIdx}, this.value)">
+                    <select class="action-select-opcion" onchange="ejecutarAccionOperativaDepto(${realIdx}, this.value)">
                         <option value="" disabled selected>-- Seleccionar Acción Operativa --</option>
                         <option value="Mal conteo inv.">🔹 Mal conteo inv.</option>
                         <option value="Proceso de merma.">🔹 Proceso de merma.</option>
@@ -1218,10 +1215,9 @@
             container.innerHTML = htmlRes + `</div>`;
         }
 
-        function ejecutarAccionOperativaCarpeta(index, opcion) {
-            let carpeta = carpetasReportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
-            if (!opcion || !carpeta || !carpeta.productos[index]) return;
-            carpeta.productos[index].accionAplicada = opcion;
+        function ejecutarAccionOperativaDepto(index, opcion) {
+            if (!opcion || !reportesActivosList[index]) return;
+            reportesActivosList[index].accionAplicada = opcion;
             guardarEstadoCompleto();
             renderizarDetalleCarpetaAbierta();
             renderizarReportesActivosGUI();
@@ -1238,9 +1234,8 @@
         }
 
         function confirmarReporteErrorDato(tipoError) {
-            let carpeta = carpetasReportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
-            if (indexProductoReporteError !== null && carpeta && carpeta.productos[indexProductoReporteError]) {
-                let prod = carpeta.productos[indexProductoReporteError];
+            if (indexProductoReporteError !== null && reportesActivosList[indexProductoReporteError]) {
+                let prod = reportesActivosList[indexProductoReporteError];
                 alert(`Inconsistencia reportada en SKU ${prod.sku}: "${tipoError}". Se notificó al administrador.`);
                 cerrarModalReporteError();
             }
