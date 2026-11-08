@@ -195,7 +195,6 @@
         .btn-regresar-pendiente { background-color: #1a73e8; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(26,115,232,0.25); flex-shrink: 0; transition: transform 0.2s; }
         .btn-regresar-pendiente:hover { transform: scale(1.08); }
 
-        /* Estilo limpio y profesional para las carpetas independientes */
         .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid var(--mexican-pink); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,0,0,0.03); gap: 8px; }
         .folder-card-item:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(228,0,124,0.12); }
         .folder-info { display: flex; flex-direction: column; gap: 2px; cursor: pointer; flex-grow: 1; }
@@ -275,7 +274,6 @@
         </div>
     </div>
 
-    <!-- Modal para seleccionar carpeta independiente a eliminar (Admin) -->
     <div id="deleteSelectModal" class="reason-modal">
         <div class="reason-modal-box" style="max-width: 320px;">
             <h3 style="margin-bottom: 8px; color: #c5221f;">🗑️ Eliminar Reportes</h3>
@@ -568,7 +566,7 @@
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
-        let reportesActivosList = []; // Carpetas independientes
+        let reportesActivosList = []; 
         let idCarpetaAbiertaActual = null;
         let indexProductoReporteError = null;
         let contextoEscanerActual = 'alta'; 
@@ -1167,7 +1165,7 @@
         }
 
         function confirmarReporte() {
-            if (listaPendientesGlobal.length === 0) { alert("Lista vacía."); return; }
+            if (listaPendientesGlobal.length === 0) { alert("La lista de pendientes está vacía. Sube un archivo con artículos negados primero."); return; }
             mostrarLoader("Generando carpetas independientes...");
             setTimeout(() => {
                 ocultarLoader();
@@ -1219,7 +1217,7 @@
             containerAdminBtn.innerHTML = "";
 
             if (reportesActivosList.length === 0) {
-                containerCarpetas.innerHTML = `<div class="empty-negados">No hay reportes activos registrados.</div>`;
+                containerCarpetas.innerHTML = `<div class="empty-negados">No hay reportes activos registrados. Sube un archivo y confirma.</div>`;
                 return;
             }
 
