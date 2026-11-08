@@ -195,14 +195,23 @@
         .btn-regresar-pendiente { background-color: #1a73e8; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(26,115,232,0.25); flex-shrink: 0; transition: transform 0.2s; }
         .btn-regresar-pendiente:hover { transform: scale(1.08); }
 
-        /* Botón de eliminación general de reporte por carpeta para Administradores */
-        .folder-delete-btn { background-color: #c5221f; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(197,34,31,0.25); transition: transform 0.2s; }
-        .folder-delete-btn:hover { transform: scale(1.05); background-color: #a51a17; }
+        /* Estilo delgado y limpio para las carpetas */
+        .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid var(--mexican-pink); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,0,0,0.03); gap: 8px; }
+        .folder-card-item:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(228,0,124,0.12); }
+        .folder-info { display: flex; flex-direction: column; gap: 2px; cursor: pointer; flex-grow: 1; }
+        .folder-title { font-size: 13px; font-weight: bold; color: var(--text-color); display: flex; align-items: center; gap: 5px; }
+        .folder-sub { font-size: 10px; color: var(--label-color); font-weight: 600; }
+        .folder-meta-time { font-size: 9px; color: var(--mexican-pink); font-weight: bold; }
+        .folder-badge-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .folder-badge { background-color: var(--pink-transparent-30); color: var(--mexican-pink); font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 10px; }
+
+        .btn-global-delete-admin { background-color: #c5221f; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(197,34,31,0.25); }
+        .btn-global-delete-admin:hover { background-color: #a51a17; }
 
         .reason-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 10500; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; }
         .reason-modal.active { opacity: 1; visibility: visible; }
-        .reason-modal-box { background: white; padding: 25px; border-radius: 16px; width: 90%; max-width: 360px; text-align: center; }
-        .reason-btn { width: 100%; padding: 11px; margin-top: 10px; border-radius: 8px; border: 1px solid #dadce0; font-weight: bold; cursor: pointer; font-size: 12px; background: #f8f9fa; color: var(--text-color); transition: 0.2s; text-align: left; display: flex; align-items: center; gap: 8px; }
+        .reason-modal-box { background: white; padding: 22px; border-radius: 16px; width: 90%; max-width: 350px; text-align: center; }
+        .reason-btn { width: 100%; padding: 10px; margin-top: 8px; border-radius: 8px; border: 1px solid #dadce0; font-weight: bold; cursor: pointer; font-size: 11px; background: #f8f9fa; color: var(--text-color); transition: 0.2s; text-align: left; display: flex; align-items: center; gap: 8px; }
         .reason-btn:hover { background: var(--pink-transparent-30); border-color: var(--mexican-pink); color: var(--mexican-pink); }
 
         .scanner-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; }
@@ -226,16 +235,6 @@
         .metric-icon { font-size: 18px; margin-bottom: 2px; display: block; }
         .metric-title { font-size: 10px; font-weight: bold; color: var(--label-color); text-transform: uppercase; }
         .metric-value { font-size: 16px; font-weight: bold; color: var(--mexican-pink); margin-top: 2px; }
-
-        /* Tarjeta de Carpeta por Departamento */
-        .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 5px solid var(--mexican-pink); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.04); gap: 10px; }
-        .folder-card-item:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(228,0,124,0.15); }
-        .folder-info { display: flex; flex-direction: column; gap: 4px; cursor: pointer; flex-grow: 1; }
-        .folder-title { font-size: 14px; font-weight: bold; color: var(--text-color); display: flex; align-items: center; gap: 6px; }
-        .folder-sub { font-size: 11px; color: var(--label-color); font-weight: 600; }
-        .folder-meta-time { font-size: 10px; color: var(--mexican-pink); font-weight: bold; }
-        .folder-badge-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-        .folder-badge { background-color: var(--pink-transparent-30); color: var(--mexican-pink); font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 12px; }
 
         @media (max-width: 600px) {
             .upload-bar-compact { flex-direction: column; align-items: stretch; text-align: center; gap: 15px; }
@@ -275,6 +274,16 @@
             <button class="reason-btn" onclick="confirmarReporteErrorDato('3. Imagen no corresponde / fallida')"><span>🖼️</span> Imagen no corresponde / fallida</button>
             <button class="reason-btn" onclick="confirmarReporteErrorDato('4. Descripción imprecisa')"><span>📝</span> Descripción imprecisa</button>
             <button class="btn-primary" style="background: #5f6368; color: white; margin-top: 15px;" onclick="cerrarModalReporteError()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal para seleccionar reporte a eliminar -->
+    <div id="deleteSelectModal" class="reason-modal">
+        <div class="reason-modal-box" style="max-width: 320px;">
+            <h3 style="margin-bottom: 8px; color: #c5221f;">🗑️ Eliminar Reportes</h3>
+            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Selecciona el departamento cuyo reporte deseas eliminar:</p>
+            <div id="deleteModalList" style="display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; margin-bottom: 12px;"></div>
+            <button class="btn-primary" style="background: #5f6368; color: white; margin-top: 5px; padding: 10px;" onclick="cerrarModalEliminarGlobal()">Cancelar</button>
         </div>
     </div>
 
@@ -465,9 +474,12 @@
                             </div>
                         </div>
 
-                        <!-- VISTA 1: Carpetas por Departamento -->
+                        <!-- VISTA 1: Carpetas por Departamento con Botón General Admin -->
                         <div id="vistaListaCarpetasReportes">
-                            <h4 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: var(--text-color);">📁 CARPETAS POR DEPARTAMENTO</h4>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                                <h4 style="font-size: 13px; font-weight: bold; color: var(--text-color);">📁 CARPETAS POR DEPARTAMENTO</h4>
+                                <div id="containerAdminGlobalDelete"></div>
+                            </div>
                             <div id="contenedorCarpetasReportes">
                                 <div class="empty-negados">No hay reportes activos registrados.</div>
                             </div>
@@ -476,9 +488,9 @@
                         <!-- VISTA 2: Detalle del Departamento Seleccionado -->
                         <div id="vistaDetalleReporteSeleccionado" style="display: none; margin-top: 15px;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; flex-wrap: wrap;">
-                                <button class="tab-btn" onclick="cerrarCarpetaReporte()" style="background:#5f6368; color:white;">← Volver a Departamentos</button>
+                                <button class="tab-btn" onclick="cerrarCarpetaReporte()" style="background:#5f6368; color:white;">← Volver a Carpetas</button>
                                 <span style="font-weight: bold; font-size: 14px; color: var(--mexican-pink);" id="tituloCarpetaAbierta">Departamento: -</span>
-                                <button class="btn-action-escanear" onclick="abrirEscanerActivo()">📷 Escanear / Buscar</button>
+                                <button class="btn-action-escanear" id="btnEscanearActivoDepto" onclick="abrirEscanerActivo()">📷 Escanear / Buscar</button>
                             </div>
 
                             <div id="contenedorProductosReporteAbierto"></div>
@@ -810,7 +822,8 @@
                 "PÁGINA", "COMERCIAL", "CITY", "FRESKO", "REPORTE", "AUDITORÍA", "ARTÍCULOS", 
                 "NEGADOS", "SUCURSAL", "CÓDIGO", "BARRAS", "DESCRIPCIÓN", "DIVISIÓN", "ESTATUS", 
                 "FOLIO", "CREACIÓN", "FINALIZADO", "CANTIDAD", "PEDIDA", "ENTREGADA", "NEGADA", "HOGAR", "%",
-                "ALIMENTACION", "ALIMENTACIÓN", "ABARROTES", "PERECEDEROS", "PANADERIA", "PANADERÍA"
+                "ALIMENTACION", "ALIMENTACIÓN", "ABARROTES", "PERECEDEROS", "PANADERIA", "PANADERÍA",
+                "CARNES", "SALCHICHONERIA", "SALCHICHONERÍA", "TORTILLERIA", "TORTILLERÍA", "REPOSTERIA", "REPOSTERÍA", "ALIMENTOS", "PREPARADOS", "PESCADOS", "MARISCOS"
             ];
 
             bloquesTablas.forEach((tokens) => {
@@ -822,6 +835,12 @@
                     if (tokenUpper.includes("ALIMENTACION") || tokenUpper.includes("ALIMENTACIÓN")) deptoActual = "Alimentación";
                     else if (tokenUpper.includes("PANADERIA") || tokenUpper.includes("PANADERÍA")) deptoActual = "Panadería";
                     else if (tokenUpper.includes("PERECEDEROS")) deptoActual = "Perecederos";
+                    else if (tokenUpper.includes("CARNES")) deptoActual = "Carnes";
+                    else if (tokenUpper.includes("SALCHICHONERIA") || tokenUpper.includes("SALCHICHONERÍA")) deptoActual = "Salchichonería";
+                    else if (tokenUpper.includes("TORTILLERIA") || tokenUpper.includes("TORTILLERÍA")) deptoActual = "Tortillería";
+                    else if (tokenUpper.includes("REPOSTERIA") || tokenUpper.includes("REPOSTERÍA")) deptoActual = "Repostería";
+                    else if (tokenUpper.includes("PREPARADOS")) deptoActual = "Alimentos Preparados";
+                    else if (tokenUpper.includes("PESCADOS") || tokenUpper.includes("MARISCOS")) deptoActual = "Pescados y Mariscos";
                     else if (tokenUpper.includes("ABARROTES")) deptoActual = "Abarrotes";
                     else if (tokenUpper.includes("HOGAR")) deptoActual = "Hogar";
 
@@ -989,7 +1008,7 @@
                 }
             }
             if (departamentosDisponibles.length === 0) {
-                departamentosDisponibles = ["Alimentación", "Panadería", "Perecederos", "Abarrotes", "Hogar"];
+                departamentosDisponibles = ["Alimentación", "Panadería", "Perecederos", "Abarrotes", "Hogar", "Carnes", "Salchichonería", "Tortillería", "Repostería", "Alimentos Preparados", "Pescados y Mariscos"];
             }
 
             document.querySelectorAll('.negado-card-item').forEach((card, idx) => {
@@ -1013,20 +1032,23 @@
             contextoEscanerActual = 'alta';
             document.getElementById('manualScanInput').style.display = "block";
             document.getElementById('btnRegistrarManual').style.display = "block";
-            document.getElementById('scanSubtitleInfo').textContent = "Escribe el código (ej. 26...) o nombre del producto:";
+            document.getElementById('scanSubtitleInfo').textContent = "Escribe el código o nombre del producto:";
             abrirModalEscanerGenerico();
         }
 
         function abrirEscanerActivo() {
             contextoEscanerActual = 'activo';
-            let itemsDepto = reportesActivosList.filter(p => p.depto === deptoAbiertoActual);
-            const tienePerecederos = deptoAbiertoActual === 'Perecederos' || itemsDepto.some(p => p.depto === 'Perecederos');
+            const areasConEscaneo = [
+                'Perecederos', 'Carnes', 'Salchichonería', 'Panadería', 
+                'Tortillería', 'Repostería', 'Alimentos Preparados', 'Pescados y Mariscos'
+            ];
             const manualInput = document.getElementById('manualScanInput');
             const btnReg = document.getElementById('btnRegistrarManual');
-            if (tienePerecederos) {
+            
+            if (areasConEscaneo.includes(deptoAbiertoActual)) {
                 manualInput.style.display = "block";
                 btnReg.style.display = "block";
-                document.getElementById('scanSubtitleInfo').textContent = "Escanea el código o busca manualmente (Habilitado para Perecederos):";
+                document.getElementById('scanSubtitleInfo').textContent = `Escaneo / Búsqueda activa (${deptoAbiertoActual}):`;
             } else {
                 manualInput.style.display = "none";
                 btnReg.style.display = "none";
@@ -1126,13 +1148,13 @@
                 renderizarVistaActual();
                 renderizarReportesActivosGUI();
                 seleccionarSubreporte('reportes-activos', 'Reportes activos', document.querySelectorAll('#submenuReportes .submenu-item')[1]);
-                alert("Reportes distribuidos por departamento correctamente con fecha y hora.");
+                alert("Reportes distribuidos por departamento correctamente.");
             }, 1000);
         }
 
         function filtrarNegadosPorDepto() { renderizarVistaActual(); }
 
-        /* Lógica de Carpetas por Departamento con Fecha, Hora y Eliminación General */
+        /* Lógica de Carpetas Delgado y Eliminación Global con Selección */
         function renderizarReportesActivosGUI() {
             let totalNegados = reportesActivosList.length;
             let totalTrabajados = reportesActivosList.filter(item => item.accionAplicada !== null).length;
@@ -1143,43 +1165,48 @@
             document.getElementById('metricAbasto').textContent = `${porcentaje}%`;
 
             const containerCarpetas = document.getElementById('contenedorCarpetasReportes');
+            const containerAdminBtn = document.getElementById('containerAdminGlobalDelete');
             containerCarpetas.innerHTML = "";
+            containerAdminBtn.innerHTML = "";
 
             if (reportesActivosList.length === 0) {
                 containerCarpetas.innerHTML = `<div class="empty-negados">No hay reportes activos registrados.</div>`;
                 return;
             }
 
-            const departamentosUnicos = ["Alimentación", "Panadería", "Perecederos", "Abarrotes", "Hogar"];
+            let departamentosActivosUnicos = [...new Set(reportesActivosList.map(p => p.depto))];
             let esAdmin = sesionActualGlobal && sesionActualGlobal.isAdmin;
-            let htmlCarpetas = "";
 
-            departamentosUnicos.forEach(depto => {
+            if (esAdmin && departamentosActivosUnicos.length > 0) {
+                containerAdminBtn.innerHTML = `<button class="btn-global-delete-admin" onclick="abrirModalEliminarGlobal()">🗑️ Eliminar Reporte</button>`;
+            }
+
+            let htmlCarpetas = "";
+            departamentosActivosUnicos.forEach(depto => {
                 let itemsDepto = reportesActivosList.filter(p => p.depto === depto);
                 if (itemsDepto.length > 0) {
                     let pendientesDepto = itemsDepto.filter(p => !p.accionAplicada).length;
                     let fechaCreacionReporte = itemsDepto[0].fechaCreacion || "Reciente";
                     let iconoDepto = "📁";
                     if (depto === "Perecederos") iconoDepto = "🥩";
+                    else if (depto === "Carnes") iconoDepto = "🥩";
+                    else if (depto === "Salchichonería") iconoDepto = "🥓";
                     else if (depto === "Alimentación") iconoDepto = "🥗";
-                    else if (depto === "Panadería") iconoDepto = "🥖";
+                    else if (depto === "Panadería" || depto === "Repostería") iconoDepto = "🥖";
+                    else if (depto === "Tortillería") iconoDepto = "🌽";
+                    else if (depto === "Alimentos Preparados") iconoDepto = "🍲";
+                    else if (depto === "Pescados y Mariscos") iconoDepto = "🐟";
                     else if (depto === "Abarrotes") iconoDepto = "🛒";
                     else if (depto === "Hogar") iconoDepto = "🏠";
-
-                    let btnEliminarCarpeta = esAdmin ? `
-                        <button class="folder-delete-btn" title="Eliminar reporte completo" onclick="event.stopPropagation(); eliminarCarpetaCompletaAdmin('${depto}')">🗑️ Eliminar</button>
-                    ` : '';
 
                     htmlCarpetas += `
                         <div class="folder-card-item">
                             <div class="folder-info" onclick="abrirCarpetaDepartamento('${depto}')">
-                                <span class="folder-title">${iconoDepto} Departamento de ${depto}</span>
-                                <span class="folder-sub">Total productos: ${itemsDepto.length} ítems</span>
-                                <span class="folder-meta-time">🕒 Creado: ${fechaCreacionReporte}</span>
+                                <span class="folder-title">${iconoDepto} ${depto}</span>
+                                <span class="folder-sub">Total productos: ${itemsDepto.length} ítems | 🕒 ${fechaCreacionReporte}</span>
                             </div>
                             <div class="folder-badge-group">
                                 <span class="folder-badge">${pendientesDepto} Pendientes</span>
-                                ${btnEliminarCarpeta}
                             </div>
                         </div>
                     `;
@@ -1189,11 +1216,37 @@
             containerCarpetas.innerHTML = htmlCarpetas;
         }
 
+        function abrirModalEliminarGlobal() {
+            const listContainer = document.getElementById('deleteModalList');
+            listContainer.innerHTML = "";
+            let departamentosActivosUnicos = [...new Set(reportesActivosList.map(p => p.depto))];
+            
+            departamentosActivosUnicos.forEach(depto => {
+                let btn = document.createElement('button');
+                btn.className = 'reason-btn';
+                btn.innerHTML = `<span>📁</span> Departamento: <strong>${depto}</strong>`;
+                btn.onclick = () => {
+                    if (confirm(`¿Estás seguro de eliminar por completo el reporte de "${depto}"?`)) {
+                        reportesActivosList = reportesActivosList.filter(p => p.depto !== depto);
+                        guardarEstadoCompleto();
+                        cerrarModalEliminarGlobal();
+                        renderizarReportesActivosGUI();
+                    }
+                };
+                listContainer.appendChild(btn);
+            });
+            abrirModal('deleteSelectModal');
+        }
+
+        function cerrarModalEliminarGlobal() {
+            cerrarModal('deleteSelectModal');
+        }
+
         function abrirCarpetaDepartamento(depto) {
             deptoAbiertoActual = depto;
             document.getElementById('vistaListaCarpetasReportes').style.display = "none";
             document.getElementById('vistaDetalleReporteSeleccionado').style.display = "block";
-            document.getElementById('tituloCarpetaAbierta').textContent = `Departamento: ${depto}`;
+            document.getElementById('tituloCarpetaAbierta').textContent = `${depto}`;
             renderizarDetalleCarpetaAbierta();
         }
 
@@ -1202,14 +1255,6 @@
             document.getElementById('vistaDetalleReporteSeleccionado').style.display = "none";
             document.getElementById('vistaListaCarpetasReportes').style.display = "block";
             renderizarReportesActivosGUI();
-        }
-
-        function eliminarCarpetaCompletaAdmin(depto) {
-            if (confirm(`¿Estás seguro de eliminar por completo el reporte activo del departamento "${depto}"?`)) {
-                reportesActivosList = reportesActivosList.filter(p => p.depto !== depto);
-                guardarEstadoCompleto();
-                renderizarReportesActivosGUI();
-            }
         }
 
         function renderizarDetalleCarpetaAbierta() {
