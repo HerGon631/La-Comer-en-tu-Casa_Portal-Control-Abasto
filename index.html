@@ -195,7 +195,8 @@
         .btn-regresar-pendiente { background-color: #1a73e8; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(26,115,232,0.25); flex-shrink: 0; transition: transform 0.2s; }
         .btn-regresar-pendiente:hover { transform: scale(1.08); }
 
-        .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid var(--mexican-pink); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,0,0,0.03); gap: 8px; }
+        /* Estilo limpio y profesional para las carpetas independientes */
+        .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid var(--mexican-pink); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,0,0,0.03); gap: 8px; }
         .folder-card-item:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(228,0,124,0.12); }
         .folder-info { display: flex; flex-direction: column; gap: 2px; cursor: pointer; flex-grow: 1; }
         .folder-title { font-size: 13px; font-weight: bold; color: var(--text-color); display: flex; align-items: center; gap: 5px; }
@@ -274,6 +275,7 @@
         </div>
     </div>
 
+    <!-- Modal para seleccionar carpeta independiente a eliminar (Admin) -->
     <div id="deleteSelectModal" class="reason-modal">
         <div class="reason-modal-box" style="max-width: 320px;">
             <h3 style="margin-bottom: 8px; color: #c5221f;">🗑️ Eliminar Reportes</h3>
@@ -477,6 +479,7 @@
                             </div>
                         </div>
 
+                        <!-- VISTA 1: Carpetas Independientes -->
                         <div id="vistaListaCarpetasReportes">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
                                 <h4 style="font-size: 13px; font-weight: bold; color: var(--text-color);">📁 CARPETAS INDEPENDIENTES</h4>
@@ -487,6 +490,7 @@
                             </div>
                         </div>
 
+                        <!-- VISTA 2: Detalle Carpeta Abierta -->
                         <div id="vistaDetalleReporteSeleccionado" style="display: none; margin-top: 15px;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; flex-wrap: wrap;">
                                 <button class="tab-btn" onclick="cerrarCarpetaReporte()" style="background:#5f6368; color:white;">← Volver a Carpetas</button>
@@ -564,7 +568,7 @@
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
-        let reportesActivosList = [];
+        let reportesActivosList = []; // Carpetas independientes
         let idCarpetaAbiertaActual = null;
         let indexProductoReporteError = null;
         let contextoEscanerActual = 'alta'; 
@@ -685,22 +689,17 @@
         }
 
         async function cargarDepartamentos() {
-            // Cargar inmediatamente la lista local por seguridad para evitar que se quede trabado
             poblarSelectDepartamentos(DEPARTAMENTOS_PREDETERMINADOS);
-
-            // Intentar actualizar desde la nube en segundo plano sin bloquear la interfaz
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 4000); // Timeout de 4 seg max
+                const timeoutId = setTimeout(() => controller.abort(), 4000);
                 const response = await fetch(`${WEB_APP_URL}?action=getDepartamentos`, { signal: controller.signal });
                 clearTimeout(timeoutId);
                 const result = await response.json();
                 if (result && result.departments && result.departments.length > 0) {
                     poblarSelectDepartamentos(result.departments);
                 }
-            } catch (error) {
-                // Si falla o excede el tiempo, se conserva la lista predeterminada ya cargada de inmediato
-            }
+            } catch (error) {}
         }
 
         cargarDepartamentos();
