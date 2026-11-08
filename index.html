@@ -96,7 +96,20 @@
         .submenu-item:hover { color: var(--mexican-pink); background-color: rgba(228, 0, 124, 0.08); }
         .submenu-item.active { color: var(--mexican-pink); font-weight: bold; background-color: rgba(228, 0, 124, 0.12); }
 
-        .ticker-container { background: linear-gradient(90deg, #fff0f5 0%, #ffe4ee 100%); border-bottom: 2px solid rgba(228, 0, 124, 0.15); height: 38px; line-height: 38px; overflow: hidden; white-space: nowrap; position: relative; z-index: 80; margin-bottom: 15px; width: 100%; }
+        /* Franja rosa estática */
+        .ticker-container { 
+            background: linear-gradient(90deg, #fff0f5 0%, #ffe4ee 100%); 
+            border-bottom: 2px solid rgba(228, 0, 124, 0.15); 
+            height: 38px; 
+            line-height: 38px; 
+            overflow: hidden; 
+            white-space: nowrap; 
+            position: sticky; 
+            top: 65px; 
+            z-index: 90; 
+            margin-bottom: 15px; 
+            width: 100%; 
+        }
         .ticker-track { display: inline-block; white-space: nowrap; will-change: transform; }
         .ticker-item { display: inline-flex; align-items: center; gap: 10px; margin-right: 60px; font-size: 13px; }
         .ticker-stars { font-size: 12px; }
@@ -484,7 +497,7 @@
                                 <div id="containerAdminGlobalDelete"></div>
                             </div>
                             <div id="contenedorCarpetasReportes">
-                                <div class="empty-negados">No hay reportes activos registrados.</div>
+                                <div class="empty-negados">No hay reportes activos registrados. Sube un archivo y confirma.</div>
                             </div>
                         </div>
 
@@ -1164,34 +1177,53 @@
             } else { alert("Artículo no encontrado o ya atendido en esta carpeta."); }
         }
 
+        /* FUNCIÓN CORREGIDA DE GENERACIÓN Y REDIRECCIÓN */
         function confirmarReporte() {
-            if (listaPendientesGlobal.length === 0) { alert("La lista de pendientes está vacía. Sube un archivo con artículos negados primero."); return; }
+            if (listaPendientesGlobal.length === 0) { 
+                alert("La lista de pendientes está vacía. Sube un archivo con artículos negados primero."); 
+                return; 
+            }
+            
             mostrarLoader("Generando carpetas independientes...");
+            
             setTimeout(() => {
-                ocultarLoader();
                 let ahora = new Date();
                 let fechaHoraStr = ahora.toLocaleDateString() + ' - ' + ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
-                let departamentosPresentes = [...new Set(listaPendientesGlobal.map(item => item.depto))];
+                // Obtener departamentos únicos presentes en la lista de pendientes
+                let departamentosPresentes = [...new Set(listaPendientesGlobal.map(item => item.depto || "Abarrotes"))];
                 
                 departamentosPresentes.forEach(depto => {
-                    let productosDepto = listaPendientesGlobal.filter(item => item.depto === depto).map(item => ({ ...item, accionAplicada: null }));
-                    let nuevaCarpeta = {
-                        id: 'folder_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-                        depto: depto,
-                        fechaCreacion: fechaHoraStr,
-                        productos: productosDepto
-                    };
-                    reportesActivosList.push(nuevaCarpeta);
+                    let productosDepto = listaPendientesGlobal
+                        .filter(item => (item.depto || "Abarrotes") === depto)
+                        .map(item => ({ ...item, accionAplicada: null }));
+                        
+                    if (productosDepto.length > 0) {
+                        let nuevaCarpeta = {
+                            id: 'folder_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                            depto: depto,
+                            fechaCreacion: fechaHoraStr,
+                            productos: productosDepto
+                        };
+                        reportesActivosList.push(nuevaCarpeta);
+                    }
                 });
 
-                listaPendientesGlobal = []; listaRevisadosGlobal = [];
+                // Vaciar pendientes y guardar
+                listaPendientesGlobal = []; 
+                listaRevisadosGlobal = [];
                 guardarEstadoCompleto(); 
+                
+                // Renderizar ambas vistas
                 renderizarVistaActual();
                 renderizarReportesActivosGUI();
-                seleccionarSubreporte('reportes-activos', 'Reportes activos', document.querySelectorAll('#submenuReportes .submenu-item')[1]);
-                alert("Reportes generados en carpetas independientes correctamente.");
-            }, 1000);
+                
+                ocultarLoader();
+                
+                // Redirigir a Reportes Activos
+                const subitems = document.querySelectorAll('#submenuReportes .submenu-item');
+                seleccionarSubreporte('reportes-activos', 'Reportes activos', subitems[1] || null);
+            }, 800);
         }
 
         function filtrarNegadosPorDepto() { renderizarVistaActual(); }
