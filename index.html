@@ -195,13 +195,11 @@
         .btn-regresar-pendiente { background-color: #1a73e8; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(26,115,232,0.25); flex-shrink: 0; transition: transform 0.2s; }
         .btn-regresar-pendiente:hover { transform: scale(1.08); }
 
-        /* Estilo delgado y limpio para las carpetas independientes */
         .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid var(--mexican-pink); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,0,0,0.03); gap: 8px; }
         .folder-card-item:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(228,0,124,0.12); }
         .folder-info { display: flex; flex-direction: column; gap: 2px; cursor: pointer; flex-grow: 1; }
         .folder-title { font-size: 13px; font-weight: bold; color: var(--text-color); display: flex; align-items: center; gap: 5px; }
         .folder-sub { font-size: 10px; color: var(--label-color); font-weight: 600; }
-        .folder-meta-time { font-size: 9px; color: var(--mexican-pink); font-weight: bold; }
         .folder-badge-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
         .folder-badge { background-color: var(--pink-transparent-30); color: var(--mexican-pink); font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 10px; }
 
@@ -229,7 +227,6 @@
         .btn-report-error:hover { transform: scale(1.1); background: #ffcdd2; }
         .action-select-opcion { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #dadce0; font-size: 12px; font-weight: bold; color: var(--text-color); background-color: #f8f9fa; margin-top: 6px; }
 
-        /* Estilos del Panel de Métricas de Abasto */
         .metrics-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; margin-bottom: 15px; }
         .metric-card { background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 10px 6px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
         .metric-icon { font-size: 18px; margin-bottom: 2px; display: block; }
@@ -277,7 +274,6 @@
         </div>
     </div>
 
-    <!-- Modal para seleccionar reporte independiente a eliminar -->
     <div id="deleteSelectModal" class="reason-modal">
         <div class="reason-modal-box" style="max-width: 320px;">
             <h3 style="margin-bottom: 8px; color: #c5221f;">🗑️ Eliminar Reportes</h3>
@@ -332,7 +328,9 @@
                 </div>
                 <div class="form-group">
                     <label for="departamento">DEPARTAMENTO</label>
-                    <select id="departamento" required><option value="" disabled selected>Cargando departamentos...</option></select>
+                    <select id="departamento" required>
+                        <option value="" disabled selected>Seleccione su departamento</option>
+                    </select>
                 </div>
                 <button type="submit" id="btnIngresar" class="btn-primary">Ingresar al Portal &rarr;</button>
             </form>
@@ -461,7 +459,6 @@
                         <h3 style="font-size: 16px; font-weight: bold; color: #111;">⚡ Reportes Activos Independientes</h3>
                         <p style="margin-top: 4px; color: var(--label-color); font-size: 13px;">Listado de carpetas individuales generadas por fecha y hora.</p>
 
-                        <!-- Tarjetas de Métricas de Abasto -->
                         <div class="metrics-panel">
                             <div class="metric-card">
                                 <span class="metric-icon">📦</span>
@@ -480,7 +477,6 @@
                             </div>
                         </div>
 
-                        <!-- VISTA 1: Carpetas Independientes por Fecha/Hora con Botón General Admin -->
                         <div id="vistaListaCarpetasReportes">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
                                 <h4 style="font-size: 13px; font-weight: bold; color: var(--text-color);">📁 CARPETAS INDEPENDIENTES</h4>
@@ -491,7 +487,6 @@
                             </div>
                         </div>
 
-                        <!-- VISTA 2: Detalle de la Carpeta Seleccionada -->
                         <div id="vistaDetalleReporteSeleccionado" style="display: none; margin-top: 15px;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; flex-wrap: wrap;">
                                 <button class="tab-btn" onclick="cerrarCarpetaReporte()" style="background:#5f6368; color:white;">← Volver a Carpetas</button>
@@ -525,6 +520,12 @@
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyc7tXRLUR4aiguUk2mq-liDOyG8irBb8tRVG8bmoayNspMvSjkhh_eIghTNx-S9D0HwQ/exec";
+
+        const DEPARTAMENTOS_PREDETERMINADOS = [
+            "Alimentación", "Panadería", "Perecederos", "Abarrotes", "Hogar",
+            "Carnes", "Salchichonería", "Tortillería", "Repostería",
+            "Alimentos Preparados", "Pescados y Mariscos", "Gerencia", "Mesa de Control"
+        ];
 
         const form = document.getElementById('accessForm');
         const mensajeAlerta = document.getElementById('mensajeAlerta');
@@ -563,7 +564,7 @@
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
-        let reportesActivosList = []; // Ahora contendrá objetos de carpetas independientes
+        let reportesActivosList = [];
         let idCarpetaAbiertaActual = null;
         let indexProductoReporteError = null;
         let contextoEscanerActual = 'alta'; 
@@ -674,19 +675,32 @@
             reiniciarTemporizadorInactividad();
         }
 
+        function poblarSelectDepartamentos(lista) {
+            selectDepartamento.innerHTML = '<option value="" disabled selected>Seleccione su departamento</option>';
+            lista.forEach(depto => {
+                const option = document.createElement('option');
+                option.value = depto; option.textContent = depto;
+                selectDepartamento.appendChild(option);
+            });
+        }
+
         async function cargarDepartamentos() {
+            // Cargar inmediatamente la lista local por seguridad para evitar que se quede trabado
+            poblarSelectDepartamentos(DEPARTAMENTOS_PREDETERMINADOS);
+
+            // Intentar actualizar desde la nube en segundo plano sin bloquear la interfaz
             try {
-                const response = await fetch(`${WEB_APP_URL}?action=getDepartamentos`);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 4000); // Timeout de 4 seg max
+                const response = await fetch(`${WEB_APP_URL}?action=getDepartamentos`, { signal: controller.signal });
+                clearTimeout(timeoutId);
                 const result = await response.json();
                 if (result && result.departments && result.departments.length > 0) {
-                    selectDepartamento.innerHTML = '<option value="" disabled selected>Seleccione su departamento</option>';
-                    result.departments.forEach(depto => {
-                        const option = document.createElement('option');
-                        option.value = depto; option.textContent = depto;
-                        selectDepartamento.appendChild(option);
-                    });
+                    poblarSelectDepartamentos(result.departments);
                 }
-            } catch (error) { selectDepartamento.innerHTML = '<option value="" disabled selected>Error al cargar lista</option>'; }
+            } catch (error) {
+                // Si falla o excede el tiempo, se conserva la lista predeterminada ya cargada de inmediato
+            }
         }
 
         cargarDepartamentos();
@@ -1014,7 +1028,7 @@
                 }
             }
             if (departamentosDisponibles.length === 0) {
-                departamentosDisponibles = ["Alimentación", "Panadería", "Perecederos", "Abarrotes", "Hogar", "Carnes", "Salchichonería", "Tortillería", "Repostería", "Alimentos Preparados", "Pescados y Mariscos"];
+                departamentosDisponibles = DEPARTAMENTOS_PREDETERMINADOS;
             }
 
             document.querySelectorAll('.negado-card-item').forEach((card, idx) => {
@@ -1161,13 +1175,12 @@
                 let ahora = new Date();
                 let fechaHoraStr = ahora.toLocaleDateString() + ' - ' + ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
-                // Agrupar pendientes por departamento para crear carpetas independientes por cada carga
                 let departamentosPresentes = [...new Set(listaPendientesGlobal.map(item => item.depto))];
                 
                 departamentosPresentes.forEach(depto => {
                     let productosDepto = listaPendientesGlobal.filter(item => item.depto === depto).map(item => ({ ...item, accionAplicada: null }));
                     let nuevaCarpeta = {
-                        id: 'folder_' + Date.now() + '_' + Math.random().toString(36.substring(2, 6)),
+                        id: 'folder_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
                         depto: depto,
                         fechaCreacion: fechaHoraStr,
                         productos: productosDepto
@@ -1186,7 +1199,6 @@
 
         function filtrarNegadosPorDepto() { renderizarVistaActual(); }
 
-        /* Lógica de Carpetas Independientes con Eliminación Global */
         function renderizarReportesActivosGUI() {
             let totalNegados = 0;
             let totalTrabajados = 0;
