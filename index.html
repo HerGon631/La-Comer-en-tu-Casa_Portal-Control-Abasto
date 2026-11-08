@@ -195,7 +195,7 @@
         .btn-regresar-pendiente { background-color: #1a73e8; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(26,115,232,0.25); flex-shrink: 0; transition: transform 0.2s; }
         .btn-regresar-pendiente:hover { transform: scale(1.08); }
 
-        /* Estilo delgado y limpio para las carpetas */
+        /* Estilo delgado y limpio para las carpetas independientes */
         .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid var(--mexican-pink); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,0,0,0.03); gap: 8px; }
         .folder-card-item:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(228,0,124,0.12); }
         .folder-info { display: flex; flex-direction: column; gap: 2px; cursor: pointer; flex-grow: 1; }
@@ -277,11 +277,11 @@
         </div>
     </div>
 
-    <!-- Modal para seleccionar reporte a eliminar -->
+    <!-- Modal para seleccionar reporte independiente a eliminar -->
     <div id="deleteSelectModal" class="reason-modal">
         <div class="reason-modal-box" style="max-width: 320px;">
             <h3 style="margin-bottom: 8px; color: #c5221f;">🗑️ Eliminar Reportes</h3>
-            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Selecciona el departamento cuyo reporte deseas eliminar:</p>
+            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Selecciona la carpeta de reporte independiente que deseas eliminar:</p>
             <div id="deleteModalList" style="display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; margin-bottom: 12px;"></div>
             <button class="btn-primary" style="background: #5f6368; color: white; margin-top: 5px; padding: 10px;" onclick="cerrarModalEliminarGlobal()">Cancelar</button>
         </div>
@@ -440,6 +440,12 @@
                                     <option value="Perecederos">Perecederos</option>
                                     <option value="Abarrotes">Abarrotes</option>
                                     <option value="Hogar">Hogar</option>
+                                    <option value="Carnes">Carnes</option>
+                                    <option value="Salchichonería">Salchichonería</option>
+                                    <option value="Tortillería">Tortillería</option>
+                                    <option value="Repostería">Repostería</option>
+                                    <option value="Alimentos Preparados">Alimentos Preparados</option>
+                                    <option value="Pescados y Mariscos">Pescados y Mariscos</option>
                                 </select>
                             </div>
                         </div>
@@ -452,8 +458,8 @@
                     </div>
 
                     <div id="subpane-reportes-activos" class="report-subpane">
-                        <h3 style="font-size: 16px; font-weight: bold; color: #111;">⚡ Reportes Activos por Departamento</h3>
-                        <p style="margin-top: 4px; color: var(--label-color); font-size: 13px;">Listado de incidencias enviadas y pendientes de atención en piso.</p>
+                        <h3 style="font-size: 16px; font-weight: bold; color: #111;">⚡ Reportes Activos Independientes</h3>
+                        <p style="margin-top: 4px; color: var(--label-color); font-size: 13px;">Listado de carpetas individuales generadas por fecha y hora.</p>
 
                         <!-- Tarjetas de Métricas de Abasto -->
                         <div class="metrics-panel">
@@ -474,10 +480,10 @@
                             </div>
                         </div>
 
-                        <!-- VISTA 1: Carpetas por Departamento con Botón General Admin -->
+                        <!-- VISTA 1: Carpetas Independientes por Fecha/Hora con Botón General Admin -->
                         <div id="vistaListaCarpetasReportes">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-                                <h4 style="font-size: 13px; font-weight: bold; color: var(--text-color);">📁 CARPETAS POR DEPARTAMENTO</h4>
+                                <h4 style="font-size: 13px; font-weight: bold; color: var(--text-color);">📁 CARPETAS INDEPENDIENTES</h4>
                                 <div id="containerAdminGlobalDelete"></div>
                             </div>
                             <div id="contenedorCarpetasReportes">
@@ -485,11 +491,11 @@
                             </div>
                         </div>
 
-                        <!-- VISTA 2: Detalle del Departamento Seleccionado -->
+                        <!-- VISTA 2: Detalle de la Carpeta Seleccionada -->
                         <div id="vistaDetalleReporteSeleccionado" style="display: none; margin-top: 15px;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; flex-wrap: wrap;">
                                 <button class="tab-btn" onclick="cerrarCarpetaReporte()" style="background:#5f6368; color:white;">← Volver a Carpetas</button>
-                                <span style="font-weight: bold; font-size: 14px; color: var(--mexican-pink);" id="tituloCarpetaAbierta">Departamento: -</span>
+                                <span style="font-weight: bold; font-size: 14px; color: var(--mexican-pink);" id="tituloCarpetaAbierta">Carpeta: -</span>
                                 <button class="btn-action-escanear" id="btnEscanearActivoDepto" onclick="abrirEscanerActivo()">📷 Escanear / Buscar</button>
                             </div>
 
@@ -557,8 +563,8 @@
         let temporizadorInactividad;
         const TIEMPO_INACTIVIDAD = 20 * 60 * 1000;
 
-        let reportesActivosList = [];
-        let deptoAbiertoActual = null;
+        let reportesActivosList = []; // Ahora contendrá objetos de carpetas independientes
+        let idCarpetaAbiertaActual = null;
         let indexProductoReporteError = null;
         let contextoEscanerActual = 'alta'; 
 
@@ -1038,6 +1044,9 @@
 
         function abrirEscanerActivo() {
             contextoEscanerActual = 'activo';
+            let carpetaActual = reportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+            let nombreDepto = carpetaActual ? carpetaActual.depto : "";
+
             const areasConEscaneo = [
                 'Perecederos', 'Carnes', 'Salchichonería', 'Panadería', 
                 'Tortillería', 'Repostería', 'Alimentos Preparados', 'Pescados y Mariscos'
@@ -1045,10 +1054,10 @@
             const manualInput = document.getElementById('manualScanInput');
             const btnReg = document.getElementById('btnRegistrarManual');
             
-            if (areasConEscaneo.includes(deptoAbiertoActual)) {
+            if (areasConEscaneo.includes(nombreDepto)) {
                 manualInput.style.display = "block";
                 btnReg.style.display = "block";
-                document.getElementById('scanSubtitleInfo').textContent = `Escaneo / Búsqueda activa (${deptoAbiertoActual}):`;
+                document.getElementById('scanSubtitleInfo').textContent = `Escaneo / Búsqueda activa (${nombreDepto}):`;
             } else {
                 manualInput.style.display = "none";
                 btnReg.style.display = "none";
@@ -1088,7 +1097,15 @@
             list.innerHTML = "";
             if (!texto || !texto.trim()) { list.style.display = "none"; return; }
             const q = texto.toUpperCase();
-            let fuente = (contextoEscanerActual === 'alta') ? listaPendientesGlobal : reportesActivosList.filter(item => item.depto === deptoAbiertoActual && !item.accionAplicada);
+            
+            let fuente = [];
+            if (contextoEscanerActual === 'alta') {
+                fuente = listaPendientesGlobal;
+            } else {
+                let carpetaActual = reportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+                if (carpetaActual) fuente = carpetaActual.productos.filter(item => !item.accionAplicada);
+            }
+
             let matches = fuente.filter(item => item.desc.includes(q) || item.sku.includes(q));
             if (matches.length === 0) { list.innerHTML = `<div class="autocomplete-item" style="color:red;">No encontrado.</div>`; list.style.display = "block"; return; }
             matches.forEach(m => {
@@ -1123,41 +1140,62 @@
         }
 
         function procesarSkuEscaneadoReporteActivo(code) {
-            let idx = reportesActivosList.findIndex(item => item.depto === deptoAbiertoActual && (item.sku.includes(code) || item.desc.includes(code.toUpperCase())) && !item.accionAplicada);
+            let carpetaActual = reportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+            if (!carpetaActual) return;
+
+            let idx = carpetaActual.productos.findIndex(item => (item.sku.includes(code) || item.desc.includes(code.toUpperCase())) && !item.accionAplicada);
             if (idx !== -1) {
-                reportesActivosList[idx].accionAplicada = "Se exhibe en mueble";
+                carpetaActual.productos[idx].accionAplicada = "Se exhibe en mueble";
                 guardarEstadoCompleto();
                 renderizarDetalleCarpetaAbierta();
                 renderizarReportesActivosGUI();
                 cerrarEscaner();
-            } else { alert("Artículo no encontrado o ya atendido en este departamento."); }
+            } else { alert("Artículo no encontrado o ya atendido en esta carpeta."); }
         }
 
         function confirmarReporte() {
             if (listaPendientesGlobal.length === 0) { alert("Lista vacía."); return; }
-            mostrarLoader("Enviando reportes a activos...");
+            mostrarLoader("Generando carpetas independientes...");
             setTimeout(() => {
                 ocultarLoader();
                 let ahora = new Date();
                 let fechaHoraStr = ahora.toLocaleDateString() + ' - ' + ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
-                let nuevosActivos = listaPendientesGlobal.map(item => ({ ...item, accionAplicada: null, fechaCreacion: fechaHoraStr }));
-                reportesActivosList = [...reportesActivosList, ...nuevosActivos];
+                // Agrupar pendientes por departamento para crear carpetas independientes por cada carga
+                let departamentosPresentes = [...new Set(listaPendientesGlobal.map(item => item.depto))];
+                
+                departamentosPresentes.forEach(depto => {
+                    let productosDepto = listaPendientesGlobal.filter(item => item.depto === depto).map(item => ({ ...item, accionAplicada: null }));
+                    let nuevaCarpeta = {
+                        id: 'folder_' + Date.now() + '_' + Math.random().toString(36.substring(2, 6)),
+                        depto: depto,
+                        fechaCreacion: fechaHoraStr,
+                        productos: productosDepto
+                    };
+                    reportesActivosList.push(nuevaCarpeta);
+                });
+
                 listaPendientesGlobal = []; listaRevisadosGlobal = [];
                 guardarEstadoCompleto(); 
                 renderizarVistaActual();
                 renderizarReportesActivosGUI();
                 seleccionarSubreporte('reportes-activos', 'Reportes activos', document.querySelectorAll('#submenuReportes .submenu-item')[1]);
-                alert("Reportes distribuidos por departamento correctamente.");
+                alert("Reportes generados en carpetas independientes correctamente.");
             }, 1000);
         }
 
         function filtrarNegadosPorDepto() { renderizarVistaActual(); }
 
-        /* Lógica de Carpetas Delgado y Eliminación Global con Selección */
+        /* Lógica de Carpetas Independientes con Eliminación Global */
         function renderizarReportesActivosGUI() {
-            let totalNegados = reportesActivosList.length;
-            let totalTrabajados = reportesActivosList.filter(item => item.accionAplicada !== null).length;
+            let totalNegados = 0;
+            let totalTrabajados = 0;
+
+            reportesActivosList.forEach(carpeta => {
+                totalNegados += carpeta.productos.length;
+                totalTrabajados += carpeta.productos.filter(p => p.accionAplicada !== null).length;
+            });
+
             let porcentaje = totalNegados > 0 ? Math.round((totalTrabajados / totalNegados) * 100) : 0;
 
             document.getElementById('metricNegados').textContent = totalNegados;
@@ -1174,43 +1212,39 @@
                 return;
             }
 
-            let departamentosActivosUnicos = [...new Set(reportesActivosList.map(p => p.depto))];
             let esAdmin = sesionActualGlobal && sesionActualGlobal.isAdmin;
 
-            if (esAdmin && departamentosActivosUnicos.length > 0) {
-                containerAdminBtn.innerHTML = `<button class="btn-global-delete-admin" onclick="abrirModalEliminarGlobal()">🗑️ Eliminar Reporte</button>`;
+            if (esAdmin && reportesActivosList.length > 0) {
+                containerAdminBtn.innerHTML = `<button class="btn-global-delete-admin" onclick="abrirModalEliminarGlobal()">🗑️ Eliminar Carpeta</button>`;
             }
 
             let htmlCarpetas = "";
-            departamentosActivosUnicos.forEach(depto => {
-                let itemsDepto = reportesActivosList.filter(p => p.depto === depto);
-                if (itemsDepto.length > 0) {
-                    let pendientesDepto = itemsDepto.filter(p => !p.accionAplicada).length;
-                    let fechaCreacionReporte = itemsDepto[0].fechaCreacion || "Reciente";
-                    let iconoDepto = "📁";
-                    if (depto === "Perecederos") iconoDepto = "🥩";
-                    else if (depto === "Carnes") iconoDepto = "🥩";
-                    else if (depto === "Salchichonería") iconoDepto = "🥓";
-                    else if (depto === "Alimentación") iconoDepto = "🥗";
-                    else if (depto === "Panadería" || depto === "Repostería") iconoDepto = "🥖";
-                    else if (depto === "Tortillería") iconoDepto = "🌽";
-                    else if (depto === "Alimentos Preparados") iconoDepto = "🍲";
-                    else if (depto === "Pescados y Mariscos") iconoDepto = "🐟";
-                    else if (depto === "Abarrotes") iconoDepto = "🛒";
-                    else if (depto === "Hogar") iconoDepto = "🏠";
+            reportesActivosList.forEach(carpeta => {
+                let depto = carpeta.depto;
+                let pendientesCarpeta = carpeta.productos.filter(p => !p.accionAplicada).length;
+                let iconoDepto = "📁";
+                
+                if (depto === "Perecederos" || depto === "Carnes") iconoDepto = "🥩";
+                else if (depto === "Salchichonería") iconoDepto = "🥓";
+                else if (depto === "Alimentación") iconoDepto = "🥗";
+                else if (depto === "Panadería" || depto === "Repostería") iconoDepto = "🥖";
+                else if (depto === "Tortillería") iconoDepto = "🌽";
+                else if (depto === "Alimentos Preparados") iconoDepto = "🍲";
+                else if (depto === "Pescados y Mariscos") iconoDepto = "🐟";
+                else if (depto === "Abarrotes") iconoDepto = "🛒";
+                else if (depto === "Hogar") iconoDepto = "🏠";
 
-                    htmlCarpetas += `
-                        <div class="folder-card-item">
-                            <div class="folder-info" onclick="abrirCarpetaDepartamento('${depto}')">
-                                <span class="folder-title">${iconoDepto} ${depto}</span>
-                                <span class="folder-sub">Total productos: ${itemsDepto.length} ítems | 🕒 ${fechaCreacionReporte}</span>
-                            </div>
-                            <div class="folder-badge-group">
-                                <span class="folder-badge">${pendientesDepto} Pendientes</span>
-                            </div>
+                htmlCarpetas += `
+                    <div class="folder-card-item">
+                        <div class="folder-info" onclick="abrirCarpetaIndependiente('${carpeta.id}')">
+                            <span class="folder-title">${iconoDepto} ${depto}</span>
+                            <span class="folder-sub">Total productos: ${carpeta.productos.length} ítems | 🕒 ${carpeta.fechaCreacion}</span>
                         </div>
-                    `;
-                }
+                        <div class="folder-badge-group">
+                            <span class="folder-badge">${pendientesCarpeta} Pendientes</span>
+                        </div>
+                    </div>
+                `;
             });
 
             containerCarpetas.innerHTML = htmlCarpetas;
@@ -1219,15 +1253,14 @@
         function abrirModalEliminarGlobal() {
             const listContainer = document.getElementById('deleteModalList');
             listContainer.innerHTML = "";
-            let departamentosActivosUnicos = [...new Set(reportesActivosList.map(p => p.depto))];
             
-            departamentosActivosUnicos.forEach(depto => {
+            reportesActivosList.forEach(carpeta => {
                 let btn = document.createElement('button');
                 btn.className = 'reason-btn';
-                btn.innerHTML = `<span>📁</span> Departamento: <strong>${depto}</strong>`;
+                btn.innerHTML = `<span>📁</span> <strong>${carpeta.depto}</strong> <span style="font-size:9px; color:var(--label-color); display:block;">🕒 ${carpeta.fechaCreacion} (${carpeta.productos.length} ítems)</span>`;
                 btn.onclick = () => {
-                    if (confirm(`¿Estás seguro de eliminar por completo el reporte de "${depto}"?`)) {
-                        reportesActivosList = reportesActivosList.filter(p => p.depto !== depto);
+                    if (confirm(`¿Estás seguro de eliminar por completo esta carpeta de "${carpeta.depto}" creada a las ${carpeta.fechaCreacion}?`)) {
+                        reportesActivosList = reportesActivosList.filter(c => c.id !== carpeta.id);
                         guardarEstadoCompleto();
                         cerrarModalEliminarGlobal();
                         renderizarReportesActivosGUI();
@@ -1242,16 +1275,19 @@
             cerrarModal('deleteSelectModal');
         }
 
-        function abrirCarpetaDepartamento(depto) {
-            deptoAbiertoActual = depto;
+        function abrirCarpetaIndependiente(idCarpeta) {
+            idCarpetaAbiertaActual = idCarpeta;
+            let carpeta = reportesActivosList.find(c => c.id === idCarpeta);
+            if (!carpeta) return;
+
             document.getElementById('vistaListaCarpetasReportes').style.display = "none";
             document.getElementById('vistaDetalleReporteSeleccionado').style.display = "block";
-            document.getElementById('tituloCarpetaAbierta').textContent = `${depto}`;
+            document.getElementById('tituloCarpetaAbierta').textContent = `${carpeta.depto} (${carpeta.fechaCreacion})`;
             renderizarDetalleCarpetaAbierta();
         }
 
         function cerrarCarpetaReporte() {
-            deptoAbiertoActual = null;
+            idCarpetaAbiertaActual = null;
             document.getElementById('vistaDetalleReporteSeleccionado').style.display = "none";
             document.getElementById('vistaListaCarpetasReportes').style.display = "block";
             renderizarReportesActivosGUI();
@@ -1260,23 +1296,22 @@
         function renderizarDetalleCarpetaAbierta() {
             const container = document.getElementById('contenedorProductosReporteAbierto');
             container.innerHTML = "";
-            let itemsDepto = reportesActivosList.filter(p => p.depto === deptoAbiertoActual);
+            let carpeta = reportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
 
-            if (itemsDepto.length === 0) {
-                container.innerHTML = `<div class="empty-negados">No hay productos en este departamento.</div>`;
+            if (!carpeta || carpeta.productos.length === 0) {
+                container.innerHTML = `<div class="empty-negados">No hay productos en esta carpeta.</div>`;
                 return;
             }
 
             let htmlRes = `<div style="display:flex; flex-direction:column; gap:10px;">`;
             
-            itemsDepto.forEach((item) => {
-                let realIdx = reportesActivosList.findIndex(r => r.sku === item.sku && r.depto === item.depto && r.desc === item.desc);
+            carpeta.productos.forEach((item, indexProd) => {
                 let statusBadge = item.accionAplicada 
                     ? `<div class="negado-inv-badge"><span class="negado-inv-dot" style="background:#137333;"></span> ${item.accionAplicada}</div>`
                     : `<div class="negado-inv-badge"><span class="negado-inv-dot"></span> Pendiente de atención en piso</div>`;
 
                 let selectAccion = !item.accionAplicada ? `
-                    <select class="action-select-opcion" onchange="ejecutarAccionOperativaDepto(${realIdx}, this.value)">
+                    <select class="action-select-opcion" onchange="ejecutarAccionOperativaCarpeta(${indexProd}, this.value)">
                         <option value="" disabled selected>-- Seleccionar Acción Operativa --</option>
                         <option value="Mal conteo inv.">🔹 Mal conteo inv.</option>
                         <option value="Proceso de merma.">🔹 Proceso de merma.</option>
@@ -1297,7 +1332,7 @@
                                     <span class="negado-sku">SKU: ${item.sku}</span>
                                     <div style="display:flex; align-items:center; gap:6px;">
                                         <div class="negado-depto-badge">${item.depto}</div>
-                                        <button class="btn-report-error" title="Reportar error en datos" onclick="abrirModalReporteError(${realIdx})">⚠️</button>
+                                        <button class="btn-report-error" title="Reportar error en datos" onclick="abrirModalReporteError(${indexProd})">⚠️</button>
                                     </div>
                                 </div>
                                 <span class="negado-desc">${item.desc}</span>
@@ -1313,12 +1348,15 @@
             container.innerHTML = htmlRes + `</div>`;
         }
 
-        function ejecutarAccionOperativaDepto(index, opcion) {
-            if (!opcion || !reportesActivosList[index]) return;
-            reportesActivosList[index].accionAplicada = opcion;
-            guardarEstadoCompleto();
-            renderizarDetalleCarpetaAbierta();
-            renderizarReportesActivosGUI();
+        function ejecutarAccionOperativaCarpeta(indexProd, opcion) {
+            if (!opcion) return;
+            let carpeta = reportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+            if (carpeta && carpeta.productos[indexProd]) {
+                carpeta.productos[indexProd].accionAplicada = opcion;
+                guardarEstadoCompleto();
+                renderizarDetalleCarpetaAbierta();
+                renderizarReportesActivosGUI();
+            }
         }
 
         function abrirModalReporteError(index) {
@@ -1332,8 +1370,9 @@
         }
 
         function confirmarReporteErrorDato(tipoError) {
-            if (indexProductoReporteError !== null && reportesActivosList[indexProductoReporteError]) {
-                let prod = reportesActivosList[indexProductoReporteError];
+            let carpeta = reportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+            if (carpeta && indexProductoReporteError !== null && carpeta.productos[indexProductoReporteError]) {
+                let prod = carpeta.productos[indexProductoReporteError];
                 alert(`Inconsistencia reportada en SKU ${prod.sku}: "${tipoError}". Se notificó al administrador.`);
                 cerrarModalReporteError();
             }
