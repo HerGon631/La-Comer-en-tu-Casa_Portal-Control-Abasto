@@ -185,7 +185,6 @@
         .input-edit-desc { font-size: 13px; font-weight: bold; padding: 4px; border: 1px solid var(--mexican-pink); border-radius: 4px; width: 100%; }
         .input-edit-cant { font-size: 12px; font-weight: bold; padding: 4px; border: 1px solid var(--mexican-pink); border-radius: 6px; width: 60px; text-align: center; }
         
-        /* Estilo optimizado y flexible para que el selector de departamento no sobresalga */
         .input-edit-depto { font-size: 10px; font-weight: bold; padding: 3px 4px; border: 1px solid var(--mexican-pink); border-radius: 6px; background: #fff; color: var(--mexican-pink); width: 100%; max-width: 125px; outline: none; }
 
         .negado-depto-badge { background-color: rgba(228, 0, 124, 0.1); color: var(--mexican-pink); padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; white-space: nowrap; flex-shrink: 0; align-self: flex-start; }
@@ -196,9 +195,9 @@
         .btn-regresar-pendiente { background-color: #1a73e8; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(26,115,232,0.25); flex-shrink: 0; transition: transform 0.2s; }
         .btn-regresar-pendiente:hover { transform: scale(1.08); }
 
-        /* Botón de eliminación exclusivo para administradores en carpetas activas */
-        .btn-eliminar-activo-admin { background-color: #c5221f; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(197,34,31,0.3); transition: transform 0.2s; flex-shrink: 0; }
-        .btn-eliminar-activo-admin:hover { transform: scale(1.1); background-color: #a51a17; }
+        /* Botón de eliminación general de reporte por carpeta para Administradores */
+        .folder-delete-btn { background-color: #c5221f; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(197,34,31,0.25); transition: transform 0.2s; }
+        .folder-delete-btn:hover { transform: scale(1.05); background-color: #a51a17; }
 
         .reason-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 10500; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; }
         .reason-modal.active { opacity: 1; visibility: visible; }
@@ -229,11 +228,13 @@
         .metric-value { font-size: 16px; font-weight: bold; color: var(--mexican-pink); margin-top: 2px; }
 
         /* Tarjeta de Carpeta por Departamento */
-        .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 5px solid var(--mexican-pink); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 5px solid var(--mexican-pink); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.04); gap: 10px; }
         .folder-card-item:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(228,0,124,0.15); }
-        .folder-info { display: flex; flex-direction: column; gap: 4px; }
+        .folder-info { display: flex; flex-direction: column; gap: 4px; cursor: pointer; flex-grow: 1; }
         .folder-title { font-size: 14px; font-weight: bold; color: var(--text-color); display: flex; align-items: center; gap: 6px; }
         .folder-sub { font-size: 11px; color: var(--label-color); font-weight: 600; }
+        .folder-meta-time { font-size: 10px; color: var(--mexican-pink); font-weight: bold; }
+        .folder-badge-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .folder-badge { background-color: var(--pink-transparent-30); color: var(--mexican-pink); font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 12px; }
 
         @media (max-width: 600px) {
@@ -1115,20 +1116,23 @@
             mostrarLoader("Enviando reportes a activos...");
             setTimeout(() => {
                 ocultarLoader();
-                let nuevosActivos = listaPendientesGlobal.map(item => ({ ...item, accionAplicada: null }));
+                let ahora = new Date();
+                let fechaHoraStr = ahora.toLocaleDateString() + ' - ' + ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                let nuevosActivos = listaPendientesGlobal.map(item => ({ ...item, accionAplicada: null, fechaCreacion: fechaHoraStr }));
                 reportesActivosList = [...reportesActivosList, ...nuevosActivos];
                 listaPendientesGlobal = []; listaRevisadosGlobal = [];
                 guardarEstadoCompleto(); 
                 renderizarVistaActual();
                 renderizarReportesActivosGUI();
                 seleccionarSubreporte('reportes-activos', 'Reportes activos', document.querySelectorAll('#submenuReportes .submenu-item')[1]);
-                alert("Reportes distribuidos por departamento correctamente.");
+                alert("Reportes distribuidos por departamento correctamente con fecha y hora.");
             }, 1000);
         }
 
         function filtrarNegadosPorDepto() { renderizarVistaActual(); }
 
-        /* Lógica de Carpetas por Departamento */
+        /* Lógica de Carpetas por Departamento con Fecha, Hora y Eliminación General */
         function renderizarReportesActivosGUI() {
             let totalNegados = reportesActivosList.length;
             let totalTrabajados = reportesActivosList.filter(item => item.accionAplicada !== null).length;
@@ -1147,12 +1151,14 @@
             }
 
             const departamentosUnicos = ["Alimentación", "Panadería", "Perecederos", "Abarrotes", "Hogar"];
+            let esAdmin = sesionActualGlobal && sesionActualGlobal.isAdmin;
             let htmlCarpetas = "";
 
             departamentosUnicos.forEach(depto => {
                 let itemsDepto = reportesActivosList.filter(p => p.depto === depto);
                 if (itemsDepto.length > 0) {
                     let pendientesDepto = itemsDepto.filter(p => !p.accionAplicada).length;
+                    let fechaCreacionReporte = itemsDepto[0].fechaCreacion || "Reciente";
                     let iconoDepto = "📁";
                     if (depto === "Perecederos") iconoDepto = "🥩";
                     else if (depto === "Alimentación") iconoDepto = "🥗";
@@ -1160,13 +1166,21 @@
                     else if (depto === "Abarrotes") iconoDepto = "🛒";
                     else if (depto === "Hogar") iconoDepto = "🏠";
 
+                    let btnEliminarCarpeta = esAdmin ? `
+                        <button class="folder-delete-btn" title="Eliminar reporte completo" onclick="event.stopPropagation(); eliminarCarpetaCompletaAdmin('${depto}')">🗑️ Eliminar</button>
+                    ` : '';
+
                     htmlCarpetas += `
-                        <div class="folder-card-item" onclick="abrirCarpetaDepartamento('${depto}')">
-                            <div class="folder-info">
+                        <div class="folder-card-item">
+                            <div class="folder-info" onclick="abrirCarpetaDepartamento('${depto}')">
                                 <span class="folder-title">${iconoDepto} Departamento de ${depto}</span>
                                 <span class="folder-sub">Total productos: ${itemsDepto.length} ítems</span>
+                                <span class="folder-meta-time">🕒 Creado: ${fechaCreacionReporte}</span>
                             </div>
-                            <span class="folder-badge">${pendientesDepto} Pendientes</span>
+                            <div class="folder-badge-group">
+                                <span class="folder-badge">${pendientesDepto} Pendientes</span>
+                                ${btnEliminarCarpeta}
+                            </div>
                         </div>
                     `;
                 }
@@ -1190,6 +1204,14 @@
             renderizarReportesActivosGUI();
         }
 
+        function eliminarCarpetaCompletaAdmin(depto) {
+            if (confirm(`¿Estás seguro de eliminar por completo el reporte activo del departamento "${depto}"?`)) {
+                reportesActivosList = reportesActivosList.filter(p => p.depto !== depto);
+                guardarEstadoCompleto();
+                renderizarReportesActivosGUI();
+            }
+        }
+
         function renderizarDetalleCarpetaAbierta() {
             const container = document.getElementById('contenedorProductosReporteAbierto');
             container.innerHTML = "";
@@ -1200,7 +1222,6 @@
                 return;
             }
 
-            let esAdmin = sesionActualGlobal && sesionActualGlobal.isAdmin;
             let htmlRes = `<div style="display:flex; flex-direction:column; gap:10px;">`;
             
             itemsDepto.forEach((item) => {
@@ -1220,10 +1241,6 @@
                     </select>
                 ` : '';
 
-                let btnEliminarAdmin = esAdmin ? `
-                    <button class="btn-eliminar-activo-admin" title="Eliminar reporte (Solo Admin)" onclick="eliminarReporteActivoAdmin(${realIdx})">🗑️</button>
-                ` : '';
-
                 htmlRes += `
                     <div class="negado-card-item">
                         <div class="negado-card-top">
@@ -1236,7 +1253,6 @@
                                     <div style="display:flex; align-items:center; gap:6px;">
                                         <div class="negado-depto-badge">${item.depto}</div>
                                         <button class="btn-report-error" title="Reportar error en datos" onclick="abrirModalReporteError(${realIdx})">⚠️</button>
-                                        ${btnEliminarAdmin}
                                     </div>
                                 </div>
                                 <span class="negado-desc">${item.desc}</span>
@@ -1250,15 +1266,6 @@
                 `;
             });
             container.innerHTML = htmlRes + `</div>`;
-        }
-
-        function eliminarReporteActivoAdmin(index) {
-            if (confirm("¿Estás seguro de eliminar este producto del reporte activo? (Acción de Administrador)")) {
-                reportesActivosList.splice(index, 1);
-                guardarEstadoCompleto();
-                renderizarDetalleCarpetaAbierta();
-                renderizarReportesActivosGUI();
-            }
         }
 
         function ejecutarAccionOperativaDepto(index, opcion) {
