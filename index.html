@@ -208,7 +208,7 @@
         .btn-regresar-pendiente { background-color: #1a73e8; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(26,115,232,0.25); flex-shrink: 0; transition: transform 0.2s; }
         .btn-regresar-pendiente:hover { transform: scale(1.08); }
 
-        .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid var(--mexican-pink); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,0,0,0.03); gap: 8px; }
+        .folder-card-item { background: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid var(--mexican-pink); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,0,0,0.03); gap: 10px; }
         .folder-card-item:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(228,0,124,0.12); }
         .folder-info { display: flex; flex-direction: column; gap: 2px; cursor: pointer; flex-grow: 1; }
         .folder-title { font-size: 13px; font-weight: bold; color: var(--text-color); display: flex; align-items: center; gap: 5px; }
@@ -216,12 +216,15 @@
         .folder-badge-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
         .folder-badge { background-color: var(--pink-transparent-30); color: var(--mexican-pink); font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 10px; }
 
+        .folder-checkbox { width: 18px; height: 18px; accent-color: var(--mexican-pink); cursor: pointer; flex-shrink: 0; display: none; }
+        .folder-checkbox.active { display: inline-block; }
+
         .btn-global-delete-admin { background-color: #c5221f; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(197,34,31,0.25); }
         .btn-global-delete-admin:hover { background-color: #a51a17; }
 
         .reason-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 10500; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; }
         .reason-modal.active { opacity: 1; visibility: visible; }
-        .reason-modal-box { background: white; padding: 22px; border-radius: 16px; width: 90%; max-width: 350px; text-align: center; }
+        .reason-modal-box { background: white; padding: 22px; border-radius: 16px; width: 90%; max-width: 380px; text-align: center; }
         .reason-btn { width: 100%; padding: 10px; margin-top: 8px; border-radius: 8px; border: 1px solid #dadce0; font-weight: bold; cursor: pointer; font-size: 11px; background: #f8f9fa; color: var(--text-color); transition: 0.2s; text-align: left; display: flex; align-items: center; gap: 8px; }
         .reason-btn:hover { background: var(--pink-transparent-30); border-color: var(--mexican-pink); color: var(--mexican-pink); }
 
@@ -287,12 +290,18 @@
         </div>
     </div>
 
-    <div id="deleteSelectModal" class="reason-modal">
-        <div class="reason-modal-box" style="max-width: 320px;">
-            <h3 style="margin-bottom: 8px; color: #c5221f;">🗑️ Eliminar Reportes</h3>
-            <p style="font-size: 12px; color: var(--label-color); margin-bottom: 12px;">Selecciona la carpeta de reporte independiente que deseas eliminar:</p>
-            <div id="deleteModalList" style="display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; margin-bottom: 12px;"></div>
-            <button class="btn-primary" style="background: #5f6368; color: white; margin-top: 5px; padding: 10px;" onclick="cerrarModalEliminarGlobal()">Cancelar</button>
+    <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN CON RESUMEN Y AVISO -->
+    <div id="deleteConfirmModal" class="reason-modal">
+        <div class="reason-modal-box" style="max-width: 400px; text-align: left;">
+            <h3 style="margin-bottom: 8px; color: #c5221f; text-align: center;">⚠️ Aviso de Eliminación</h3>
+            <p style="font-size: 12px; color: var(--text-color); margin-bottom: 12px; line-height: 1.4;">
+                Los siguientes reportes independientes seleccionados serán <strong>eliminados permanentemente</strong> del sistema:
+            </p>
+            <div id="deleteModalSummaryList" style="max-height: 150px; overflow-y: auto; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px; margin-bottom: 15px; font-size: 11px;"></div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" style="background: #5f6368; color: white; margin-top: 0;" onclick="cerrarModalConfirmacionEliminar()">Cancelar</button>
+                <button class="btn-primary" style="background: #c5221f; color: white; margin-top: 0;" onclick="ejecutarEliminacionSeleccionados()">Aceptar y Eliminar</button>
+            </div>
         </div>
     </div>
 
@@ -583,6 +592,7 @@
         let idCarpetaAbiertaActual = null;
         let indexProductoReporteError = null;
         let contextoEscanerActual = 'alta'; 
+        let modoSeleccionEliminacionActivo = false;
 
         function mostrarLoader(mensaje = "Verificando acceso") {
             if (loaderText) loaderText.innerHTML = `${mensaje}<span class="loading-dots"></span>`;
@@ -1177,7 +1187,6 @@
             } else { alert("Artículo no encontrado o ya atendido en esta carpeta."); }
         }
 
-        /* FUNCIÓN CORREGIDA DE GENERACIÓN Y REDIRECCIÓN */
         function confirmarReporte() {
             if (listaPendientesGlobal.length === 0) { 
                 alert("La lista de pendientes está vacía. Sube un archivo con artículos negados primero."); 
@@ -1190,7 +1199,6 @@
                 let ahora = new Date();
                 let fechaHoraStr = ahora.toLocaleDateString() + ' - ' + ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
-                // Obtener departamentos únicos presentes en la lista de pendientes
                 let departamentosPresentes = [...new Set(listaPendientesGlobal.map(item => item.depto || "Abarrotes"))];
                 
                 departamentosPresentes.forEach(depto => {
@@ -1209,18 +1217,15 @@
                     }
                 });
 
-                // Vaciar pendientes y guardar
                 listaPendientesGlobal = []; 
                 listaRevisadosGlobal = [];
                 guardarEstadoCompleto(); 
                 
-                // Renderizar ambas vistas
                 renderizarVistaActual();
                 renderizarReportesActivosGUI();
                 
                 ocultarLoader();
                 
-                // Redirigir a Reportes Activos
                 const subitems = document.querySelectorAll('#submenuReportes .submenu-item');
                 seleccionarSubreporte('reportes-activos', 'Reportes activos', subitems[1] || null);
             }, 800);
@@ -1250,13 +1255,24 @@
 
             if (reportesActivosList.length === 0) {
                 containerCarpetas.innerHTML = `<div class="empty-negados">No hay reportes activos registrados. Sube un archivo y confirma.</div>`;
+                modoSeleccionEliminacionActivo = false;
                 return;
             }
 
             let esAdmin = sesionActualGlobal && sesionActualGlobal.isAdmin;
 
             if (esAdmin && reportesActivosList.length > 0) {
-                containerAdminBtn.innerHTML = `<button class="btn-global-delete-admin" onclick="abrirModalEliminarGlobal()">🗑️ Eliminar Carpeta</button>`;
+                if (!modoSeleccionEliminacionActivo) {
+                    containerAdminBtn.innerHTML = `<button class="btn-global-delete-admin" onclick="activarModoSeleccionEliminar()">🗑️ Eliminar Reportes</button>`;
+                } else {
+                    containerAdminBtn.innerHTML = `
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button class="tab-btn" style="background:#5f6368; color:white; padding:6px 10px; font-size:11px;" onclick="cancelarModoSeleccionEliminar()">Cancelar</button>
+                            <button class="tab-btn" style="background:#1a73e8; color:white; padding:6px 10px; font-size:11px;" onclick="seleccionarTodasCarpetas(true)">Seleccionar todo</button>
+                            <button class="btn-global-delete-admin" onclick="confirmarSeleccionEliminar()">Confirmar</button>
+                        </div>
+                    `;
+                }
             }
 
             let htmlCarpetas = "";
@@ -1275,11 +1291,16 @@
                 else if (depto === "Abarrotes") iconoDepto = "🛒";
                 else if (depto === "Hogar") iconoDepto = "🏠";
 
+                let checkboxHtml = `<input type="checkbox" class="folder-checkbox ${modoSeleccionEliminacionActivo ? 'active' : ''}" data-id="${carpeta.id}" ${carpeta.seleccionadoParaEliminar ? 'checked' : ''} onchange="toggleSeleccionCarpeta('${carpeta.id}', this.checked)">`;
+
                 htmlCarpetas += `
                     <div class="folder-card-item">
-                        <div class="folder-info" onclick="abrirCarpetaIndependiente('${carpeta.id}')">
-                            <span class="folder-title">${iconoDepto} ${depto}</span>
-                            <span class="folder-sub">Total productos: ${carpeta.productos.length} ítems | 🕒 ${carpeta.fechaCreacion}</span>
+                        <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0;">
+                            ${checkboxHtml}
+                            <div class="folder-info" onclick="${modoSeleccionEliminacionActivo ? '' : `abrirCarpetaIndependiente('${carpeta.id}')`}">
+                                <span class="folder-title">${iconoDepto} ${depto}</span>
+                                <span class="folder-sub">Total productos: ${carpeta.productos.length} ítems | 🕒 ${carpeta.fechaCreacion}</span>
+                            </div>
                         </div>
                         <div class="folder-badge-group">
                             <span class="folder-badge">${pendientesCarpeta} Pendientes</span>
@@ -1291,29 +1312,61 @@
             containerCarpetas.innerHTML = htmlCarpetas;
         }
 
-        function abrirModalEliminarGlobal() {
-            const listContainer = document.getElementById('deleteModalList');
-            listContainer.innerHTML = "";
-            
-            reportesActivosList.forEach(carpeta => {
-                let btn = document.createElement('button');
-                btn.className = 'reason-btn';
-                btn.innerHTML = `<span>📁</span> <strong>${carpeta.depto}</strong> <span style="font-size:9px; color:var(--label-color); display:block;">🕒 ${carpeta.fechaCreacion} (${carpeta.productos.length} ítems)</span>`;
-                btn.onclick = () => {
-                    if (confirm(`¿Estás seguro de eliminar por completo esta carpeta de "${carpeta.depto}" creada a las ${carpeta.fechaCreacion}?`)) {
-                        reportesActivosList = reportesActivosList.filter(c => c.id !== carpeta.id);
-                        guardarEstadoCompleto();
-                        cerrarModalEliminarGlobal();
-                        renderizarReportesActivosGUI();
-                    }
-                };
-                listContainer.appendChild(btn);
-            });
-            abrirModal('deleteSelectModal');
+        function activarModoSeleccionEliminar() {
+            modoSeleccionEliminacionActivo = true;
+            reportesActivosList.forEach(c => c.seleccionadoParaEliminar = false);
+            renderizarReportesActivosGUI();
         }
 
-        function cerrarModalEliminarGlobal() {
-            cerrarModal('deleteSelectModal');
+        function cancelarModoSeleccionEliminar() {
+            modoSeleccionEliminacionActivo = false;
+            reportesActivosList.forEach(c => c.seleccionadoParaEliminar = false);
+            renderizarReportesActivosGUI();
+        }
+
+        function seleccionarTodasCarpetas(marcar) {
+            reportesActivosList.forEach(c => c.seleccionadoParaEliminar = marcar);
+            renderizarReportesActivosGUI();
+        }
+
+        function toggleSeleccionCarpeta(idCarpeta, seleccionado) {
+            let carpeta = reportesActivosList.find(c => c.id === idCarpeta);
+            if (carpeta) {
+                carpeta.seleccionadoParaEliminar = seleccionado;
+            }
+        }
+
+        function confirmarSeleccionEliminار() {
+            let seleccionados = reportesActivosList.filter(c => c.seleccionadoParaEliminar);
+            if (seleccionados.length === 0) {
+                alert("Por favor, selecciona al menos una carpeta para eliminar.");
+                return;
+            }
+
+            const summaryListContainer = document.getElementById('deleteModalSummaryList');
+            summaryListContainer.innerHTML = "";
+            
+            seleccionados.forEach(c => {
+                let div = document.createElement('div');
+                div.style.padding = "4px 0";
+                div.style.borderBottom = "1px solid #eee";
+                div.innerHTML = `• <strong>${c.depto}</strong> (🕒 ${c.fechaCreacion} — ${c.productos.length} ítems)`;
+                summaryListContainer.appendChild(div);
+            });
+
+            abrirModal('deleteConfirmModal');
+        }
+
+        function cerrarModalConfirmacionEliminar() {
+            cerrarModal('deleteConfirmModal');
+        }
+
+        function ejecutarEliminacionSeleccionados() {
+            reportesActivosList = reportesActivosList.filter(c => !c.seleccionadoParaEliminar);
+            modoSeleccionEliminacionActivo = false;
+            guardarEstadoCompleto();
+            cerrarModalConfirmacionEliminar();
+            renderizarReportesActivosGUI();
         }
 
         function abrirCarpetaIndependiente(idCarpeta) {
