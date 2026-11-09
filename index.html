@@ -96,7 +96,6 @@
         .submenu-item:hover { color: var(--mexican-pink); background-color: rgba(228, 0, 124, 0.08); }
         .submenu-item.active { color: var(--mexican-pink); font-weight: bold; background-color: rgba(228, 0, 124, 0.12); }
 
-        /* Franja rosa estática */
         .ticker-container { 
             background: linear-gradient(90deg, #fff0f5 0%, #ffe4ee 100%); 
             border-bottom: 2px solid rgba(228, 0, 124, 0.15); 
@@ -1211,7 +1210,8 @@
                             id: 'folder_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
                             depto: depto,
                             fechaCreacion: fechaHoraStr,
-                            productos: productosDepto
+                            productos: productosDepto,
+                            seleccionadoParaEliminar: false
                         };
                         reportesActivosList.push(nuevaCarpeta);
                     }
@@ -1219,6 +1219,7 @@
 
                 listaPendientesGlobal = []; 
                 listaRevisadosGlobal = [];
+                modoSeleccionEliminacionActivo = false;
                 guardarEstadoCompleto(); 
                 
                 renderizarVistaActual();
@@ -1265,11 +1266,14 @@
                 if (!modoSeleccionEliminacionActivo) {
                     containerAdminBtn.innerHTML = `<button class="btn-global-delete-admin" onclick="activarModoSeleccionEliminar()">🗑️ Eliminar Reportes</button>`;
                 } else {
+                    let todosSeleccionados = reportesActivosList.length > 0 && reportesActivosList.every(c => c.seleccionadoParaEliminar);
+                    let textoSeleccionarTodo = todosSeleccionados ? "Deseleccionar todo" : "Seleccionar todo";
+
                     containerAdminBtn.innerHTML = `
                         <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                             <button class="tab-btn" style="background:#5f6368; color:white; padding:6px 10px; font-size:11px;" onclick="cancelarModoSeleccionEliminar()">Cancelar</button>
-                            <button class="tab-btn" style="background:#1a73e8; color:white; padding:6px 10px; font-size:11px;" onclick="seleccionarTodasCarpetas(true)">Seleccionar todo</button>
-                            <button class="btn-global-delete-admin" onclick="confirmarSeleccionEliminar()">Confirmar</button>
+                            <button class="tab-btn" style="background:#1a73e8; color:white; padding:6px 10px; font-size:11px;" onclick="toggleSeleccionarTodasCarpetas()">${textoSeleccionarTodo}</button>
+                            <button class="btn-global-delete-admin" style="background-color: #137333;" onclick="confirmarSeleccionEliminar()">Confirmar</button>
                         </div>
                     `;
                 }
@@ -1324,8 +1328,10 @@
             renderizarReportesActivosGUI();
         }
 
-        function seleccionarTodasCarpetas(marcar) {
-            reportesActivosList.forEach(c => c.seleccionadoParaEliminar = marcar);
+        function toggleSeleccionarTodasCarpetas() {
+            let todosSeleccionados = reportesActivosList.every(c => c.seleccionadoParaEliminar);
+            let nuevoEstado = !todosSeleccionados;
+            reportesActivosList.forEach(c => c.seleccionadoParaEliminar = nuevoEstado);
             renderizarReportesActivosGUI();
         }
 
@@ -1336,7 +1342,7 @@
             }
         }
 
-        function confirmarSeleccionEliminار() {
+        function confirmarSeleccionEliminar() {
             let seleccionados = reportesActivosList.filter(c => c.seleccionadoParaEliminar);
             if (seleccionados.length === 0) {
                 alert("Por favor, selecciona al menos una carpeta para eliminar.");
