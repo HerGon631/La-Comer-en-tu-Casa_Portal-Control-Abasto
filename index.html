@@ -289,12 +289,11 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN CON RESUMEN Y AVISO -->
     <div id="deleteConfirmModal" class="reason-modal">
         <div class="reason-modal-box" style="max-width: 400px; text-align: left;">
             <h3 style="margin-bottom: 8px; color: #c5221f; text-align: center;">⚠️ Aviso de Eliminación</h3>
             <p style="font-size: 12px; color: var(--text-color); margin-bottom: 12px; line-height: 1.4;">
-                Los siguientes reportes independientes seleccionados serán <strong>eliminados permanentemente</strong> del sistema:
+                Los siguientes reportes independientes seleccionados serán <strong>eliminados permanentemente</strong> de la base de datos (Reporte_Historial):
             </p>
             <div id="deleteModalSummaryList" style="max-height: 150px; overflow-y: auto; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px; margin-bottom: 15px; font-size: 11px;"></div>
             <div style="display: flex; gap: 10px;">
@@ -542,6 +541,7 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
+        // URL del despliegue de Google Apps Script
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyc7tXRLUR4aiguUk2mq-liDOyG8irBb8tRVG8bmoayNspMvSjkhh_eIghTNx-S9D0HwQ/exec";
 
         const DEPARTAMENTOS_PREDETERMINADOS = [
@@ -682,6 +682,7 @@
                     cargarDatosPersistidos(datos.empleado);
                     iniciarControlInactividad();
                     cargarEvaluacionesNPS();
+                    sincronizarReportesActivosDesdeCloud();
                 } catch (e) { localStorage.removeItem('lcc_sesion'); }
             } else { loginSection.style.display = "flex"; dashboard.style.display = "none"; }
         }
@@ -752,7 +753,9 @@
             document.querySelectorAll('.report-subpane').forEach(sp => sp.classList.remove('active'));
             const targetPane = document.getElementById(`subpane-${subId}`);
             if (targetPane) targetPane.classList.add('active');
-            if (subId === 'reportes-activos') renderizarReportesActivosGUI();
+            if (subId === 'reportes-activos') {
+                sincronizarReportesActivosDesdeCloud();
+            }
             cerrarTodo();
         }
 
@@ -1178,44 +1181,70 @@
 
             let idx = carpetaActual.productos.findIndex(item => (item.sku.includes(code) || item.desc.includes(code.toUpperCase())) && !item.accionAplicada);
             if (idx !== -1) {
-                carpetaActual.productos[idx].accionAplicada = "Se exhibe en mueble";
-                guardarEstadoCompleto();
-                renderizarDetalleCarpetaAbierta();
-                renderizarReportesActivosGUI();
+                ejecutarAccionOperativaCarpeta(idx, "Se exhibe en mueble");
                 cerrarEscaner();
             } else { alert("Artículo no encontrado o ya atendido en esta carpeta."); }
         }
 
+        // Cargar reportes activos desde Google Sheets (Pestaña Reporte_Historial)
+        async function sincronizarReportesActivosDesdeCloud() {
+            try {
+                const response = await fetch(`${WEB_APP_URL}?action=getReportesActivos`);
+                const result = await response.json();
+                if (result && result.status === "success") {
+                    reportesActivosList = result.reportes || [];
+                    renderizarReportesActivosGUI();
+                }
+            } catch (e) {
+                console.warn("Modo offline o error al conectar con Google Sheets.");
+            }
+        }
+
+        // Confirmar alta de reporte y enviar a la pestaña "Reporte_Historial"
         function confirmarReporte() {
             if (listaPendientesGlobal.length === 0) { 
                 alert("La lista de pendientes está vacía. Sube un archivo con artículos negados primero."); 
                 return; 
             }
             
-            mostrarLoader("Generando carpetas independientes...");
+            mostrarLoader("Guardando en Reporte_Historial de Google Sheets...");
             
-            setTimeout(() => {
+            setTimeout(async () => {
                 let ahora = new Date();
                 let fechaHoraStr = ahora.toLocaleDateString() + ' - ' + ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
                 let departamentosPresentes = [...new Set(listaPendientesGlobal.map(item => item.depto || "Abarrotes"))];
                 
-                departamentosPresentes.forEach(depto => {
+                for (let depto of departamentosPresentes) {
                     let productosDepto = listaPendientesGlobal
                         .filter(item => (item.depto || "Abarrotes") === depto)
                         .map(item => ({ ...item, accionAplicada: null }));
                         
                     if (productosDepto.length > 0) {
                         let nuevaCarpeta = {
-                            id: 'folder_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                            id: 'REP-' + Date.now().toString().slice(-6),
                             depto: depto,
                             fechaCreacion: fechaHoraStr,
                             productos: productosDepto,
                             seleccionadoParaEliminar: false
                         };
+                        
                         reportesActivosList.push(nuevaCarpeta);
+
+                        // Enviar vía POST a Google Sheets
+                        try {
+                            await fetch(WEB_APP_URL, {
+                                method: "POST",
+                                body: JSON.stringify({
+                                    action: "guardarReporte",
+                                    id: nuevaCarpeta.id,
+                                    depto: nuevaCarpeta.depto,
+                                    productos: nuevaCarpeta.productos
+                                })
+                            });
+                        } catch (err) {}
                     }
-                });
+                }
 
                 listaPendientesGlobal = []; 
                 listaRevisadosGlobal = [];
@@ -1255,7 +1284,7 @@
             containerAdminBtn.innerHTML = "";
 
             if (reportesActivosList.length === 0) {
-                containerCarpetas.innerHTML = `<div class="empty-negados">No hay reportes activos registrados. Sube un archivo y confirma.</div>`;
+                containerCarpetas.innerHTML = `<div class="empty-negados">No hay reportes activos registrados en Google Sheets. Sube un archivo y confirma.</div>`;
                 modoSeleccionEliminacionActivo = false;
                 return;
             }
@@ -1302,8 +1331,8 @@
                         <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; min-width: 0;">
                             ${checkboxHtml}
                             <div class="folder-info" onclick="${modoSeleccionEliminacionActivo ? '' : `abrirCarpetaIndependiente('${carpeta.id}')`}">
-                                <span class="folder-title">${iconoDepto} ${depto}</span>
-                                <span class="folder-sub">Total productos: ${carpeta.productos.length} ítems | 🕒 ${carpeta.fechaCreacion}</span>
+                                <span class="folder-title">${iconoDepto} ${depto} <span style="font-size:11px; color:var(--label-color);">(${carpeta.id})</span></span>
+                                <span class="folder-sub">Total productos: ${carpeta.productos.length} ítems</span>
                             </div>
                         </div>
                         <div class="folder-badge-group">
@@ -1356,7 +1385,7 @@
                 let div = document.createElement('div');
                 div.style.padding = "4px 0";
                 div.style.borderBottom = "1px solid #eee";
-                div.innerHTML = `• <strong>${c.depto}</strong> (🕒 ${c.fechaCreacion} — ${c.productos.length} ítems)`;
+                div.innerHTML = `• <strong>${c.depto}</strong> (${c.id} — ${c.productos.length} ítems)`;
                 summaryListContainer.appendChild(div);
             });
 
@@ -1367,12 +1396,27 @@
             cerrarModal('deleteConfirmModal');
         }
 
-        function ejecutarEliminacionSeleccionados() {
+        async function ejecutarEliminacionSeleccionados() {
+            let seleccionados = reportesActivosList.filter(c => c.seleccionadoParaEliminar);
+            let idsAEliminar = seleccionados.map(c => c.id);
+
             reportesActivosList = reportesActivosList.filter(c => !c.seleccionadoParaEliminar);
             modoSeleccionEliminacionActivo = false;
             guardarEstadoCompleto();
             cerrarModalConfirmacionEliminar();
             renderizarReportesActivosGUI();
+
+            mostrarLoader("Eliminando registros en Google Sheets...");
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        action: "eliminarReportes",
+                        ids: idsAEliminar
+                    })
+                });
+            } catch (e) {}
+            ocultarLoader();
         }
 
         function abrirCarpetaIndependiente(idCarpeta) {
@@ -1382,7 +1426,7 @@
 
             document.getElementById('vistaListaCarpetasReportes').style.display = "none";
             document.getElementById('vistaDetalleReporteSeleccionado').style.display = "block";
-            document.getElementById('tituloCarpetaAbierta').textContent = `${carpeta.depto} (${carpeta.fechaCreacion})`;
+            document.getElementById('tituloCarpetaAbierta').textContent = `${carpeta.depto} (${carpeta.id})`;
             renderizarDetalleCarpetaAbierta();
         }
 
@@ -1448,14 +1492,30 @@
             container.innerHTML = htmlRes + `</div>`;
         }
 
-        function ejecutarAccionOperativaCarpeta(indexProd, opcion) {
+        // Registrar la acción operativa de un producto directamente en Google Sheets (Reporte_Historial)
+        async function ejecutarAccionOperativaCarpeta(indexProd, opcion) {
             if (!opcion) return;
             let carpeta = reportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
             if (carpeta && carpeta.productos[indexProd]) {
                 carpeta.productos[indexProd].accionAplicada = opcion;
+                let productoActualizado = carpeta.productos[indexProd];
+                
                 guardarEstadoCompleto();
                 renderizarDetalleCarpetaAbierta();
                 renderizarReportesActivosGUI();
+
+                // Actualizar la fila correspondiente en la hoja de cálculo
+                try {
+                    await fetch(WEB_APP_URL, {
+                        method: "POST",
+                        body: JSON.stringify({
+                            action: "actualizarAccionProducto",
+                            idCarpeta: carpeta.id,
+                            sku: productoActualizado.sku,
+                            accionAplicada: opcion
+                        })
+                    });
+                } catch (e) {}
             }
         }
 
