@@ -293,7 +293,7 @@
         <div class="reason-modal-box" style="max-width: 400px; text-align: left;">
             <h3 style="margin-bottom: 8px; color: #c5221f; text-align: center;">⚠️ Aviso de Eliminación</h3>
             <p style="font-size: 12px; color: var(--text-color); margin-bottom: 12px; line-height: 1.4;">
-                Los siguientes reportes independientes seleccionados serán <strong>eliminados permanentemente</strong> de la base de datos (Reporte_Historial):
+                Los siguientes reportes independientes seleccionados serán <strong>eliminados permanentemente</strong> de la base de datos (REPORTES_HISTORIAL):
             </p>
             <div id="deleteModalSummaryList" style="max-height: 150px; overflow-y: auto; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px; margin-bottom: 15px; font-size: 11px;"></div>
             <div style="display: flex; gap: 10px;">
@@ -541,7 +541,6 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-        // URL del despliegue de Google Apps Script
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyc7tXRLUR4aiguUk2mq-liDOyG8irBb8tRVG8bmoayNspMvSjkhh_eIghTNx-S9D0HwQ/exec";
 
         const DEPARTAMENTOS_PREDETERMINADOS = [
@@ -579,6 +578,7 @@
         let sesionActualGlobal = null;
         let modoEdicionActivo = false;
         let pestanaActualPreview = 'pendientes';
+        let pestanaCarpetaAbierta = 'pendientes';
         let listaPendientesGlobal = [];
         let listaRevisadosGlobal = [];
         let html5QrCode = null;
@@ -909,21 +909,13 @@
                         let descVal = descTokens.join(" ").replace(/PÁGINA.*$/i, "").trim();
                         
                         if (descVal.length > 3 && !nuevosProductos.some(p => p.sku === skuVal)) {
-                            let deptoAsignado = deptoActual;
-                            if (skuVal.startsWith("26")) {
-                                const c = skuVal.charAt(2);
-                                if (c === '1') deptoAsignado = "Perecederos";
-                                else if (c === '5') deptoAsignado = "Alimentación";
-                                else if (c === '6') deptoAsignado = "Panadería";
-                            }
-                            
                             let imgUrl = obtenerUrlImagenProducto(skuVal);
 
                             nuevosProductos.push({ 
                                 sku: skuVal, 
                                 desc: descVal.toUpperCase(), 
                                 cant: "", 
-                                depto: deptoAsignado, 
+                                depto: deptoActual, // Respeta el departamento detectado
                                 img: imgUrl,
                                 accionAplicada: null
                             });
@@ -1026,10 +1018,12 @@
                 document.querySelectorAll('.negado-card-item').forEach((card, idx) => {
                     const skuInput = card.querySelector('.input-edit-sku'), descInput = card.querySelector('.input-edit-desc'), cantInput = card.querySelector('.input-edit-cant'), deptoSelect = card.querySelector('.input-edit-depto');
                     if (skuInput && descInput && listaPendientesGlobal[idx]) {
-                        listaPendientesGlobal[idx].sku = skuInput.value;
-                        listaPendientesGlobal[idx].desc = descInput.value;
-                        if (cantInput) listaPendientesGlobal[idx].cant = cantInput.value;
-                        if (deptoSelect) listaPendientesGlobal[idx].depto = deptoSelect.value;
+                        listaPendientesGlobal[idx].sku = skuInput.value.trim();
+                        listaPendientesGlobal[idx].desc = descInput.value.trim();
+                        if (cantInput) listaPendientesGlobal[idx].cant = cantInput.value.trim();
+                        if (deptoSelect && deptoSelect.value) {
+                            listaPendientesGlobal[idx].depto = deptoSelect.value; // Solo cambia si el usuario lo editó expresamente
+                        }
                         listaPendientesGlobal[idx].img = obtenerUrlImagenProducto(listaPendientesGlobal[idx].sku);
                     }
                 });
@@ -1056,14 +1050,20 @@
             document.querySelectorAll('.negado-card-item').forEach((card, idx) => {
                 const skuSpan = card.querySelector('.sku-val'), descSpan = card.querySelector('.desc-val'), cantSpan = card.querySelector('.cant-val'), deptoContainer = card.querySelector('.negado-depto-badge');
                 if (activar && !skuSpan.querySelector('input')) {
-                    skuSpan.innerHTML = `<input type="text" class="input-edit-sku" value="${skuSpan.textContent}">`;
-                    descSpan.innerHTML = `<input type="text" class="input-edit-desc" value="${descSpan.textContent}">`;
+                    skuSpan.innerHTML = `<input type="text" class="input-edit-sku" value="${skuSpan.textContent.trim()}">`;
+                    descSpan.innerHTML = `<input type="text" class="input-edit-desc" value="${descSpan.textContent.trim()}">`;
                     cantSpan.innerHTML = `<input type="number" class="input-edit-cant" placeholder="0" value="${listaPendientesGlobal[idx] ? listaPendientesGlobal[idx].cant : ''}">`;
                     
-                    let deptoActual = deptoContainer.querySelector('.depto-val') ? deptoContainer.querySelector('.depto-val').textContent : deptoContainer.textContent.trim();
+                    let deptoActual = deptoContainer.querySelector('.depto-val') ? deptoContainer.querySelector('.depto-val').textContent.trim() : deptoContainer.textContent.trim();
+                    
+                    if (deptoActual && !departamentosDisponibles.includes(deptoActual)) {
+                        departamentosDisponibles.push(deptoActual);
+                    }
+
                     let optionsHtml = "";
                     departamentosDisponibles.forEach(d => {
-                        optionsHtml += `<option value="${d}" ${d === deptoActual ? 'selected' : ''}>${d}</option>`;
+                        let isSelected = d.trim().toLowerCase() === deptoActual.trim().toLowerCase() ? 'selected' : '';
+                        optionsHtml += `<option value="${d}" ${isSelected}>${d}</option>`;
                     });
                     deptoContainer.innerHTML = `<select class="input-edit-depto">${optionsHtml}</select>`;
                 }
@@ -1186,7 +1186,6 @@
             } else { alert("Artículo no encontrado o ya atendido en esta carpeta."); }
         }
 
-        // Cargar reportes activos desde Google Sheets (Pestaña Reporte_Historial)
         async function sincronizarReportesActivosDesdeCloud() {
             try {
                 const response = await fetch(`${WEB_APP_URL}?action=getReportesActivos`);
@@ -1200,14 +1199,13 @@
             }
         }
 
-        // Confirmar alta de reporte y enviar a la pestaña "Reporte_Historial"
         function confirmarReporte() {
             if (listaPendientesGlobal.length === 0) { 
                 alert("La lista de pendientes está vacía. Sube un archivo con artículos negados primero."); 
                 return; 
             }
             
-            mostrarLoader("Guardando en Reporte_Historial de Google Sheets...");
+            mostrarLoader("Guardando en REPORTES_HISTORIAL de Google Sheets...");
             
             setTimeout(async () => {
                 let ahora = new Date();
@@ -1231,15 +1229,14 @@
                         
                         reportesActivosList.push(nuevaCarpeta);
 
-                        // Enviar vía POST a Google Sheets
                         try {
                             await fetch(WEB_APP_URL, {
                                 method: "POST",
                                 body: JSON.stringify({
                                     action: "guardarReporte",
                                     id: nuevaCarpeta.id,
-                                    depto: nuevaCarpeta.depto,
-                                    productos: nuevaCarpeta.productos
+                                    depto: depto,
+                                    productos: productosDepto.map(p => ({ ...p, accionAplicada: "" }))
                                 })
                             });
                         } catch (err) {}
@@ -1253,7 +1250,6 @@
                 
                 renderizarVistaActual();
                 renderizarReportesActivosGUI();
-                
                 ocultarLoader();
                 
                 const subitems = document.querySelectorAll('#submenuReportes .submenu-item');
@@ -1421,6 +1417,7 @@
 
         function abrirCarpetaIndependiente(idCarpeta) {
             idCarpetaAbiertaActual = idCarpeta;
+            pestanaCarpetaAbierta = 'pendientes';
             let carpeta = reportesActivosList.find(c => c.id === idCarpeta);
             if (!carpeta) return;
 
@@ -1437,6 +1434,11 @@
             renderizarReportesActivosGUI();
         }
 
+        function cambiarPestanaCarpetaAbierta(pestana) {
+            pestanaCarpetaAbierta = pestana;
+            renderizarDetalleCarpetaAbierta();
+        }
+
         function renderizarDetalleCarpetaAbierta() {
             const container = document.getElementById('contenedorProductosReporteAbierto');
             container.innerHTML = "";
@@ -1447,15 +1449,34 @@
                 return;
             }
 
-            let htmlRes = `<div style="display:flex; flex-direction:column; gap:10px;">`;
+            let pendientes = carpeta.productos.filter(p => !p.accionAplicada);
+            let resueltos = carpeta.productos.filter(p => p.accionAplicada);
+
+            let htmlTabs = `
+                <div class="preview-tabs" style="margin-bottom: 12px;">
+                    <button class="tab-btn ${pestanaCarpetaAbierta === 'pendientes' ? 'active' : ''}" onclick="cambiarPestanaCarpetaAbierta('pendientes')">📦 Pendientes (${pendientes.length})</button>
+                    <button class="tab-btn ${pestanaCarpetaAbierta === 'resueltos' ? 'active' : ''}" onclick="cambiarPestanaCarpetaAbierta('resueltos')">🔍 Resueltos / Atendidos (${resueltos.length})</button>
+                </div>
+            `;
+
+            let fuenteActual = pestanaCarpetaAbierta === 'pendientes' ? pendientes : resueltos;
+
+            if (fuenteActual.length === 0) {
+                container.innerHTML = htmlTabs + `<div class="empty-negados">No hay elementos en esta sección.</div>`;
+                return;
+            }
+
+            let htmlRes = htmlTabs + `<div style="display:flex; flex-direction:column; gap:10px;">`;
             
-            carpeta.productos.forEach((item, indexProd) => {
+            fuenteActual.forEach((item) => {
+                let indexReal = carpeta.productos.findIndex(p => p.sku === item.sku);
+
                 let statusBadge = item.accionAplicada 
                     ? `<div class="negado-inv-badge"><span class="negado-inv-dot" style="background:#137333;"></span> ${item.accionAplicada}</div>`
                     : `<div class="negado-inv-badge"><span class="negado-inv-dot"></span> Pendiente de atención en piso</div>`;
 
                 let selectAccion = !item.accionAplicada ? `
-                    <select class="action-select-opcion" onchange="ejecutarAccionOperativaCarpeta(${indexProd}, this.value)">
+                    <select class="action-select-opcion" onchange="ejecutarAccionOperativaCarpeta(${indexReal}, this.value)">
                         <option value="" disabled selected>-- Seleccionar Acción Operativa --</option>
                         <option value="Mal conteo inv.">🔹 Mal conteo inv.</option>
                         <option value="Proceso de merma.">🔹 Proceso de merma.</option>
@@ -1463,21 +1484,18 @@
                         <option value="Faltante CEDIS.">🔹 Faltante CEDIS.</option>
                         <option value="Transferencia.">🔹 Transferencia.</option>
                     </select>
-                ` : '';
+                ` : `<button class="tab-btn" style="background:#c5221f; color:white; padding:6px 12px; margin-top:6px;" onclick="quitarAccionOperativaCarpeta(${indexReal})">↩️ Modificar / Devolver a Pendientes</button>`;
 
                 htmlRes += `
                     <div class="negado-card-item">
                         <div class="negado-card-top">
-                            <div class="negado-img-wrapper" onclick="abrirZoomImagen('${item.img}')" title="Toca para ampliar imagen">
+                            <div class="negado-img-wrapper" onclick="abrirZoomImagen('${item.img}')">
                                 <img src="${item.img}" class="negado-img-thumb" onerror="this.onerror=null; this.src='pelicano.jpg';">
                             </div>
                             <div class="negado-details">
                                 <div class="negado-top-row">
                                     <span class="negado-sku">SKU: ${item.sku}</span>
-                                    <div style="display:flex; align-items:center; gap:6px;">
-                                        <div class="negado-depto-badge">${item.depto}</div>
-                                        <button class="btn-report-error" title="Reportar error en datos" onclick="abrirModalReporteError(${indexProd})">⚠️</button>
-                                    </div>
+                                    <div class="negado-depto-badge">${item.depto}</div>
                                 </div>
                                 <span class="negado-desc">${item.desc}</span>
                             </div>
@@ -1492,7 +1510,6 @@
             container.innerHTML = htmlRes + `</div>`;
         }
 
-        // Registrar la acción operativa de un producto directamente en Google Sheets (Reporte_Historial)
         async function ejecutarAccionOperativaCarpeta(indexProd, opcion) {
             if (!opcion) return;
             let carpeta = reportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
@@ -1504,7 +1521,6 @@
                 renderizarDetalleCarpetaAbierta();
                 renderizarReportesActivosGUI();
 
-                // Actualizar la fila correspondiente en la hoja de cálculo
                 try {
                     await fetch(WEB_APP_URL, {
                         method: "POST",
@@ -1513,6 +1529,30 @@
                             idCarpeta: carpeta.id,
                             sku: productoActualizado.sku,
                             accionAplicada: opcion
+                        })
+                    });
+                } catch (e) {}
+            }
+        }
+
+        async function quitarAccionOperativaCarpeta(indexProd) {
+            let carpeta = reportesActivosList.find(c => c.id === idCarpetaAbiertaActual);
+            if (carpeta && carpeta.productos[indexProd]) {
+                carpeta.productos[indexProd].accionAplicada = null;
+                let productoActualizado = carpeta.productos[indexProd];
+                
+                guardarEstadoCompleto();
+                renderizarDetalleCarpetaAbierta();
+                renderizarReportesActivosGUI();
+
+                try {
+                    await fetch(WEB_APP_URL, {
+                        method: "POST",
+                        body: JSON.stringify({
+                            action: "actualizarAccionProducto",
+                            idCarpeta: carpeta.id,
+                            sku: productoActualizado.sku,
+                            accionAplicada: ""
                         })
                     });
                 } catch (e) {}
